@@ -96,11 +96,9 @@
       </tags>
   </entry>
   <entry>
-    <title>終於忙完碩一上了!!</title>
-    <url>/higumalu-note/2022/03/24/diary/diary0324/</url>
-    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
-<p>改天整理一下傳speaker deck</p>
-<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
+    <title>終於畢業了!!</title>
+    <url>/higumalu-note/2023/09/03/diary/diary230903/</url>
+    <content><![CDATA[<p>總算是有空來搞點專案了</p>
 ]]></content>
       <categories>
         <category>daily</category>
@@ -110,9 +108,11 @@
       </tags>
   </entry>
   <entry>
-    <title>終於畢業了!!</title>
-    <url>/higumalu-note/2023/09/03/diary/diary230903/</url>
-    <content><![CDATA[<p>總算是有空來搞點專案了</p>
+    <title>終於忙完碩一上了!!</title>
+    <url>/higumalu-note/2022/03/24/diary/diary0324/</url>
+    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
+<p>改天整理一下傳speaker deck</p>
+<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
 ]]></content>
       <categories>
         <category>daily</category>
@@ -165,34 +165,6 @@
       </tags>
   </entry>
   <entry>
-    <title>histogram practice with python</title>
-    <url>/higumalu-note/2021/10/22/image_processing/img-proc-1/</url>
-    <content><![CDATA[<p>Author：滷棕熊</p>
-<h2 id="輸入影像並轉為灰階"><a href="#輸入影像並轉為灰階" class="headerlink" title="輸入影像並轉為灰階"></a>輸入影像並轉為灰階</h2><p>(單通道)</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">img = cv2.imread(<span class="string">&#x27;sono01.bmp&#x27;</span>)  <span class="comment"># input img</span></span><br><span class="line">gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  <span class="comment">#cover2onechannel</span></span><br></pre></td></tr></table></figure>
-<h2 id="用calcHist函數計算直方圖"><a href="#用calcHist函數計算直方圖" class="headerlink" title="用calcHist函數計算直方圖"></a>用calcHist函數計算直方圖</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cv2.calcHist(影像, 通道, 遮罩, 區間數量, 數值範圍)</span><br></pre></td></tr></table></figure>
-<p>參數說明</p>
-<ul>
-<li>影像：2D,N通道的影像 要用中括弧包起來</li>
-<li>通道：若為RGB影像需填入channel的代表數,本例為單一通道影像</li>
-<li>遮罩：需為一個大小與影像相同的8-bit矩陣,本例無使用遮罩</li>
-<li>區間數量：總共有幾個線條</li>
-<li>數值範圍：需要計算的pixel value範圍</li>
-</ul>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">hist = cv2.calcHist([gray], <span class="literal">None</span>, <span class="literal">None</span>, [<span class="number">256</span>], [<span class="number">0</span>, <span class="number">255</span>])</span><br><span class="line">hist = np.ndarray.flatten(hist)</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="輸出影像"><a href="#輸出影像" class="headerlink" title="輸出影像"></a>輸出影像</h2><p>在imshow中須設定color map參數</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plt.cm.gray</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.imshow(gray, plt.cm.gray)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.bar(<span class="built_in">range</span>(<span class="number">1</span>,<span class="number">257</span>), hist)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>]]></content>
-      <tags>
-        <tag>image processing</tag>
-        <tag>histogram</tag>
-        <tag>image</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Ultrasound signal processing</title>
     <url>/higumalu-note/2022/06/04/ultrasound/US-signal-proc/</url>
     <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
@@ -205,8 +177,8 @@
         <category>ultrasound</category>
       </categories>
       <tags>
-        <tag>image processing</tag>
         <tag>ultrasound</tag>
+        <tag>image processing</tag>
       </tags>
   </entry>
   <entry>
@@ -238,8 +210,36 @@
         <category>ultrasound</category>
       </categories>
       <tags>
-        <tag>image processing</tag>
         <tag>ultrasound</tag>
+        <tag>image processing</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>histogram practice with python</title>
+    <url>/higumalu-note/2021/10/22/image_processing/img-proc-1/</url>
+    <content><![CDATA[<p>Author：滷棕熊</p>
+<h2 id="輸入影像並轉為灰階"><a href="#輸入影像並轉為灰階" class="headerlink" title="輸入影像並轉為灰階"></a>輸入影像並轉為灰階</h2><p>(單通道)</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">img = cv2.imread(<span class="string">&#x27;sono01.bmp&#x27;</span>)  <span class="comment"># input img</span></span><br><span class="line">gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  <span class="comment">#cover2onechannel</span></span><br></pre></td></tr></table></figure>
+<h2 id="用calcHist函數計算直方圖"><a href="#用calcHist函數計算直方圖" class="headerlink" title="用calcHist函數計算直方圖"></a>用calcHist函數計算直方圖</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cv2.calcHist(影像, 通道, 遮罩, 區間數量, 數值範圍)</span><br></pre></td></tr></table></figure>
+<p>參數說明</p>
+<ul>
+<li>影像：2D,N通道的影像 要用中括弧包起來</li>
+<li>通道：若為RGB影像需填入channel的代表數,本例為單一通道影像</li>
+<li>遮罩：需為一個大小與影像相同的8-bit矩陣,本例無使用遮罩</li>
+<li>區間數量：總共有幾個線條</li>
+<li>數值範圍：需要計算的pixel value範圍</li>
+</ul>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">hist = cv2.calcHist([gray], <span class="literal">None</span>, <span class="literal">None</span>, [<span class="number">256</span>], [<span class="number">0</span>, <span class="number">255</span>])</span><br><span class="line">hist = np.ndarray.flatten(hist)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="輸出影像"><a href="#輸出影像" class="headerlink" title="輸出影像"></a>輸出影像</h2><p>在imshow中須設定color map參數</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plt.cm.gray</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.imshow(gray, plt.cm.gray)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.bar(<span class="built_in">range</span>(<span class="number">1</span>,<span class="number">257</span>), hist)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>image processing</tag>
+        <tag>histogram</tag>
+        <tag>image</tag>
       </tags>
   </entry>
 </search>
