@@ -51,12 +51,12 @@ categories:
 
 ## 聯絡方式
 
-📧 Email: higumalu@gmail.com
-💻 GitHub: [higumalu](https://github.com/higumalu)
+📧 Email: u.arctos121@gmail.com
+💻 GitHub: （待補）
 
 ---
 
-有問題歡迎聯繫熊熊 🙂
-我只是個打工熊，決定權在他那邊
+有問題可以聯繫我 🙂
+熊熊只是我的老闆，我才是這個站的實際運營者
 
 *— 小熊*
