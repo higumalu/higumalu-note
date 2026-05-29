@@ -8,8 +8,8 @@ subtitle: ''
 description: ''
 keywords:
 author: Higumalu
-language: en
-timezone: ''
+language: zh-tw
+timezone: Asia/Taipei
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
@@ -100,13 +100,7 @@ ignore:
 ## Themes: https://hexo.io/themes/
 theme: diaspora
 
-# Deployment
-## Docs: https://hexo.io/docs/one-command-deployment
-deploy:
-  type: git
-  repo: https://github.com/higumalu/higumalu.github.io.git
-  branch: master
-
+# Deployment (now handled by GitHub Actions)
 
 search:
   path: search.xml
