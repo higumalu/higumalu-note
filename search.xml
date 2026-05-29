@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>My New Post</title>
+    <url>/higumalu-note/2021/09/30/2021/09/30/My-New-Post/</url>
+    <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
+<h1 id="YT-test"><a href="#YT-test" class="headerlink" title="YT test"></a>YT test</h1><div class="video-container"><iframe src="https://www.youtube.com/embed/EmbKlm0P5W0" frameborder="0" loading="lazy" allowfullscreen></iframe></div>
+
+<h1 id="Picture-test"><a href="#Picture-test" class="headerlink" title="Picture test"></a>Picture test</h1><p><img src="https://i.imgur.com/WDqHaZP.jpg" alt="klee"></p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hello World</title>
-    <url>/higumalu-note/2021/09/30/hello-world/</url>
+    <url>/higumalu-note/2021/09/30/2021/09/30/hello-world/</url>
     <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
 <h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
 
@@ -19,42 +34,8 @@
 ]]></content>
   </entry>
   <entry>
-    <title>My New Post</title>
-    <url>/higumalu-note/2021/09/30/My-New-Post/</url>
-    <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
-<h1 id="YT-test"><a href="#YT-test" class="headerlink" title="YT test"></a>YT test</h1><div class="video-container"><iframe src="https://www.youtube.com/embed/EmbKlm0P5W0" frameborder="0" loading="lazy" allowfullscreen></iframe></div>
-
-<h1 id="Picture-test"><a href="#Picture-test" class="headerlink" title="Picture test"></a>Picture test</h1><p><img src="https://i.imgur.com/WDqHaZP.jpg" alt="klee"></p>
-]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>google colab (2) CNN classification model with custom dataset</title>
-    <url>/higumalu-note/2021/10/09/colab/colab-3/</url>
-    <content><![CDATA[<h2 id="目錄"><a href="#目錄" class="headerlink" title="目錄"></a>目錄</h2><ul>
-<li>資料上傳(Google Drive)</li>
-<li>資料預處理</li>
-<li>建立CNN model(keras)</li>
-<li>training</li>
-<li>predict</li>
-</ul>
-<h3 id="上傳資料至Drive"><a href="#上傳資料至Drive" class="headerlink" title="上傳資料至Drive"></a>上傳資料至Drive</h3><h3 id="資料預處理"><a href="#資料預處理" class="headerlink" title="資料預處理"></a>資料預處理</h3><h3 id="建立CNN分類模型"><a href="#建立CNN分類模型" class="headerlink" title="建立CNN分類模型"></a>建立CNN分類模型</h3>]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>drive</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>google colab (0) setting &amp; UI</title>
-    <url>/higumalu-note/2021/10/05/colab/colab-1/</url>
+    <url>/higumalu-note/2021/10/05/2021/10/05/colab-1/</url>
     <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a><br><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></p>
 <hr>
 <p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
@@ -72,22 +53,8 @@
       </tags>
   </entry>
   <entry>
-    <title>終於忙完碩一上了!!</title>
-    <url>/higumalu-note/2022/03/24/diary/diary0324/</url>
-    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
-<p>改天整理一下傳speaker deck</p>
-<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
-]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>google colab (1) connect to drive</title>
-    <url>/higumalu-note/2021/10/07/colab/colab-2/</url>
+    <url>/higumalu-note/2021/10/07/2021/10/07/colab-2/</url>
     <content><![CDATA[<h3 id="連結到Google-Drive"><a href="#連結到Google-Drive" class="headerlink" title="連結到Google Drive"></a>連結到Google Drive</h3><p>&nbsp;</p>
 <figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!apt-get install -y -qq software-properties-common python-software-properties module-init-tools</span><br><span class="line">!add-apt-repository -y ppa:alessandro-strada/ppa <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get update -qq <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get -y install -qq google-drive-ocamlfuse fuse</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> google.colab <span class="keyword">import</span> auth</span><br><span class="line">auth.authenticate_user()</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> oauth2client.client <span class="keyword">import</span> GoogleCredentials</span><br><span class="line">creds = GoogleCredentials.get_application_default()</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> getpass</span><br><span class="line">!google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125; &lt; /dev/null <span class="number">2</span>&gt;&amp;<span class="number">1</span> | grep URL</span><br><span class="line">vcode = getpass.getpass()</span><br><span class="line">!echo &#123;vcode&#125; | google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">E: Package &#x27;python-software-properties&#x27; has no installation candidate</span><br><span class="line">Selecting previously unselected package google-drive-ocamlfuse.</span><br><span class="line">(Reading database ... 155047 files and directories currently installed.)</span><br><span class="line">Preparing to unpack .../google-drive-ocamlfuse_0.7.26-0ubuntu1~ubuntu18.04.1_amd64.deb ...</span><br><span class="line">Unpacking google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Setting up google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Processing triggers for man-db (2.8.3-2ubuntu0.1) ...</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">··········</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">Please enter the verification code: Access token retrieved correctly.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
@@ -110,8 +77,119 @@
       </tags>
   </entry>
   <entry>
+    <title>google colab (2) CNN classification model with custom dataset</title>
+    <url>/higumalu-note/2021/10/09/2021/10/09/colab-3/</url>
+    <content><![CDATA[<h2 id="目錄"><a href="#目錄" class="headerlink" title="目錄"></a>目錄</h2><ul>
+<li>資料上傳(Google Drive)</li>
+<li>資料預處理</li>
+<li>建立CNN model(keras)</li>
+<li>training</li>
+<li>predict</li>
+</ul>
+<h3 id="上傳資料至Drive"><a href="#上傳資料至Drive" class="headerlink" title="上傳資料至Drive"></a>上傳資料至Drive</h3><h3 id="資料預處理"><a href="#資料預處理" class="headerlink" title="資料預處理"></a>資料預處理</h3><h3 id="建立CNN分類模型"><a href="#建立CNN分類模型" class="headerlink" title="建立CNN分類模型"></a>建立CNN分類模型</h3>]]></content>
+      <categories>
+        <category>colab</category>
+      </categories>
+      <tags>
+        <tag>colab</tag>
+        <tag>drive</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>histogram practice with python</title>
+    <url>/higumalu-note/2021/10/22/2021/10/22/img-proc-1/</url>
+    <content><![CDATA[<p>Author：滷棕熊</p>
+<h2 id="輸入影像並轉為灰階"><a href="#輸入影像並轉為灰階" class="headerlink" title="輸入影像並轉為灰階"></a>輸入影像並轉為灰階</h2><p>(單通道)</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">img = cv2.imread(<span class="string">&#x27;sono01.bmp&#x27;</span>)  <span class="comment"># input img</span></span><br><span class="line">gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  <span class="comment">#cover2onechannel</span></span><br></pre></td></tr></table></figure>
+<h2 id="用calcHist函數計算直方圖"><a href="#用calcHist函數計算直方圖" class="headerlink" title="用calcHist函數計算直方圖"></a>用calcHist函數計算直方圖</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cv2.calcHist(影像, 通道, 遮罩, 區間數量, 數值範圍)</span><br></pre></td></tr></table></figure>
+<p>參數說明</p>
+<ul>
+<li>影像：2D,N通道的影像 要用中括弧包起來</li>
+<li>通道：若為RGB影像需填入channel的代表數,本例為單一通道影像</li>
+<li>遮罩：需為一個大小與影像相同的8-bit矩陣,本例無使用遮罩</li>
+<li>區間數量：總共有幾個線條</li>
+<li>數值範圍：需要計算的pixel value範圍</li>
+</ul>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">hist = cv2.calcHist([gray], <span class="literal">None</span>, <span class="literal">None</span>, [<span class="number">256</span>], [<span class="number">0</span>, <span class="number">255</span>])</span><br><span class="line">hist = np.ndarray.flatten(hist)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="輸出影像"><a href="#輸出影像" class="headerlink" title="輸出影像"></a>輸出影像</h2><p>在imshow中須設定color map參數</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plt.cm.gray</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.imshow(gray, plt.cm.gray)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.bar(<span class="built_in">range</span>(<span class="number">1</span>,<span class="number">257</span>), hist)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>image processing</tag>
+        <tag>histogram</tag>
+        <tag>image</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ultrasound defan</title>
+    <url>/higumalu-note/2022/03/25/2022/03/25/US_defan/</url>
+    <content><![CDATA[<h3 id="A-universal-method-for-ultrasound-image-defan"><a href="#A-universal-method-for-ultrasound-image-defan" class="headerlink" title="A universal method for ultrasound image defan"></a>A universal method for ultrasound image defan</h3><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+<h1 id="step-1"><a href="#step-1" class="headerlink" title="step 1"></a>step 1</h1><h3 id="import-moudle-amp-load-image"><a href="#import-moudle-amp-load-image" class="headerlink" title="import moudle &amp; load image"></a>import moudle &amp; load image</h3><p><img src="https://imgur.com/cuaq1Cd.jpg" alt="load"></p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> util <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageDraw</span><br><span class="line"></span><br><span class="line">img = cv2.imread(imgpath, cv2.IMREAD_COLOR)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h1 id="step-2"><a href="#step-2" class="headerlink" title="step 2"></a>step 2</h1><h3 id="get-the-coner-coordinate-x4"><a href="#get-the-coner-coordinate-x4" class="headerlink" title="get the coner coordinate (x4)"></a>get the coner coordinate (x4)</h3><h4 id="here-I-use-ginput-get-the-coordinate"><a href="#here-I-use-ginput-get-the-coordinate" class="headerlink" title="here I use ginput get the coordinate"></a>here I use ginput get the coordinate</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.title(<span class="string">&#x27;plt ginput&#x27;</span>) </span><br><span class="line">point = plt.ginput(<span class="number">4</span>) </span><br><span class="line"><span class="built_in">print</span>(point) </span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="use-line1-and-line2-to-caculate-the-focus-point-above-the-img"><a href="#use-line1-and-line2-to-caculate-the-focus-point-above-the-img" class="headerlink" title="use line1 and line2 to caculate the focus point above the img"></a>use line1 and line2 to caculate the focus point above the img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">ux1, uy1 = point[<span class="number">0</span>]</span><br><span class="line">dx1, dy1 = point[<span class="number">1</span>]</span><br><span class="line">ux2, uy2 = point[<span class="number">2</span>]</span><br><span class="line">dx2, dy2 = point[<span class="number">3</span>]</span><br><span class="line">img[:<span class="built_in">int</span>(uy1),:,:] = <span class="number">0</span> <span class="comment">#del area of uper UI </span></span><br><span class="line">line1 = [ux1, uy1, dx1, dy1]</span><br><span class="line">line2 = [ux2, uy2, dx2, dy2]</span><br><span class="line"></span><br><span class="line">focus = cross_point(line1, line2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="how2get-cross-point-coordinate"><a href="#how2get-cross-point-coordinate" class="headerlink" title="how2get cross point coordinate"></a>how2get cross point coordinate</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cross_point</span>(<span class="params">line1,line2</span>):</span></span><br><span class="line">    x1=line1[<span class="number">0</span>]</span><br><span class="line">    y1=line1[<span class="number">1</span>]</span><br><span class="line">    x2=line1[<span class="number">2</span>]</span><br><span class="line">    y2=line1[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    x3=line2[<span class="number">0</span>]</span><br><span class="line">    y3=line2[<span class="number">1</span>]</span><br><span class="line">    x4=line2[<span class="number">2</span>]</span><br><span class="line">    y4=line2[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    k1=(y2-y1)*<span class="number">1.0</span>/(x2-x1)</span><br><span class="line">    b1=y1*<span class="number">1.0</span>-x1*k1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> (x4-x3)==<span class="number">0</span>:</span><br><span class="line">        k2=<span class="literal">None</span></span><br><span class="line">        b2=<span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        k2=(y4-y3)*<span class="number">1.0</span>/(x4-x3)</span><br><span class="line">        b2=y3*<span class="number">1.0</span>-x3*k2*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> k2==<span class="literal">None</span>:</span><br><span class="line">        x=x3</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        x=(b2-b1)*<span class="number">1.0</span>/(k1-k2)</span><br><span class="line">    y=k1*x*<span class="number">1.0</span>+b1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">return</span> [x,y]</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h1 id="step-3"><a href="#step-3" class="headerlink" title="step 3"></a>step 3</h1><h3 id="caculating-the-distance-of-focus-point-to-surface-and-bottom"><a href="#caculating-the-distance-of-focus-point-to-surface-and-bottom" class="headerlink" title="caculating the distance of focus point to surface and bottom"></a>caculating the distance of focus point to surface and bottom</h3><p><img src="https://i.imgur.com/sElg0Dn.png" alt="var"></p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">sur = math.dist(focus, point[<span class="number">0</span>])</span><br><span class="line">rad = math.dist(focus, point[<span class="number">1</span>])</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="crop-img-and-extension-the-matrix-size"><a href="#crop-img-and-extension-the-matrix-size" class="headerlink" title="crop img and extension the matrix size"></a>crop img and extension the matrix size</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">img = img[:math.floor(focus[<span class="number">1</span>]+rad), math.floor(dx1):math.ceil(dx2)]</span><br><span class="line"></span><br><span class="line">mask_w = img.shape[<span class="number">1</span>]</span><br><span class="line">mask_h = math.ceil(rad)</span><br><span class="line"></span><br><span class="line">bg = np.zeros(shape=(mask_h, mask_w, <span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">0</span>] = img[:,:,<span class="number">0</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">1</span>] = img[:,:,<span class="number">1</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">2</span>] = img[:,:,<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
+<h1 id="step-4"><a href="#step-4" class="headerlink" title="step 4"></a>step 4</h1><h3 id="defan-amp-crop-img"><a href="#defan-amp-crop-img" class="headerlink" title="defan &amp; crop img"></a>defan &amp; crop img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">defan = de_fan(bg,probe_angle,num_aline)</span><br><span class="line">defan = defan[<span class="built_in">int</span>(sur):,:,:]</span><br></pre></td></tr></table></figure>
+<h3 id="de-fan-code"><a href="#de-fan-code" class="headerlink" title="de_fan code"></a>de_fan code</h3><p>‘angle’ means the probe curve angle we can get that with product info or using cosine function to get it.<br>‘num_line’ means ‘A line’ here we can understand that is image width.<br>Here I used a for loop to resample the image, then inserted into the blank matrix.</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">de_fan</span>(<span class="params">image,angle,num_line</span>):</span></span><br><span class="line">    </span><br><span class="line">    h_l = math.floor(num_line/<span class="number">2</span>)</span><br><span class="line">    h_a = math.floor(angle/<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    height, width = image.shape[:<span class="number">2</span>]</span><br><span class="line">    defan = np.zeros(shape=(height,num_line,<span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">    defan[:,h_l,:] = image[:,math.floor(width)-<span class="number">1</span>,:]</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,h_l):</span><br><span class="line">        line = rotate_image_topcenter(image,d*h_a/h_l)</span><br><span class="line">        defan[:,h_l-d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">        line = rotate_image_topcenter(image,-d*h_a/h_l)</span><br><span class="line">        defan[:,h_l+d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> defan</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="rotate-image-topcenter-code"><a href="#rotate-image-topcenter-code" class="headerlink" title="rotate_image_topcenter code"></a>rotate_image_topcenter code</h3><p>Let rotate center is focused center</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rotate_image_topcenter</span>(<span class="params">mat, angle</span>):</span></span><br><span class="line">    height, width = mat.shape[:<span class="number">2</span>] <span class="comment"># image shape has 3 dimensions</span></span><br><span class="line">    image_center = (width/<span class="number">2</span>, <span class="number">0</span>) </span><br><span class="line">    rotation_mat = cv2.getRotationMatrix2D(image_center, angle, <span class="number">1.</span>)</span><br><span class="line">    rotated_mat = cv2.warpAffine(mat, rotation_mat, (width, height))</span><br><span class="line">    <span class="keyword">return</span> rotated_mat</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;<br>finally—<br><img src="https://i.imgur.com/yPYAMkn.png" alt="fin"><br>&nbsp;</p>
+]]></content>
+      <categories>
+        <category>ultrasound</category>
+      </categories>
+      <tags>
+        <tag>image processing</tag>
+        <tag>ultrasound</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>終於忙完碩一上了!!</title>
+    <url>/higumalu-note/2022/03/24/2022/03/24/diary0324/</url>
+    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
+<p>改天整理一下傳speaker deck</p>
+<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ultrasound signal processing</title>
+    <url>/higumalu-note/2022/06/04/2022/06/04/US-signal-proc/</url>
+    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
+<p>These steps can be roughly categorized as follows:</p>
+<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
+<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
+<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+]]></content>
+      <categories>
+        <category>ultrasound</category>
+      </categories>
+      <tags>
+        <tag>image processing</tag>
+        <tag>ultrasound</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>終於畢業了!!</title>
-    <url>/higumalu-note/2023/09/03/diary/diary230903/</url>
+    <url>/higumalu-note/2023/09/03/2023/09/03/diary230903/</url>
     <content><![CDATA[<p>總算是有空來搞點專案了</p>
 ]]></content>
       <categories>
@@ -123,7 +201,7 @@
   </entry>
   <entry>
     <title>在Photoshop使用stable diffusion</title>
-    <url>/higumalu-note/2023/09/25/diary/diary230925/</url>
+    <url>/higumalu-note/2023/09/25/2023/09/25/diary230925/</url>
     <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在整理部落格資料的時候發現封面的圖片需求量是有的，<br>抓網上的圖解析度常會各種混亂甚至浮水印或版權等問題，<br>所以最一開始的想法是用SD模型來生圖一來可以完美解決解析度問題，二來可以根據XP自行調整還是比較香的，<br>但是實際上穩定擴散卻不是那麼穩定inpainting功能或者img2img這類的常會生出一些過於前衛的藝術，<br>像是兩顆頭的美少女或者三腳獸這類超越人類審美的藝術。</p>
 <p>後來在使用了幾次後發現SD雖然能給整體佈局很美的view但細部還是得靠工人智慧去細尻，<br>細尻的部分基於個人習慣我還是比較常用PS來做，設計工具還是比較全的。<br>一開始有考慮用Adobe Firefly去做，但風格上個人還是偏愛二刺螈，很快就又回到了SDwebui上了。</p>
 <p>這篇文章主要是面向繪圖愛好者<br>主要以<strong>安裝</strong>跟<strong>使用</strong>的觀點去紀錄 </p>
@@ -161,85 +239,8 @@
         <category>daily</category>
       </categories>
       <tags>
-        <tag>other, sd_model</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>histogram practice with python</title>
-    <url>/higumalu-note/2021/10/22/image_processing/img-proc-1/</url>
-    <content><![CDATA[<p>Author：滷棕熊</p>
-<h2 id="輸入影像並轉為灰階"><a href="#輸入影像並轉為灰階" class="headerlink" title="輸入影像並轉為灰階"></a>輸入影像並轉為灰階</h2><p>(單通道)</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">img = cv2.imread(<span class="string">&#x27;sono01.bmp&#x27;</span>)  <span class="comment"># input img</span></span><br><span class="line">gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  <span class="comment">#cover2onechannel</span></span><br></pre></td></tr></table></figure>
-<h2 id="用calcHist函數計算直方圖"><a href="#用calcHist函數計算直方圖" class="headerlink" title="用calcHist函數計算直方圖"></a>用calcHist函數計算直方圖</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cv2.calcHist(影像, 通道, 遮罩, 區間數量, 數值範圍)</span><br></pre></td></tr></table></figure>
-<p>參數說明</p>
-<ul>
-<li>影像：2D,N通道的影像 要用中括弧包起來</li>
-<li>通道：若為RGB影像需填入channel的代表數,本例為單一通道影像</li>
-<li>遮罩：需為一個大小與影像相同的8-bit矩陣,本例無使用遮罩</li>
-<li>區間數量：總共有幾個線條</li>
-<li>數值範圍：需要計算的pixel value範圍</li>
-</ul>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">hist = cv2.calcHist([gray], <span class="literal">None</span>, <span class="literal">None</span>, [<span class="number">256</span>], [<span class="number">0</span>, <span class="number">255</span>])</span><br><span class="line">hist = np.ndarray.flatten(hist)</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="輸出影像"><a href="#輸出影像" class="headerlink" title="輸出影像"></a>輸出影像</h2><p>在imshow中須設定color map參數</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plt.cm.gray</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.imshow(gray, plt.cm.gray)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.bar(<span class="built_in">range</span>(<span class="number">1</span>,<span class="number">257</span>), hist)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>]]></content>
-      <tags>
-        <tag>image processing</tag>
-        <tag>histogram</tag>
-        <tag>image</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ultrasound signal processing</title>
-    <url>/higumalu-note/2022/06/04/ultrasound/US-signal-proc/</url>
-    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
-<p>These steps can be roughly categorized as follows:</p>
-<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
-<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
-<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
-]]></content>
-      <categories>
-        <category>ultrasound</category>
-      </categories>
-      <tags>
-        <tag>image processing</tag>
-        <tag>ultrasound</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ultrasound defan</title>
-    <url>/higumalu-note/2022/03/25/ultrasound/US_defan/</url>
-    <content><![CDATA[<h3 id="A-universal-method-for-ultrasound-image-defan"><a href="#A-universal-method-for-ultrasound-image-defan" class="headerlink" title="A universal method for ultrasound image defan"></a>A universal method for ultrasound image defan</h3><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
-<h1 id="step-1"><a href="#step-1" class="headerlink" title="step 1"></a>step 1</h1><h3 id="import-moudle-amp-load-image"><a href="#import-moudle-amp-load-image" class="headerlink" title="import moudle &amp; load image"></a>import moudle &amp; load image</h3><p><img src="https://imgur.com/cuaq1Cd.jpg" alt="load"></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> util <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageDraw</span><br><span class="line"></span><br><span class="line">img = cv2.imread(imgpath, cv2.IMREAD_COLOR)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h1 id="step-2"><a href="#step-2" class="headerlink" title="step 2"></a>step 2</h1><h3 id="get-the-coner-coordinate-x4"><a href="#get-the-coner-coordinate-x4" class="headerlink" title="get the coner coordinate (x4)"></a>get the coner coordinate (x4)</h3><h4 id="here-I-use-ginput-get-the-coordinate"><a href="#here-I-use-ginput-get-the-coordinate" class="headerlink" title="here I use ginput get the coordinate"></a>here I use ginput get the coordinate</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.title(<span class="string">&#x27;plt ginput&#x27;</span>) </span><br><span class="line">point = plt.ginput(<span class="number">4</span>) </span><br><span class="line"><span class="built_in">print</span>(point) </span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h3 id="use-line1-and-line2-to-caculate-the-focus-point-above-the-img"><a href="#use-line1-and-line2-to-caculate-the-focus-point-above-the-img" class="headerlink" title="use line1 and line2 to caculate the focus point above the img"></a>use line1 and line2 to caculate the focus point above the img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">ux1, uy1 = point[<span class="number">0</span>]</span><br><span class="line">dx1, dy1 = point[<span class="number">1</span>]</span><br><span class="line">ux2, uy2 = point[<span class="number">2</span>]</span><br><span class="line">dx2, dy2 = point[<span class="number">3</span>]</span><br><span class="line">img[:<span class="built_in">int</span>(uy1),:,:] = <span class="number">0</span> <span class="comment">#del area of uper UI </span></span><br><span class="line">line1 = [ux1, uy1, dx1, dy1]</span><br><span class="line">line2 = [ux2, uy2, dx2, dy2]</span><br><span class="line"></span><br><span class="line">focus = cross_point(line1, line2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h3 id="how2get-cross-point-coordinate"><a href="#how2get-cross-point-coordinate" class="headerlink" title="how2get cross point coordinate"></a>how2get cross point coordinate</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cross_point</span>(<span class="params">line1,line2</span>):</span></span><br><span class="line">    x1=line1[<span class="number">0</span>]</span><br><span class="line">    y1=line1[<span class="number">1</span>]</span><br><span class="line">    x2=line1[<span class="number">2</span>]</span><br><span class="line">    y2=line1[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    x3=line2[<span class="number">0</span>]</span><br><span class="line">    y3=line2[<span class="number">1</span>]</span><br><span class="line">    x4=line2[<span class="number">2</span>]</span><br><span class="line">    y4=line2[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    k1=(y2-y1)*<span class="number">1.0</span>/(x2-x1)</span><br><span class="line">    b1=y1*<span class="number">1.0</span>-x1*k1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> (x4-x3)==<span class="number">0</span>:</span><br><span class="line">        k2=<span class="literal">None</span></span><br><span class="line">        b2=<span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        k2=(y4-y3)*<span class="number">1.0</span>/(x4-x3)</span><br><span class="line">        b2=y3*<span class="number">1.0</span>-x3*k2*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> k2==<span class="literal">None</span>:</span><br><span class="line">        x=x3</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        x=(b2-b1)*<span class="number">1.0</span>/(k1-k2)</span><br><span class="line">    y=k1*x*<span class="number">1.0</span>+b1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">return</span> [x,y]</span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h1 id="step-3"><a href="#step-3" class="headerlink" title="step 3"></a>step 3</h1><h3 id="caculating-the-distance-of-focus-point-to-surface-and-bottom"><a href="#caculating-the-distance-of-focus-point-to-surface-and-bottom" class="headerlink" title="caculating the distance of focus point to surface and bottom"></a>caculating the distance of focus point to surface and bottom</h3><p><img src="https://i.imgur.com/sElg0Dn.png" alt="var"></p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">sur = math.dist(focus, point[<span class="number">0</span>])</span><br><span class="line">rad = math.dist(focus, point[<span class="number">1</span>])</span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h3 id="crop-img-and-extension-the-matrix-size"><a href="#crop-img-and-extension-the-matrix-size" class="headerlink" title="crop img and extension the matrix size"></a>crop img and extension the matrix size</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">img = img[:math.floor(focus[<span class="number">1</span>]+rad), math.floor(dx1):math.ceil(dx2)]</span><br><span class="line"></span><br><span class="line">mask_w = img.shape[<span class="number">1</span>]</span><br><span class="line">mask_h = math.ceil(rad)</span><br><span class="line"></span><br><span class="line">bg = np.zeros(shape=(mask_h, mask_w, <span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">0</span>] = img[:,:,<span class="number">0</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">1</span>] = img[:,:,<span class="number">1</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">2</span>] = img[:,:,<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
-<h1 id="step-4"><a href="#step-4" class="headerlink" title="step 4"></a>step 4</h1><h3 id="defan-amp-crop-img"><a href="#defan-amp-crop-img" class="headerlink" title="defan &amp; crop img"></a>defan &amp; crop img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">defan = de_fan(bg,probe_angle,num_aline)</span><br><span class="line">defan = defan[<span class="built_in">int</span>(sur):,:,:]</span><br></pre></td></tr></table></figure>
-<h3 id="de-fan-code"><a href="#de-fan-code" class="headerlink" title="de_fan code"></a>de_fan code</h3><p>‘angle’ means the probe curve angle we can get that with product info or using cosine function to get it.<br>‘num_line’ means ‘A line’ here we can understand that is image width.<br>Here I used a for loop to resample the image, then inserted into the blank matrix.</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">de_fan</span>(<span class="params">image,angle,num_line</span>):</span></span><br><span class="line">    </span><br><span class="line">    h_l = math.floor(num_line/<span class="number">2</span>)</span><br><span class="line">    h_a = math.floor(angle/<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    height, width = image.shape[:<span class="number">2</span>]</span><br><span class="line">    defan = np.zeros(shape=(height,num_line,<span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">    defan[:,h_l,:] = image[:,math.floor(width)-<span class="number">1</span>,:]</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,h_l):</span><br><span class="line">        line = rotate_image_topcenter(image,d*h_a/h_l)</span><br><span class="line">        defan[:,h_l-d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">        line = rotate_image_topcenter(image,-d*h_a/h_l)</span><br><span class="line">        defan[:,h_l+d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> defan</span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h3 id="rotate-image-topcenter-code"><a href="#rotate-image-topcenter-code" class="headerlink" title="rotate_image_topcenter code"></a>rotate_image_topcenter code</h3><p>Let rotate center is focused center</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rotate_image_topcenter</span>(<span class="params">mat, angle</span>):</span></span><br><span class="line">    height, width = mat.shape[:<span class="number">2</span>] <span class="comment"># image shape has 3 dimensions</span></span><br><span class="line">    image_center = (width/<span class="number">2</span>, <span class="number">0</span>) </span><br><span class="line">    rotation_mat = cv2.getRotationMatrix2D(image_center, angle, <span class="number">1.</span>)</span><br><span class="line">    rotated_mat = cv2.warpAffine(mat, rotation_mat, (width, height))</span><br><span class="line">    <span class="keyword">return</span> rotated_mat</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>&nbsp;<br>finally—<br><img src="https://i.imgur.com/yPYAMkn.png" alt="fin"><br>&nbsp;</p>
-]]></content>
-      <categories>
-        <category>ultrasound</category>
-      </categories>
-      <tags>
-        <tag>image processing</tag>
-        <tag>ultrasound</tag>
+        <tag>other</tag>
+        <tag>sd_model</tag>
       </tags>
   </entry>
 </search>
