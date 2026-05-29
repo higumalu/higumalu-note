@@ -34,25 +34,6 @@
 ]]></content>
   </entry>
   <entry>
-    <title>google colab (0) setting &amp; UI</title>
-    <url>/higumalu-note/2021/10/05/colab/colab-1/</url>
-    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a><br><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></p>
-<hr>
-<p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
-<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
-<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
-<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
-<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
-]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>setting</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>google colab (1) connect to drive</title>
     <url>/higumalu-note/2021/10/07/colab/colab-2/</url>
     <content><![CDATA[<h3 id="連結到Google-Drive"><a href="#連結到Google-Drive" class="headerlink" title="連結到Google Drive"></a>連結到Google Drive</h3><p>&nbsp;</p>
@@ -74,6 +55,25 @@
       <tags>
         <tag>colab</tag>
         <tag>drive</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>google colab (0) setting &amp; UI</title>
+    <url>/higumalu-note/2021/10/05/colab/colab-1/</url>
+    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a><br><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></p>
+<hr>
+<p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
+<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
+<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
+<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
+<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
+]]></content>
+      <categories>
+        <category>colab</category>
+      </categories>
+      <tags>
+        <tag>colab</tag>
+        <tag>setting</tag>
       </tags>
   </entry>
   <entry>
