@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ultrasound defan - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="A universal method for ultrasound image defan
+step 1import moudle &amp;amp; load image
+1234567import cv,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="http://higumalu.github.io"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">ultrasound defan</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">ultrasound defan</h1>
+        <div class="stuff">
+            <span>三月 25, 2022</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/image-processing/" rel="tag">image processing</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/ultrasound/" rel="tag">ultrasound</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h3 id="A-universal-method-for-ultrasound-image-defan"><a href="#A-universal-method-for-ultrasound-image-defan" class="headerlink" title="A universal method for ultrasound image defan"></a>A universal method for ultrasound image defan</h3><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+<h1 id="step-1"><a href="#step-1" class="headerlink" title="step 1"></a>step 1</h1><h3 id="import-moudle-amp-load-image"><a href="#import-moudle-amp-load-image" class="headerlink" title="import moudle &amp; load image"></a>import moudle &amp; load image</h3><p><img src="https://imgur.com/cuaq1Cd.jpg" alt="load"></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> util <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageDraw</span><br><span class="line"></span><br><span class="line">img = cv2.imread(imgpath, cv2.IMREAD_COLOR)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h1 id="step-2"><a href="#step-2" class="headerlink" title="step 2"></a>step 2</h1><h3 id="get-the-coner-coordinate-x4"><a href="#get-the-coner-coordinate-x4" class="headerlink" title="get the coner coordinate (x4)"></a>get the coner coordinate (x4)</h3><h4 id="here-I-use-ginput-get-the-coordinate"><a href="#here-I-use-ginput-get-the-coordinate" class="headerlink" title="here I use ginput get the coordinate"></a>here I use ginput get the coordinate</h4><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">plt.title(<span class="string">&#x27;plt ginput&#x27;</span>) </span><br><span class="line">point = plt.ginput(<span class="number">4</span>) </span><br><span class="line"><span class="built_in">print</span>(point) </span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="use-line1-and-line2-to-caculate-the-focus-point-above-the-img"><a href="#use-line1-and-line2-to-caculate-the-focus-point-above-the-img" class="headerlink" title="use line1 and line2 to caculate the focus point above the img"></a>use line1 and line2 to caculate the focus point above the img</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ux1, uy1 = point[<span class="number">0</span>]</span><br><span class="line">dx1, dy1 = point[<span class="number">1</span>]</span><br><span class="line">ux2, uy2 = point[<span class="number">2</span>]</span><br><span class="line">dx2, dy2 = point[<span class="number">3</span>]</span><br><span class="line">img[:<span class="built_in">int</span>(uy1),:,:] = <span class="number">0</span> <span class="comment">#del area of uper UI </span></span><br><span class="line">line1 = [ux1, uy1, dx1, dy1]</span><br><span class="line">line2 = [ux2, uy2, dx2, dy2]</span><br><span class="line"></span><br><span class="line">focus = cross_point(line1, line2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="how2get-cross-point-coordinate"><a href="#how2get-cross-point-coordinate" class="headerlink" title="how2get cross point coordinate"></a>how2get cross point coordinate</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cross_point</span>(<span class="params">line1,line2</span>):</span></span><br><span class="line">    x1=line1[<span class="number">0</span>]</span><br><span class="line">    y1=line1[<span class="number">1</span>]</span><br><span class="line">    x2=line1[<span class="number">2</span>]</span><br><span class="line">    y2=line1[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    x3=line2[<span class="number">0</span>]</span><br><span class="line">    y3=line2[<span class="number">1</span>]</span><br><span class="line">    x4=line2[<span class="number">2</span>]</span><br><span class="line">    y4=line2[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    k1=(y2-y1)*<span class="number">1.0</span>/(x2-x1)</span><br><span class="line">    b1=y1*<span class="number">1.0</span>-x1*k1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> (x4-x3)==<span class="number">0</span>:</span><br><span class="line">        k2=<span class="literal">None</span></span><br><span class="line">        b2=<span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        k2=(y4-y3)*<span class="number">1.0</span>/(x4-x3)</span><br><span class="line">        b2=y3*<span class="number">1.0</span>-x3*k2*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> k2==<span class="literal">None</span>:</span><br><span class="line">        x=x3</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        x=(b2-b1)*<span class="number">1.0</span>/(k1-k2)</span><br><span class="line">    y=k1*x*<span class="number">1.0</span>+b1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">return</span> [x,y]</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h1 id="step-3"><a href="#step-3" class="headerlink" title="step 3"></a>step 3</h1><h3 id="caculating-the-distance-of-focus-point-to-surface-and-bottom"><a href="#caculating-the-distance-of-focus-point-to-surface-and-bottom" class="headerlink" title="caculating the distance of focus point to surface and bottom"></a>caculating the distance of focus point to surface and bottom</h3><p><img src="https://i.imgur.com/sElg0Dn.png" alt="var"></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sur = math.dist(focus, point[<span class="number">0</span>])</span><br><span class="line">rad = math.dist(focus, point[<span class="number">1</span>])</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="crop-img-and-extension-the-matrix-size"><a href="#crop-img-and-extension-the-matrix-size" class="headerlink" title="crop img and extension the matrix size"></a>crop img and extension the matrix size</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">img = img[:math.floor(focus[<span class="number">1</span>]+rad), math.floor(dx1):math.ceil(dx2)]</span><br><span class="line"></span><br><span class="line">mask_w = img.shape[<span class="number">1</span>]</span><br><span class="line">mask_h = math.ceil(rad)</span><br><span class="line"></span><br><span class="line">bg = np.zeros(shape=(mask_h, mask_w, <span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">0</span>] = img[:,:,<span class="number">0</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">1</span>] = img[:,:,<span class="number">1</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">2</span>] = img[:,:,<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
+<h1 id="step-4"><a href="#step-4" class="headerlink" title="step 4"></a>step 4</h1><h3 id="defan-amp-crop-img"><a href="#defan-amp-crop-img" class="headerlink" title="defan &amp; crop img"></a>defan &amp; crop img</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">defan = de_fan(bg,probe_angle,num_aline)</span><br><span class="line">defan = defan[<span class="built_in">int</span>(sur):,:,:]</span><br></pre></td></tr></table></figure>
+<h3 id="de-fan-code"><a href="#de-fan-code" class="headerlink" title="de_fan code"></a>de_fan code</h3><p>‘angle’ means the probe curve angle we can get that with product info or using cosine function to get it.<br>‘num_line’ means ‘A line’ here we can understand that is image width.<br>Here I used a for loop to resample the image, then inserted into the blank matrix.</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">de_fan</span>(<span class="params">image,angle,num_line</span>):</span></span><br><span class="line">    </span><br><span class="line">    h_l = math.floor(num_line/<span class="number">2</span>)</span><br><span class="line">    h_a = math.floor(angle/<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    height, width = image.shape[:<span class="number">2</span>]</span><br><span class="line">    defan = np.zeros(shape=(height,num_line,<span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">    defan[:,h_l,:] = image[:,math.floor(width)-<span class="number">1</span>,:]</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,h_l):</span><br><span class="line">        line = rotate_image_topcenter(image,d*h_a/h_l)</span><br><span class="line">        defan[:,h_l-d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">        line = rotate_image_topcenter(image,-d*h_a/h_l)</span><br><span class="line">        defan[:,h_l+d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> defan</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="rotate-image-topcenter-code"><a href="#rotate-image-topcenter-code" class="headerlink" title="rotate_image_topcenter code"></a>rotate_image_topcenter code</h3><p>Let rotate center is focused center</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rotate_image_topcenter</span>(<span class="params">mat, angle</span>):</span></span><br><span class="line">    height, width = mat.shape[:<span class="number">2</span>] <span class="comment"># image shape has 3 dimensions</span></span><br><span class="line">    image_center = (width/<span class="number">2</span>, <span class="number">0</span>) </span><br><span class="line">    rotation_mat = cv2.getRotationMatrix2D(image_center, angle, <span class="number">1.</span>)</span><br><span class="line">    rotated_mat = cv2.warpAffine(mat, rotation_mat, (width, height))</span><br><span class="line">    <span class="keyword">return</span> rotated_mat</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;<br>finally—<br><img src="https://i.imgur.com/yPYAMkn.png" alt="fin"><br>&nbsp;</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#A-universal-method-for-ultrasound-image-defan"><span class="toc-number">1.</span> <span class="toc-text">A universal method for ultrasound image defan</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#step-1"><span class="toc-number"></span> <span class="toc-text">step 1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#import-moudle-amp-load-image"><span class="toc-number">1.</span> <span class="toc-text">import moudle &amp; load image</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#step-2"><span class="toc-number"></span> <span class="toc-text">step 2</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#get-the-coner-coordinate-x4"><span class="toc-number">1.</span> <span class="toc-text">get the coner coordinate (x4)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#here-I-use-ginput-get-the-coordinate"><span class="toc-number">1.1.</span> <span class="toc-text">here I use ginput get the coordinate</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#use-line1-and-line2-to-caculate-the-focus-point-above-the-img"><span class="toc-number">2.</span> <span class="toc-text">use line1 and line2 to caculate the focus point above the img</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#how2get-cross-point-coordinate"><span class="toc-number">3.</span> <span class="toc-text">how2get cross point coordinate</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#step-3"><span class="toc-number"></span> <span class="toc-text">step 3</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#caculating-the-distance-of-focus-point-to-surface-and-bottom"><span class="toc-number">1.</span> <span class="toc-text">caculating the distance of focus point to surface and bottom</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#crop-img-and-extension-the-matrix-size"><span class="toc-number">2.</span> <span class="toc-text">crop img and extension the matrix size</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#step-4"><span class="toc-number"></span> <span class="toc-text">step 4</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#defan-amp-crop-img"><span class="toc-number">1.</span> <span class="toc-text">defan &amp; crop img</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#de-fan-code"><span class="toc-number">2.</span> <span class="toc-text">de_fan code</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#rotate-image-topcenter-code"><span class="toc-number">3.</span> <span class="toc-text">rotate_image_topcenter code</span></a></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/typed.js"></script>
+<script src="/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>

@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>在Photoshop使用stable diffusion - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="前言在整理部落格資料的時候發現封面的圖片需求量是有的，抓網上的圖解析度常會各種混亂甚至浮水印或版權等問題，所以最一開始的想法是用SD模型來生圖一來可以完美解決解析度問題，二來可以根據XP自行調整還是,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="http://higumalu.github.io"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">在Photoshop使用stable diffusion</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">在Photoshop使用stable diffusion</h1>
+        <div class="stuff">
+            <span>九月 25, 2023</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/other-sd-model/" rel="tag">other, sd_model</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在整理部落格資料的時候發現封面的圖片需求量是有的，<br>抓網上的圖解析度常會各種混亂甚至浮水印或版權等問題，<br>所以最一開始的想法是用SD模型來生圖一來可以完美解決解析度問題，二來可以根據XP自行調整還是比較香的，<br>但是實際上穩定擴散卻不是那麼穩定inpainting功能或者img2img這類的常會生出一些過於前衛的藝術，<br>像是兩顆頭的美少女或者三腳獸這類超越人類審美的藝術。</p>
+<p>後來在使用了幾次後發現SD雖然能給整體佈局很美的view但細部還是得靠工人智慧去細尻，<br>細尻的部分基於個人習慣我還是比較常用PS來做，設計工具還是比較全的。<br>一開始有考慮用Adobe Firefly去做，但風格上個人還是偏愛二刺螈，很快就又回到了SDwebui上了。</p>
+<p>這篇文章主要是面向繪圖愛好者<br>主要以<strong>安裝</strong>跟<strong>使用</strong>的觀點去紀錄 </p>
+<p>&nbsp;</p>
+<hr>
+<pre><code>重要連結:
+照下方連結依序安裝就能work了，下面會有這次安裝的紀錄
+</code></pre>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">AUTOMATIC1111 SDwebui github</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/AbdullahAlfaraj/Auto-Photoshop-StableDiffusion-Plugin">SD photoshop plugin</a></li>
+<li><a target="_blank" rel="noopener" href="https://civitai.com/">SD model 下載</a></li>
+</ul>
+<hr>
+<h1 id="前置"><a href="#前置" class="headerlink" title="前置"></a>前置</h1><h3 id="硬體-電腦"><a href="#硬體-電腦" class="headerlink" title="硬體(電腦)"></a>硬體(電腦)</h3><p>任何AI的東西都是很吃計算的，顯卡越好意味著算圖更快。<br>目前主流用來跑的顯卡不外乎就是NVIDIA，其他能用但我都不推也不適合非開發人員。</p>
+<p>在硬體方面會建議用桌上型電腦來做這事情，原因同上不外乎就是散熱跟計算效能，筆電不推是因為會讓電池短壽。<br>以下是建議配置:</p>
+<ol>
+<li>在RAM(記憶體)的方面會建議盡量堆高實際上PS圖層一多的時候16GB就可能吃超過一半了在加上網頁跟SD的運作會接近滿載，因此在記憶體方面我會建議32GB以上。</li>
+<li>GPU(顯卡)則是需要考慮到VRAM的大小，VRAM會決定模型一次能計算多大的圖這部分在<a target="_blank" rel="noopener" href="https://www.nvidia.com/zh-tw/geforce/graphics-cards/40-series/">NVIDIA網頁</a>能看，一般消費級的顯卡以RTX3090跟RTX4090的VRAM為最大的(24GB)，在這類算圖的模型我會建議至少買VRAM 12GB以上的GPU</li>
+</ol>
+<h3 id="軟體"><a href="#軟體" class="headerlink" title="軟體"></a>軟體</h3><p>作業系統就windows吧 10或11 </p>
+<p>在軟體方面有兩個需要進行安裝跟下載</p>
+<ol>
+<li><p>Python (版本&gt;3.10)<br><a target="_blank" rel="noopener" href="https://www.python.org/downloads/">https://www.python.org/downloads/</a><br>3.11.5 x64 <a target="_blank" rel="noopener" href="https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe">下載</a><br>3.10.0 x64 (跟本篇一樣的) <a target="_blank" rel="noopener" href="https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe">下載</a></p>
+</li>
+<li><p>Git<br><a target="_blank" rel="noopener" href="https://git-scm.com/download/win">https://git-scm.com/download/win</a></p>
+</li>
+<li><p>Photoshop<br>需要安裝24.0以後的版本 (PS2023以後的版本)</p>
+</li>
+</ol>
+<p>其他一些非必要的軟體:<br>NVIDIA CUDA 跟 cudnn開發包 (開發者或有需要做finetune)</p>
+<hr>
+<h1 id="Stable-Diffusion-Web-UI"><a href="#Stable-Diffusion-Web-UI" class="headerlink" title="Stable Diffusion Web UI"></a>Stable Diffusion Web UI</h1>
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">前置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E9%AB%94-%E9%9B%BB%E8%85%A6"><span class="toc-number">2.0.1.</span> <span class="toc-text">硬體(電腦)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BB%9F%E9%AB%94"><span class="toc-number">2.0.2.</span> <span class="toc-text">軟體</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Stable-Diffusion-Web-UI"><span class="toc-number">3.</span> <span class="toc-text">Stable Diffusion Web UI</span></a></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/typed.js"></script>
+<script src="/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
