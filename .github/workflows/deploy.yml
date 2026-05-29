@@ -33,10 +33,11 @@ jobs:
 
       - name: Build Hexo
         env:
-          TZ: 'Asia/Taipei'  # 設定時區
+          TZ: 'Asia/Taipei'
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
         run: |
-          hexo clean
-          hexo generate
+          npx hexo clean
+          npx hexo generate
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
