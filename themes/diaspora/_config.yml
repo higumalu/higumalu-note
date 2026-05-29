@@ -1,10 +1,10 @@
 # 头部菜单，title: link
 menu:
-  Home: /higumalu-note/
-  Categories: /higumalu-note/categories
-  Tags: /higumalu-note/tags
-  Archives: /higumalu-note/archives  
-  About: /higumalu-note/about
+  Home: /
+  Categories: /categories
+  Tags: /tags
+  Archives: /archives  
+  About: /about
 
 # 是否显示目录
 TOC: true
