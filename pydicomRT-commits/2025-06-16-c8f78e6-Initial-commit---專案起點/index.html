@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Initial commit — 專案起點 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="🏁 Initial commit — 專案起點Commit: c8f78e6日期： 2025-06-16
+
+📋 變動內容這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">Initial commit — 專案起點</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">Initial commit — 專案起點</h1>
+        <div class="stuff">
+            <span>六月 16, 2025</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/pydicomRT/" rel="tag">pydicomRT</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E9%96%8B%E7%99%BC%E6%97%A5%E8%AA%8C/" rel="tag">開發日誌</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：<code>.gitignore</code>、<code>LICENSE</code>、<code>README.md</code>。</p>
+<p>我決定從零開始建立一個專案，選擇正確的工具和架構是很重要的第一步。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">3 files changed, 216 insertions(+)</span><br><span class="line">.gitignore</span><br><span class="line">LICENSE</span><br><span class="line">README.md</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 當時是什麼契機想要建立這個專案？</strong></p>
+<blockquote>
+<p>我把醫學影像操作變簡單——這是最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。我希望打造一個簡單的套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+</blockquote>
+<p><strong>Q2: 為什麼選擇這個專案結構？（src/ + example/ + test/）</strong></p>
+<blockquote>
+<p>主要是套件開發的慣例，沒有特別設計。src/ 內的架構是我希望根據 RT 每個流程的資料型態來分門別類：影像相關、RTSTRUCT 相關、DOSE 相關、影像配準相關——每個子領域一套對應的 function。</p>
+</blockquote>
+<p><strong>Q3: pyproject.toml 的設計有參考什麼嗎？</strong></p>
+<blockquote>
+<p>既然目標是降低操作難度，依賴套件的選擇就很明確：NumPy、SimpleITK 處理 3D 物件，pydicom 處理 DICOM 格式——都是領域內最主流、最多人用的工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a target="_blank" rel="noopener" href="https://github.com/higumalu/pydicomRT/commit/c8f78e6">GitHub</a></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%8F%81-Initial-commit-%E2%80%94-%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E"><span class="toc-number">1.</span> <span class="toc-text">🏁 Initial commit — 專案起點</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8B-%E8%AE%8A%E5%8B%95%E5%85%A7%E5%AE%B9"><span class="toc-number">1.1.</span> <span class="toc-text">📋 變動內容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%81-%E5%8F%97%E5%BD%B1%E9%9F%BF%E6%AA%94%E6%A1%88"><span class="toc-number">1.2.</span> <span class="toc-text">📁 受影響檔案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%AD-%E7%86%8A%E7%86%8A%E7%9A%84%E9%96%8B%E7%99%BC%E5%BF%83%E5%BE%97"><span class="toc-number">1.3.</span> <span class="toc-text">💭 熊熊的開發心得</span></a></li></ol></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>

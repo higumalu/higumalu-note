@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>建立核心套件 — RTSTRUCT 處理 **v0.3.1** - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1Commit: 903eb86日期： 2025-06-16
+
+🌱 專案起源背景我想要把醫學影像操作變簡單——這就是 pydicomRT 最,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">建立核心套件 — RTSTRUCT 處理 **v0.3.1**</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">建立核心套件 — RTSTRUCT 處理 **v0.3.1**</h1>
+        <div class="stuff">
+            <span>六月 16, 2025</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/pydicomRT/" rel="tag">pydicomRT</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E9%96%8B%E7%99%BC%E6%97%A5%E8%AA%8C/" rel="tag">開發日誌</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
+<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
+<ul>
+<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
+<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
+<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
+</ul>
+<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
+<ul>
+<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
+<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
+<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
+<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
+<li><strong>範例腳本</strong> — 附有使用範例</li>
+</ul>
+<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
+<blockquote>
+<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
+</blockquote>
+<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
+<blockquote>
+<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
+</blockquote>
+<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
+<blockquote>
+<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a target="_blank" rel="noopener" href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%A8-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6-%E2%80%94-RTSTRUCT-%E8%99%95%E7%90%86-v0-3-1"><span class="toc-number">1.</span> <span class="toc-text">✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%8C%B1-%E5%B0%88%E6%A1%88%E8%B5%B7%E6%BA%90%E8%83%8C%E6%99%AF"><span class="toc-number">1.1.</span> <span class="toc-text">🌱 專案起源背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8B-%E8%AE%8A%E5%8B%95%E5%85%A7%E5%AE%B9"><span class="toc-number">1.2.</span> <span class="toc-text">📋 變動內容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%81-%E5%8F%97%E5%BD%B1%E9%9F%BF%E6%AA%94%E6%A1%88"><span class="toc-number">1.3.</span> <span class="toc-text">📁 受影響檔案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%AD-%E7%86%8A%E7%86%8A%E7%9A%84%E9%96%8B%E7%99%BC%E5%BF%83%E5%BE%97"><span class="toc-number">1.4.</span> <span class="toc-text">💭 熊熊的開發心得</span></a></li></ol></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>

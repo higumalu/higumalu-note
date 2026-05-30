@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🛠️ Image Series Loader — 錯誤處理改進 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="🛠️ Image Series Loader — 錯誤處理改進Commit: d03e995日期： 2026-01-06
+
+📋 變動內容這次我改進了 image_series_loader.py,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">🛠️ Image Series Loader — 錯誤處理改進</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">🛠️ Image Series Loader — 錯誤處理改進</h1>
+        <div class="stuff">
+            <span>一月 06, 2026</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/pydicomRT/" rel="tag">pydicomRT</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E9%96%8B%E7%99%BC%E6%97%A5%E8%AA%8C/" rel="tag">開發日誌</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h2 id="🛠️-Image-Series-Loader-—-錯誤處理改進"><a href="#🛠️-Image-Series-Loader-—-錯誤處理改進" class="headerlink" title="🛠️ Image Series Loader — 錯誤處理改進"></a>🛠️ Image Series Loader — 錯誤處理改進</h2><p><strong>Commit:</strong> <code>d03e995</code><br><strong>日期：</strong> 2026-01-06</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我改進了 <code>image_series_loader.py</code> 中 DICOM 檔案排序的錯誤處理。</p>
+<p><strong>修正內容：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">image_ds_list = sort_ds_list(image_ds_list)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    image_ds_list = sort_ds_list(image_ds_list)</span><br><span class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">    <span class="keyword">raise</span> ValueError(<span class="string">f&quot;Error sorting DICOM files: <span class="subst">&#123;e&#125;</span>, check if the ImageOrientationPatient attribute is valid&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>改進說明：</strong></p>
+<ol>
+<li><p><strong>更明確的錯誤訊息</strong> — 當排序失敗時，會顯示更具體的錯誤原因，特別是指向 <code>ImageOrientationPatient</code> 屬性的有效性檢查。</p>
+</li>
+<li><p><strong>提升除錯效率</strong> — 在處理大量 DICOM 檔案時，如果某些檔案的 <code>ImageOrientationPatient</code> 缺失或格式錯誤，開發者可以快速定位問題。</p>
+</li>
+<li><p><strong>統一的例外處理</strong> — 將各種可能的排序錯誤包裝成 <code>ValueError</code>，讓呼叫端可以使用統一的方式處理。</p>
+</li>
+</ol>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">src/pydicomrt/utils/image_series_loader.py</span><br><span class="line">  - load_sorted_image_series 函數錯誤處理強化</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: <code>ImageOrientationPatient</code> 缺失或格式錯誤會導致什麼問題？</strong></p>
+<blockquote>
+<p>這個屬性是影像空間定位的關鍵。如果它不見了或格式不對，切片排序會亂掉，3D 重建也會出問題。之前錯誤訊息只說「排序失敗」，根本不知道問題在哪，現在至少知道要去檢查這個屬性。</p>
+</blockquote>
+<p><strong>Q2: 除了錯誤處理，有沒有預防措施可以確保檔案的正確性？</strong></p>
+<blockquote>
+<p>理想的做法是加一個驗證函數，在讀取影像序列之前先檢查所有必要屬性是否完整。這塊我還在考慮怎麼設計比較好，現階段先從錯誤處理下手，讓問題浮現出來再說。</p>
+</blockquote>
+<p><strong>Q3: 這個改進對於批量處理大量 DICOM 檔案時有什麼幫助？</strong></p>
+<blockquote>
+<p>批量處理最怕的就是少數幾顆老鼠屎壞了一鍋粥。假設有 500 張切片，前面 499 張都正常，但第 300 張的方向參數有問題，沒有好的錯誤處理的話可能要跑到最後才知道出錯。現在可以直接從錯誤訊息看出哪張有問題，省下不少除錯時間。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a target="_blank" rel="noopener" href="https://github.com/higumalu/pydicomRT/commit/d03e995">GitHub</a></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%F0%9F%9B%A0%EF%B8%8F-Image-Series-Loader-%E2%80%94-%E9%8C%AF%E8%AA%A4%E8%99%95%E7%90%86%E6%94%B9%E9%80%B2"><span class="toc-number">1.</span> <span class="toc-text">🛠️ Image Series Loader — 錯誤處理改進</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8B-%E8%AE%8A%E5%8B%95%E5%85%A7%E5%AE%B9"><span class="toc-number">1.1.</span> <span class="toc-text">📋 變動內容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%81-%E5%8F%97%E5%BD%B1%E9%9F%BF%E6%AA%94%E6%A1%88"><span class="toc-number">1.2.</span> <span class="toc-text">📁 受影響檔案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%AD-%E7%86%8A%E7%86%8A%E7%9A%84%E9%96%8B%E7%99%BC%E5%BF%83%E5%BE%97"><span class="toc-number">1.3.</span> <span class="toc-text">💭 熊熊的開發心得</span></a></li></ol></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>

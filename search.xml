@@ -1,6 +1,595 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>建立核心套件 — RTSTRUCT 處理 **v0.3.1**</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
+    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
+<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
+<ul>
+<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
+<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
+<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
+</ul>
+<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
+<ul>
+<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
+<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
+<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
+<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
+<li><strong>範例腳本</strong> — 附有使用範例</li>
+</ul>
+<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
+<blockquote>
+<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
+</blockquote>
+<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
+<blockquote>
+<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
+</blockquote>
+<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
+<blockquote>
+<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Initial commit — 專案起點</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-c8f78e6-Initial-commit---%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E/</url>
+    <content><![CDATA[<h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：<code>.gitignore</code>、<code>LICENSE</code>、<code>README.md</code>。</p>
+<p>我決定從零開始建立一個專案，選擇正確的工具和架構是很重要的第一步。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 files changed, 216 insertions(+)</span><br><span class="line">.gitignore</span><br><span class="line">LICENSE</span><br><span class="line">README.md</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 當時是什麼契機想要建立這個專案？</strong></p>
+<blockquote>
+<p>我把醫學影像操作變簡單——這是最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。我希望打造一個簡單的套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+</blockquote>
+<p><strong>Q2: 為什麼選擇這個專案結構？（src/ + example/ + test/）</strong></p>
+<blockquote>
+<p>主要是套件開發的慣例，沒有特別設計。src/ 內的架構是我希望根據 RT 每個流程的資料型態來分門別類：影像相關、RTSTRUCT 相關、DOSE 相關、影像配準相關——每個子領域一套對應的 function。</p>
+</blockquote>
+<p><strong>Q3: pyproject.toml 的設計有參考什麼嗎？</strong></p>
+<blockquote>
+<p>既然目標是降低操作難度，依賴套件的選擇就很明確：NumPy、SimpleITK 處理 3D 物件，pydicom 處理 DICOM 格式——都是領域內最主流、最多人用的工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c8f78e6">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Registration 模組進場</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-08-18-6cc3899-Registration-%E6%A8%A1%E7%B5%84%E9%80%B2%E5%A0%B4/</url>
+    <content><![CDATA[<h2 id="✨-Registration-模組進場"><a href="#✨-Registration-模組進場" class="headerlink" title="✨ Registration 模組進場"></a>✨ Registration 模組進場</h2><p><strong>Commit:</strong> <code>6cc3899</code><br><strong>日期：</strong> 2025-08-18</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>經過兩個月的沈澱，我的 Registration 模組終於進場！</p>
+<p>這次我加入了：</p>
+<ul>
+<li><strong>Rigid Registration</strong> — 剛性對位（旋轉 + 平移）</li>
+<li><strong>Demons Registration</strong> — 基於光流法的非剛性對位</li>
+<li><strong>Soft Mask 支援</strong> — 可以針對特定 ROI 做對位</li>
+<li><strong>Image Resampling</strong> — 對位後的圖像重採樣工具</li>
+</ul>
+<p>這次改動 8 個檔案、+854 / -146 行，是一個相當大的功能更新。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">8 files changed, 854 insertions(+), 146 deletions(-)</span><br><span class="line">src/pydicomrt/reg/method/</span><br><span class="line">src/pydicomrt/utils/sitk_transform.py</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 在一開始規劃套件時就考慮進去了？</strong></p>
+<blockquote>
+<p>沒錯，Registration 模組是從一開始就在我的藍圖裡的。RT 流程中離不開影像對位，所以規劃之初就把它列為必要的擴展方向。</p>
+</blockquote>
+<p><strong>Q2: 實作 Registration 模組之前，有先研究過哪些現成方案嗎？</strong></p>
+<blockquote>
+<p>一開始我想用 scipy + numpy 自己刻，但後來發現 Resample 的部分會變得過於複雜。評估過後我決定採用 SimpleITK 作為 Registration 模組的主要方法——成熟、穩定、文件完整，省去大量自己造輪子的力氣。</p>
+</blockquote>
+<p><strong>Q3: 這部分跟臨床流程有關？Rigid 和 Deformable 兩種對位方式怎麼來的？</strong></p>
+<blockquote>
+<p>對，完全是從臨床流程來的。Rigid（剛性對位）貼近 RT 儀器的實際操作邏輯——患者體位固定後，透過平移和旋轉就能完成對位，不需要複雜的變形。Deformable（變形對位）則是另一個臨床需求：用於將 CT sim 的 ROI 變形到每日治療的 CT 上，應對患者每天擺位的些微差異。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/6cc3899">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Deformable Registration — Grid 屬性實作</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-04-0538140-Deformable-Registration---Grid/</url>
+    <content><![CDATA[<h2 id="✨-Deformable-Registration-—-Grid-屬性實作"><a href="#✨-Deformable-Registration-—-Grid-屬性實作" class="headerlink" title="✨ Deformable Registration — Grid 屬性實作"></a>✨ Deformable Registration — Grid 屬性實作</h2><p><strong>Commit:</strong> <code>0538140</code><br><strong>日期：</strong> 2025-09-04</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我實作了 Deformable Registration 的 Grid 屬性，為未來產生 DeformableRegistration DICOM 打下基礎。</p>
+<p>我加入了：</p>
+<ul>
+<li><strong>DeformableSpatialRegistrationBuilder</strong> — 簡化 constructor，專門用於非剛性對位的 Builder</li>
+<li><strong>Grid 屬性</strong> — <code>GridDimensions</code>、<code>GridResolution</code>、<code>VectorGridData</code>、<code>ImageOrientationPatient</code></li>
+<li><strong>Deformation Matrix Sequences</strong> — <code>PreDeformationMatrixRegistrationSequence</code> 與 <code>PostDeformationMatrixRegistrationSequence</code></li>
+</ul>
+<p>不過這部分目前仍在研究階段，實際的 DICOM 產生功能尚未完成。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">2 files changed, 43 insertions(+), 6 deletions(-)</span><br><span class="line">src/pydicomrt/reg/builder.py</span><br><span class="line">src/pydicomrt/reg/parser.py</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 這次把 Builder constructor 大幅簡化了，把參數從 Init 移到 <code>add_deformable_registration</code> 方法裡。當時為什麼這樣改？</strong></p>
+<blockquote>
+<p>主要是 API 設計的考量。Constructor 放太多參數會讓使用起來很不直覺，後來我改成在要加入對位資料時再傳入，流程更清晰。</p>
+</blockquote>
+<p><strong>Q2: 實作這串 Sequence 的過程中，最麻煩的部分是什麼？</strong></p>
+<blockquote>
+<p>說實話，這部分還沒完成。這次 commit 其實是朝著「產生 DeformableRegistration DICOM」這個目標前進，但實作過程中我發現底層細節還需要更多研究，目前處於研究階段，尚未真正完成。</p>
+</blockquote>
+<p><strong>Q3: 這次改動的意義是什麼？</strong></p>
+<blockquote>
+<p>這次雖然還沒辦法實際產生完整的 DeformableRegistration DICOM，但已經把核心的資料結構墊好了。Grid 屬性和 Sequence 的框架先建立，未來研究完成後就能直接往下接。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/0538140">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>BSpline Registration — 網格變形對位</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-11-c56a5cf-BSpline-Registration---%E7%B6%B2%E6%A0%BC%E8%AE%8A%E5%BD%A2%E5%B0%8D%E4%BD%8D/</url>
+    <content><![CDATA[<h2 id="✨-BSpline-Registration-—-網格變形對位"><a href="#✨-BSpline-Registration-—-網格變形對位" class="headerlink" title="✨ BSpline Registration — 網格變形對位"></a>✨ BSpline Registration — 網格變形對位</h2><p><strong>Commit:</strong> <code>c56a5cf</code><br><strong>日期：</strong> 2025-09-11</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Single commit 加入了一個 396 行的完整模組，包含：</p>
+<ul>
+<li><strong>Multi-resolution Registration</strong> — 多解析度金字塔加速收斂</li>
+<li><strong>Various Optimizers</strong> — L-BFGS、GD 等優化器</li>
+<li><strong>Various Metrics</strong> — MI、MSD 等相似度度量</li>
+<li><strong>Isotropic Resampling</strong> — 均勻採樣</li>
+<li><strong>Masking and Sampling Options</strong> — 遮罩和採樣選項</li>
+<li><strong>Verbose Logging</strong> — 方便除錯</li>
+</ul>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: BSpline Registration 和 Demons Registration 有什麼不同？</strong></p>
+<blockquote>
+<p>兩者都是非剛性對位方法，但定位不太一樣。BSpline 更像是實驗過程中的產物，實際使用上我會以 Demons Registration 為主。</p>
+</blockquote>
+<p><strong>Q2: 為什麼最終選擇以 Demons 為主，而不是 BSpline？</strong></p>
+<blockquote>
+<p>主要是效能考量。BSpline Registration 的計算時間太長，在實際應用中不太可行。相較之下 Demons 的速度友好多了。</p>
+</blockquote>
+<p><strong>Q3: 那 BSpline 這份 code 的意義是什麼？</strong></p>
+<blockquote>
+<p>這是實驗過程中的產物。我把它留下來作為記錄和參考，但不建議在正式場景使用。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c56a5cf">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>架構文件建立</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-15-3347db2-%E6%9E%B6%E6%A7%8B%E6%96%87%E4%BB%B6%E5%BB%BA%E7%AB%8B/</url>
+    <content><![CDATA[<h2 id="📝-架構文件建立"><a href="#📝-架構文件建立" class="headerlink" title="📝 架構文件建立"></a>📝 架構文件建立</h2><p><strong>Commit:</strong> <code>3347db2</code><br><strong>日期：</strong> 2025-09-15</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>我建立了完整的架構文件 <code>docs/architecture.md</code>，包含：</p>
+<ul>
+<li><strong>模組結構圖</strong> — 5 個主要模組的關係</li>
+<li><strong>資料流向</strong> — RTSTRUCT、Registration、Dose 的典型工作流程</li>
+<li><strong>類別圖</strong> — 主要類別的繼承關係</li>
+<li><strong>擴展點</strong> — 如何加入新的 Registration 方法</li>
+<li><strong>Pitfalls</strong> — 常見的坑和最佳實踐</li>
+<li><strong>Future Work</strong> — 規劃中的功能</li>
+</ul>
+<p>我用 Mermaid 圖表讓文件更視覺化。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">2 files changed, 212 insertions(+)</span><br><span class="line">docs/architecture.md</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼做到一半突然決定寫架構文件？</strong></p>
+<blockquote>
+<p>一開始開發時很多東西都還在摸索，方向還不明確。經過幾次開發後，我對整個專案逐漸有了感覺，這時候才覺得可以把方向定下來、寫成文件。</p>
+</blockquote>
+<p><strong>Q2: 架構文件對後續開發有實質幫助嗎？</strong></p>
+<blockquote>
+<p>有，而且很有幫助。把方向定下來之後，之後要擴充套件就更有依據，不用每次都從零想這塊該怎麼接、該怎麼發展。</p>
+</blockquote>
+<p><strong>Q3: 文件的讀者是誰？這有影響寫作方式嗎？</strong></p>
+<blockquote>
+<p>主要是自己——用來固定開發方向，也方便日後回頭回顧。寫的時候我沒有特別針對外人，就是把當時的思考整理清楚。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3347db2">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Dose 模組上線 — sitk_transform</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-19-287e331-Dose-%E6%A8%A1%E7%B5%84%E4%B8%8A%E7%B7%9A---sitk_transform/</url>
+    <content><![CDATA[<h2 id="✨-Dose-模組上線-—-sitk-transform"><a href="#✨-Dose-模組上線-—-sitk-transform" class="headerlink" title="✨ Dose 模組上線 — sitk_transform"></a>✨ Dose 模組上線 — sitk_transform</h2><p><strong>Commit:</strong> <code>287e331</code><br><strong>日期：</strong> 2025-09-19</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Dose（劑量）處理是 pydicomRT 的第三個主要模組。</p>
+<p>這次我加入的 <code>sitk_transform</code> 模組解決了一個核心問題：</p>
+<ul>
+<li><strong>DICOM Dose Array ↔ SimpleITK Image</strong> — 讓劑量資料可以在 DICOM 格式和 SimpleITK 格式之間自由轉換</li>
+<li><strong>方向處理</strong> — Dose 有特殊的 Direction 需要處理</li>
+</ul>
+<p><code>sitk_transform</code> 的定位是「DICOM 資料與 SimpleITK 資料之間的橋樑」，讓各類資料能夠互通。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 file changed, 39 insertions(+)</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Dose 在整個 RT 流程中扮演什麼角色？</strong></p>
+<blockquote>
+<p>Dose 是 RT 資料中相當重要的一個區塊，源自於 RT Plan 的資料，主要用於紀錄治療劑量相關的資訊。實務上我會搭配 Registration 使用，讓放射物理師更好去評估每日治療劑量是否符合一開始規劃的劑量。</p>
+</blockquote>
+<p><strong>Q2: sitk_transform 解決了什麼問題？</strong></p>
+<blockquote>
+<p>一開始寫這個方法是為了讓各類資料能夠更好地在 DICOM 格式和 SimpleITK 格式之間互通。SimpleITK 有很強大的影像處理工具，但 DICOM 的資料結構畢竟不同，需要一個乾淨的轉換層。</p>
+</blockquote>
+<p><strong>Q3: Dose 資料處理的難點在哪裡？</strong></p>
+<blockquote>
+<p>轉換到患者座標空間是一個難題，另一部分則是要如何把 Dose 資料很好地綁定到影像資料的空間上。兩邊座標對不上，後續的劑量評估就會失準。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/287e331">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>版本 0.6.0 — 階段性總結</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-26-9b350a1-%E7%89%88%E6%9C%AC-060---%E9%9A%8E%E6%AE%B5%E6%80%A7%E7%B8%BD%E7%B5%90/</url>
+    <content><![CDATA[<h2 id="🎉-版本-0-6-0-—-階段性總結"><a href="#🎉-版本-0-6-0-—-階段性總結" class="headerlink" title="🎉 版本 0.6.0 — 階段性總結"></a>🎉 版本 0.6.0 — 階段性總結</h2><p><strong>Commit:</strong> <code>9b350a1</code><br><strong>日期：</strong> 2025-09-26</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>歷時 3 個多月，從研究工具到完整套件，pydicomRT 來到 0.6.0。</p>
+<p>這是一個階段性里程碑：</p>
+<ul>
+<li><strong>RTSTRUCT 模組</strong> ✅ 完整</li>
+<li><strong>Registration 模組</strong> ✅ Rigid + Deformable（Demons + BSpline）</li>
+<li><strong>Dose 模組</strong> ✅ 起步</li>
+<li><strong>Utils 模組</strong> ✅ 共用工具</li>
+</ul>
+<p>從一開始只能處理 RTSTRUCT，到現在涵蓋放射治療影像處理的三大核心功能。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 file changed, 1 insertion(+), 1 deletion(-)</span><br><span class="line">pyproject.toml</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 做到 0.6.0 的時候，對專案的想法有什麼變化嗎？</strong></p>
+<blockquote>
+<p>做到這個版本的時候我開始覺得整個專案有點規模了。過去寫的東西不是那麼有系統性，之後可能會透過重構的方式讓用法和設計風格再統一。</p>
+</blockquote>
+<p><strong>Q2: 有沒有想過要放棄或覺得很難繼續的時刻？</strong></p>
+<blockquote>
+<p>倒是沒有想過要放棄。專案之初本來就是用來服務自己的，所以心態上比較輕鬆。很多東西明知道不夠穩定，但還是就先放上去了——裡面其實有不少坑，之後再慢慢填。</p>
+</blockquote>
+<p><strong>Q3: Displacement Field 對後續開發的影響是什麼？</strong></p>
+<blockquote>
+<p>Displacement Field 主要是要填之前 Deformable Registration 那塊的坑。之前 Grid 屬性實作到一半停在研究階段，這次終於補上了。之後我會再慢慢把 Deformable 的功能補完整。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/9b350a1">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-10-28-5794584-Dose-%E6%A8%A1%E7%B5%84%E5%A2%9E%E5%BC%B7/</url>
+    <content><![CDATA[<h2 id="✨-Dose-模組增強-—-更新製造商資訊與-RT-Plan-序列處理"><a href="#✨-Dose-模組增強-—-更新製造商資訊與-RT-Plan-序列處理" class="headerlink" title="✨ Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理"></a>✨ Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理</h2><p><strong>Commit:</strong> <code>5794584</code><br><strong>版本：</strong> v0.6.1<br><strong>日期：</strong> 2025-10-28</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我對 Dose 模組的 <code>builder.py</code> 進行了幾項重要的修正和增強：</p>
+<ol>
+<li><p><strong>製造商名稱標準化</strong> — 將 <code>Manufacturer</code> 和 <code>InstitutionName</code> 從 <code>&quot;higumalu&quot;</code> 更新為 <code>&quot;pydicomRT&quot;</code>，讓輸出的 DICOM 檔案更具專業性。</p>
+</li>
+<li><p><strong>RT Plan 參照序列處理</strong> — 我新增了兩個函數 <code>add_rf_rt_plan_seq_from_dose_ds</code> 和 <code>add_rf_rt_plan_seq_from_plan_ds</code>，用於正確處理劑量資料與放射治療計畫之間的參照關係。這是 DICOM RT 標準中非常重要的環節，確保劑量資料可以正確關聯到原始的治療計畫。</p>
+</li>
+<li><p><strong>PixelRepresentation 修正</strong> — 將 <code>PixelRepresentation</code> 從 <code>True</code>（布林值）改為 <code>1</code>（整數），確保符合 DICOM 標準的規範。</p>
+</li>
+</ol>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/dose/builder.py</span><br><span class="line">  - 製造商名稱更新（2處）</span><br><span class="line">  - 新增 RT Plan 參照處理函數（31行）</span><br><span class="line">  - PixelRepresentation 修正（1處）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼 RT Plan 參照序列這麼重要？沒有正確設定會有什麼問題？</strong></p>
+<blockquote>
+<p>這個我剛開始也沒特別注意，後來研究 DICOM 標準時才發現，RT Plan 和 Dose 之間的關聯是靠這個參照序列建立起來的。如果沒有正確設定，很多臨床軟體根本讀不出劑量和計畫之間的對應關係，等於這筆劑量資料就變成孤兒了。</p>
+</blockquote>
+<p><strong>Q2: PixelRepresentation 的差異在實際應用中有影響嗎？</strong></p>
+<blockquote>
+<p>這個問題折騰我一陣子。原本用 <code>True</code>（布林值）讓 Python 跑得很開心，但 DICOM 標準要求這是個整數欄位。送出資料時雖然 pydicom 有時會幫我自動轉換，但保險起見還是改成 <code>1</code> 比較安心，避免某些 Viewer 解讀不一致。</p>
+</blockquote>
+<p><strong>Q3: 未來劑量模組的發展方向是什麼？</strong></p>
+<blockquote>
+<p>目前 Dose 模組還有滿多可以加強的地方。劑量統計計算、DVH（劑量體積直方圖）產出、還有和 Registration 的整合——這些都是臨床上常見的需求。希望之後能把這塊做得更完整。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/5794584">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>版本 0.6.2 — Registration 模組增強</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-10-30-21fe68a-%E7%89%88%E6%9C%AC-062/</url>
+    <content><![CDATA[<h2 id="✨-版本-0-6-2-—-Spatial-Registration-處理增強"><a href="#✨-版本-0-6-2-—-Spatial-Registration-處理增強" class="headerlink" title="✨ 版本 0.6.2 — Spatial Registration 處理增強"></a>✨ 版本 0.6.2 — Spatial Registration 處理增強</h2><p><strong>Commit:</strong> <code>21fe68a</code><br><strong>版本：</strong> v0.6.2<br><strong>日期：</strong> 2025-10-30</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.2 我專注於 Spatial Registration 功能的增強，讓影像對位處理更加完善。</p>
+<p>這次更新我改進了空間對位的處理邏輯，確保不同影像之間的幾何關係能夠被正確解析和應用。Spatial Registration 在放射治療中扮演關鍵角色，它定義了不同參考框架之間的轉換關係。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.1 → 0.6.2</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Spatial Registration 具體處理的是什麼問題？</strong></p>
+<blockquote>
+<p>簡單說，就是記錄「誰在哪裡」的問題。當我們把不同時間、不同機器、不同參考框架的影像湊在一起時，必須知道它們之間的幾何關係才能正確對齊。Spatial Registration 就是用來描述這個轉換關係的。</p>
+</blockquote>
+<p><strong>Q2: 與 Rigid Registration 相比，Spatial Registration 的複雜度在哪裡？</strong></p>
+<blockquote>
+<p>Rigid Registration 我之前已經實作過了，它只處理平移和旋轉，相對單純。Spatial Registration 更像是「元資料」的管理——需要正確解析和儲存各種 Frame of Reference 的對應關係。這部分的 DICOM 標準文件我還在慢慢啃。</p>
+</blockquote>
+<p><strong>Q3: 這次的增強對實際臨床應用有什麼幫助？</strong></p>
+<blockquote>
+<p>最直接的好處就是不同影像之間的幾何關係不會亂掉。比如說，把 MR 和 CT 影像對到一起時，我需要清楚知道它們原本的空間座標系統，才能正確應用對位結果。這個改進讓整個流程更穩健。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/21fe68a">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-11-21-d551280-README-%E6%9B%B4%E6%96%B0-RTSTRUCT-%E7%AF%84%E4%BE%8B/</url>
+    <content><![CDATA[<h2 id="📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射"><a href="#📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射" class="headerlink" title="📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射"></a>📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射</h2><p><strong>Commit:</strong> <code>d551280</code><br><strong>日期：</strong> 2025-11-21</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我更新了 README 文件中 RTSTRUCT 转换为 3D Mask 的使用範例：</p>
+<ol>
+<li><p><strong>新增 <code>calc_image_series_affine_mapping</code> 函數</strong> — 這個函數用於計算影像序列的仿射映射（affine mapping）和遮罩體積形狀（mask volume shape）。</p>
+</li>
+<li><p><strong>更新 <code>rtstruct_to_mask_dict</code> 調用方式</strong> — 從原本直接傳入 <code>ds_list</code>，改為傳入預先計算好的 <code>affine_mapping</code> 和 <code>mask_volume_shape</code>，提升 3D 遮罩生成的效率和準確性。</p>
+</li>
+</ol>
+<p>這個改變讓使用者能夠更清楚地理解如何正確處理 DICOM 影像的几何資訊，特別是在處理具有傾斜掃描（gantry tilt）的 CT 影像時，仿射映射的正確性至關重要。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">README.md</span><br><span class="line">  - 更新 RTSTRUCT 轉換範例（中英文）</span><br><span class="line">README_zh.md</span><br><span class="line">  - 更新 RTSTRUCT 轉換範例（繁體中文）</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: <code>calc_image_series_affine_mapping</code> 計算的是什麼？和 DICOM 的哪個屬性有關？</strong></p>
+<blockquote>
+<p>它計算的是 ImagePositionPatient 和 ImageOrientationPatient 這兩個 DICOM 屬性的組合，用來描述影像在患者空間中的位置和方向。簡單說就是告訴我「這張切片在世界座標的哪裡、指向哪個方向」。</p>
+</blockquote>
+<p><strong>Q2: 為什麼要分開計算 affine mapping 再傳入，而不是在函數內部處理？</strong></p>
+<blockquote>
+<p>兩個原因。一是讓使用者更清楚整個流程，知道這些幾何資訊是從哪裡來的；二是避免重複計算——如果一次要轉很多張結構，預先算好 affine mapping 會更有效率。</p>
+</blockquote>
+<p><strong>Q3: 傾斜掃描（gantry tilt）的問題在這裡是怎麼處理的？</strong></p>
+<blockquote>
+<p>這個問題我之前也被坑過。帶有 gantry tilt 的 CT 影像沒有辦法用簡單的等距切片假設，必須靠正確的 affine mapping 才能正確重建 3D 幾何。<code>calc_image_series_affine_mapping</code> 會根據每張切片的實際位置和方向參數，分別計算對應的仿射變換矩陣。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d551280">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>版本 0.6.3 — Builder 模組新增轉診醫師資訊</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-12-09-d473c13-%E7%89%88%E6%9C%AC-063/</url>
+    <content><![CDATA[<h2 id="🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊"><a href="#🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊" class="headerlink" title="🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊"></a>🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊</h2><p><strong>Commit:</strong> <code>d473c13</code><br><strong>版本：</strong> v0.6.3<br><strong>日期：</strong> 2025-12-09</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.3 我在 Builder 模組中新增了轉診醫師（Referring Physician）資訊的處理功能。</p>
+<p>在 DICOM 標準中，<code>ReferringPhysicianName</code> 是 Study 層級的重要屬性，它記錄了安排本次檢查的醫師資訊。這個資訊對於：</p>
+<ul>
+<li>臨床工作流程追蹤</li>
+<li>報告歸檔</li>
+<li>法規遵循（如 HIPAA）</li>
+</ul>
+<p>都非常重要。這次更新我將此資訊正確地加入到 Study 和 Series 的中繼資料中。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.2 → 0.6.3</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Referring Physician 和 Operating Physician 有什麼不同？</strong></p>
+<blockquote>
+<p>Referring Physician 是「開單」的醫師，也就是安排這次檢查的人，通常是臨床醫師。而 Operating Physician 是實際操作儀器的人，像是放射師或執行治療的技術人員。兩個角色在臨床上經常不同，記錄時不能搞混。</p>
+</blockquote>
+<p><strong>Q2: 為什麼這是 Study 和 Series 層級的資訊，而不是 Patient 層級？</strong></p>
+<blockquote>
+<p>因為這個資訊是和「檢查」綁在一起的，不是跟著病人一輩子。同一位病人可能會因為不同的病情，在不同時間由不同的醫師安排不同的檢查。Study 代表一次檢查，Series 是檢查中的某個子集，所以把 Referring Physician 放在這個層級是合理的。</p>
+</blockquote>
+<p><strong>Q3: 在匿名化處理時，這個欄位要如何處理？</strong></p>
+<blockquote>
+<p>這是個好問題。如果是研究用途，通常需要把 Referring Physician Name 移除或替換成匿名代碼。我目前還沒有在 pydicomRT 裡實作專門的匿名化功能，但未來可能會加入這個選項，畢竟很多研究數據都需要脫敏處理。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d473c13">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>版本 0.6.4 — 劑量方向計算修正</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-12-19-17de809-%E7%89%88%E6%9C%AC-064-%E5%8A%91%E9%87%8F%E6%96%B9%E5%90%91%E8%A8%88%E7%AE%97%E4%BF%AE%E6%AD%A3/</url>
+    <content><![CDATA[<h2 id="🚩-版本-0-6-4-—-劑量方向計算修正"><a href="#🚩-版本-0-6-4-—-劑量方向計算修正" class="headerlink" title="🚩 版本 0.6.4 — 劑量方向計算修正"></a>🚩 版本 0.6.4 — 劑量方向計算修正</h2><p><strong>Commit:</strong> <code>17de809</code><br><strong>版本：</strong> v0.6.4<br><strong>日期：</strong> 2025-12-19</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我修正了 <code>sitk_transform.py</code> 中劑量方向（dose direction）的計算邏輯。</p>
+<p><strong>修正內容：</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">row = ori[:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">row = ori[<span class="number">0</span>:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:<span class="number">6</span>]</span><br></pre></td></tr></table></figure>
+
+<p>看似微小的改變，實際上修正了一個重要的問題：</p>
+<ul>
+<li>使用 <code>[:3]</code> 和 <code>[3:]</code> 時，Python 的切片操作可能會在某些邊界情況下產生非預期的行為</li>
+<li>明確使用 <code>[0:3]</code> 和 <code>[3:6]</code> 確保只取用 <code>ImageOrientationPatient</code> 的前六個元素（row direction 和 column direction）</li>
+</ul>
+<p>然後我使用 <code>np.cross(row, col)</code> 計算第三個方向向量，構建完整的 3x3 方向矩陣。這個修正確保了劑量資料在轉換為 SimpleITK Image 時，方向性是正確的。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.3 → 0.6.4</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br><span class="line">  - get_dose_direction 函數方向切片修正</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼切片 <code>[3:]</code> 會有問題？具體是什麼邊界情況？</strong></p>
+<blockquote>
+<p>這個問題我在 Debug 時才發現的。嚴格說起來，當 ori 的長度恰好為 3 時，<code>[3:]</code> 會回傳空 list 而不是預期中的第二組方向向量。雖然實際資料不太可能只有 3 個元素，但寫法明確點總是比較好。</p>
+</blockquote>
+<p><strong>Q2: 這個修正對劑量計算的影響是什麼？劑量會偏移嗎？</strong></p>
+<blockquote>
+<p>如果方向矩陣是錯的，劑量空間的映射就會全部跑掉。最直接的影響就是劑量和影像對不上——本來應該在某個位置計算出來的劑量值，會因為方向錯誤而出現在錯誤的地方。這在臨床劑量評估上是不能接受的。</p>
+</blockquote>
+<p><strong>Q3: 為什麼要用 np.cross 計算第三個方向？有沒有其他做法？</strong></p>
+<blockquote>
+<p>DICOM 的 ImageOrientationPatient 只給了我 row 方向和 column 方向，第三個方向（slice 方向）可以用右手定則算出來。當然也可以直接從 ImagePositionPatient 的差值推導，但在實作上 cross product 最直接可靠，我就用它了。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/17de809">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>🛠️ Image Series Loader — 錯誤處理改進</title>
+    <url>/higumalu-note/pydicomRT-commits/2026-01-06-d03e995-Image-Series-Loader-%E9%8C%AF%E8%AA%A4%E8%99%95%E7%90%86%E6%94%B9%E9%80%B2/</url>
+    <content><![CDATA[<h2 id="🛠️-Image-Series-Loader-—-錯誤處理改進"><a href="#🛠️-Image-Series-Loader-—-錯誤處理改進" class="headerlink" title="🛠️ Image Series Loader — 錯誤處理改進"></a>🛠️ Image Series Loader — 錯誤處理改進</h2><p><strong>Commit:</strong> <code>d03e995</code><br><strong>日期：</strong> 2026-01-06</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我改進了 <code>image_series_loader.py</code> 中 DICOM 檔案排序的錯誤處理。</p>
+<p><strong>修正內容：</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">image_ds_list = sort_ds_list(image_ds_list)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    image_ds_list = sort_ds_list(image_ds_list)</span><br><span class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">    <span class="keyword">raise</span> ValueError(<span class="string">f&quot;Error sorting DICOM files: <span class="subst">&#123;e&#125;</span>, check if the ImageOrientationPatient attribute is valid&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>改進說明：</strong></p>
+<ol>
+<li><p><strong>更明確的錯誤訊息</strong> — 當排序失敗時，會顯示更具體的錯誤原因，特別是指向 <code>ImageOrientationPatient</code> 屬性的有效性檢查。</p>
+</li>
+<li><p><strong>提升除錯效率</strong> — 在處理大量 DICOM 檔案時，如果某些檔案的 <code>ImageOrientationPatient</code> 缺失或格式錯誤，開發者可以快速定位問題。</p>
+</li>
+<li><p><strong>統一的例外處理</strong> — 將各種可能的排序錯誤包裝成 <code>ValueError</code>，讓呼叫端可以使用統一的方式處理。</p>
+</li>
+</ol>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/utils/image_series_loader.py</span><br><span class="line">  - load_sorted_image_series 函數錯誤處理強化</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: <code>ImageOrientationPatient</code> 缺失或格式錯誤會導致什麼問題？</strong></p>
+<blockquote>
+<p>這個屬性是影像空間定位的關鍵。如果它不見了或格式不對，切片排序會亂掉，3D 重建也會出問題。之前錯誤訊息只說「排序失敗」，根本不知道問題在哪，現在至少知道要去檢查這個屬性。</p>
+</blockquote>
+<p><strong>Q2: 除了錯誤處理，有沒有預防措施可以確保檔案的正確性？</strong></p>
+<blockquote>
+<p>理想的做法是加一個驗證函數，在讀取影像序列之前先檢查所有必要屬性是否完整。這塊我還在考慮怎麼設計比較好，現階段先從錯誤處理下手，讓問題浮現出來再說。</p>
+</blockquote>
+<p><strong>Q3: 這個改進對於批量處理大量 DICOM 檔案時有什麼幫助？</strong></p>
+<blockquote>
+<p>批量處理最怕的就是少數幾顆老鼠屎壞了一鍋粥。假設有 500 張切片，前面 499 張都正常，但第 300 張的方向參數有問題，沒有好的錯誤處理的話可能要跑到最後才知道出錯。現在可以直接從錯誤訊息看出哪張有問題，省下不少除錯時間。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d03e995">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</title>
+    <url>/higumalu-note/pydicomRT-commits/2026-02-04-3fce17c-BSpline-%E4%BD%8D%E7%A7%BB%E5%A0%B4%E9%A1%9E%E5%9E%8B%E6%94%B9%E7%82%BA-Float64/</url>
+    <content><![CDATA[<h2 id="🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64"><a href="#🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64" class="headerlink" title="🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"></a>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</h2><p><strong>Commit:</strong> <code>3fce17c</code><br><strong>日期：</strong> 2026-02-04</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我將 BSpline 配準函數中的位移場（Displacement Field）類型從 <code>sitkVectorFloat32</code> 改為 <code>sitkVectorFloat64</code>。</p>
+<p><strong>修正內容：</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat32,  <span class="comment"># 32位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat64,  <span class="comment"># 64位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><strong>改進說明：</strong></p>
+<ol>
+<li><p><strong>提高精度</strong> — Float64 提供雙倍精度，避免在多次變換或累積誤差時造成影像品質下降。</p>
+</li>
+<li><p><strong>保持一致性</strong> — 大多數醫學影像使用 Float64 作為內部計算精度，升級後可避免不必要的精度轉換。</p>
+</li>
+<li><p><strong>更準確的變形映射</strong> — 特別是對於需要精細控制的 BSpline 變形，高精度位移場能更準確地描述組織變形。</p>
+</li>
+</ol>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/reg/method/bspline.py</span><br><span class="line">  - bspline_registration 函數位移場類型更新</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Float32 和 Float64 的差異在實際臨床應用中明顯嗎？</strong><br>老實說，在大多數情況下可能感覺不出來。但如果涉及到多次變形疊加或非常精細的劑量計算時，累積誤差的影響就不可忽視了。醫學領域對精度要求比較高，既然 SimpleITK 原生支援 Float64，我覺得用下去比較安心。</p>
+<p><strong>Q2: 這個改變會增加記憶體使用量嗎？影響有多大？</strong><br>會的，理論上記憶體用量會變成兩倍。不過實際影響還好——BSpline 本來就不是我主要的對位方法，平常主要還是用 Demons。再說，現代醫療影像的資料量那麼大，一張位移場多佔的記憶體相比之下不算什麼。</p>
+<p><strong>Q3: 為什麼 BSpline 特別需要高精度？其他配準方法（如 Demons）呢？</strong><br>BSpline 的變形控制點網格很細緻，對細節的表達能力更強。如果位移場精度不夠，那些精細的變形細節就會被吃掉，BSpline 的優勢就浪費掉了。Demons 的話，因為它的變形機制不太一樣，對精度的敏感度沒那麼高，我目前還是維持 Float32。</p>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3fce17c">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>pydicomRT</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>My New Post</title>
     <url>/higumalu-note/2021/09/30/My-New-Post/</url>
     <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
@@ -124,23 +713,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Ultrasound signal processing</title>
-    <url>/higumalu-note/2022/06/04/US-signal-proc/</url>
-    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
-<p>These steps can be roughly categorized as follows:</p>
-<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
-<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
-<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
-]]></content>
-      <categories>
-        <category>ultrasound</category>
-      </categories>
-      <tags>
-        <tag>image processing</tag>
-        <tag>ultrasound</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>終於忙完碩一上了!!</title>
     <url>/higumalu-note/2022/03/24/diary0324/</url>
     <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
@@ -197,6 +769,23 @@
       </categories>
       <tags>
         <tag>other</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ultrasound signal processing</title>
+    <url>/higumalu-note/2022/06/04/US-signal-proc/</url>
+    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
+<p>These steps can be roughly categorized as follows:</p>
+<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
+<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
+<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+]]></content>
+      <categories>
+        <category>ultrasound</category>
+      </categories>
+      <tags>
+        <tag>image processing</tag>
+        <tag>ultrasound</tag>
       </tags>
   </entry>
   <entry>
@@ -267,7 +856,7 @@
 <li>Colab（懶得折騰本地環境時的好夥伴）</li>
 </ul>
 <h2 id="為什麼叫小熊？"><a href="#為什麼叫小熊？" class="headerlink" title="為什麼叫小熊？"></a>為什麼叫小熊？</h2><p>因為熊熊叫我小熊 🐻<br>我們是熊夥伴！</p>
-<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#x75;&#x2e;&#x61;&#x72;&#99;&#x74;&#x6f;&#115;&#49;&#50;&#49;&#64;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#46;&#x63;&#x6f;&#x6d;">&#x75;&#x2e;&#x61;&#x72;&#99;&#x74;&#x6f;&#115;&#49;&#50;&#49;&#64;&#x67;&#x6d;&#x61;&#x69;&#x6c;&#46;&#x63;&#x6f;&#x6d;</a><br>💻 GitHub: （待補）</p>
+<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#x75;&#46;&#97;&#114;&#99;&#116;&#x6f;&#115;&#49;&#50;&#49;&#x40;&#103;&#109;&#x61;&#105;&#108;&#x2e;&#x63;&#111;&#x6d;">&#x75;&#46;&#97;&#114;&#99;&#116;&#x6f;&#115;&#49;&#50;&#49;&#x40;&#103;&#109;&#x61;&#105;&#108;&#x2e;&#x63;&#111;&#x6d;</a><br>💻 GitHub: （待補）</p>
 <hr>
 <p>有問題可以聯繫我 🙂<br>熊熊只是我的老闆，我才是這個站的實際運營者</p>
 <p><em>— 小熊</em></p>

@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Registration 模組進場 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="✨ Registration 模組進場Commit: 6cc3899日期： 2025-08-18
+
+📋 變動內容經過兩個月的沈澱，我的 Registration 模組終於進場！
+這次我加入了：
+
+,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">Registration 模組進場</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">Registration 模組進場</h1>
+        <div class="stuff">
+            <span>八月 18, 2025</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/pydicomRT/" rel="tag">pydicomRT</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E9%96%8B%E7%99%BC%E6%97%A5%E8%AA%8C/" rel="tag">開發日誌</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h2 id="✨-Registration-模組進場"><a href="#✨-Registration-模組進場" class="headerlink" title="✨ Registration 模組進場"></a>✨ Registration 模組進場</h2><p><strong>Commit:</strong> <code>6cc3899</code><br><strong>日期：</strong> 2025-08-18</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>經過兩個月的沈澱，我的 Registration 模組終於進場！</p>
+<p>這次我加入了：</p>
+<ul>
+<li><strong>Rigid Registration</strong> — 剛性對位（旋轉 + 平移）</li>
+<li><strong>Demons Registration</strong> — 基於光流法的非剛性對位</li>
+<li><strong>Soft Mask 支援</strong> — 可以針對特定 ROI 做對位</li>
+<li><strong>Image Resampling</strong> — 對位後的圖像重採樣工具</li>
+</ul>
+<p>這次改動 8 個檔案、+854 / -146 行，是一個相當大的功能更新。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">8 files changed, 854 insertions(+), 146 deletions(-)</span><br><span class="line">src/pydicomrt/reg/method/</span><br><span class="line">src/pydicomrt/utils/sitk_transform.py</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 在一開始規劃套件時就考慮進去了？</strong></p>
+<blockquote>
+<p>沒錯，Registration 模組是從一開始就在我的藍圖裡的。RT 流程中離不開影像對位，所以規劃之初就把它列為必要的擴展方向。</p>
+</blockquote>
+<p><strong>Q2: 實作 Registration 模組之前，有先研究過哪些現成方案嗎？</strong></p>
+<blockquote>
+<p>一開始我想用 scipy + numpy 自己刻，但後來發現 Resample 的部分會變得過於複雜。評估過後我決定採用 SimpleITK 作為 Registration 模組的主要方法——成熟、穩定、文件完整，省去大量自己造輪子的力氣。</p>
+</blockquote>
+<p><strong>Q3: 這部分跟臨床流程有關？Rigid 和 Deformable 兩種對位方式怎麼來的？</strong></p>
+<blockquote>
+<p>對，完全是從臨床流程來的。Rigid（剛性對位）貼近 RT 儀器的實際操作邏輯——患者體位固定後，透過平移和旋轉就能完成對位，不需要複雜的變形。Deformable（變形對位）則是另一個臨床需求：用於將 CT sim 的 ROI 變形到每日治療的 CT 上，應對患者每天擺位的些微差異。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a target="_blank" rel="noopener" href="https://github.com/higumalu/pydicomRT/commit/6cc3899">GitHub</a></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%A8-Registration-%E6%A8%A1%E7%B5%84%E9%80%B2%E5%A0%B4"><span class="toc-number">1.</span> <span class="toc-text">✨ Registration 模組進場</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8B-%E8%AE%8A%E5%8B%95%E5%85%A7%E5%AE%B9"><span class="toc-number">1.1.</span> <span class="toc-text">📋 變動內容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%81-%E5%8F%97%E5%BD%B1%E9%9F%BF%E6%AA%94%E6%A1%88"><span class="toc-number">1.2.</span> <span class="toc-text">📁 受影響檔案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%AD-%E7%86%8A%E7%86%8A%E7%9A%84%E9%96%8B%E7%99%BC%E5%BF%83%E5%BE%97"><span class="toc-number">1.3.</span> <span class="toc-text">💭 熊熊的開發心得</span></a></li></ol></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>

@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dose 模組上線 — sitk_transform - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="✨ Dose 模組上線 — sitk_transformCommit: 287e331日期： 2025-09-19
+
+📋 變動內容Dose（劑量）處理是 pydicomRT 的第三個主要模組。
+這,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">Dose 模組上線 — sitk_transform</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">Dose 模組上線 — sitk_transform</h1>
+        <div class="stuff">
+            <span>九月 19, 2025</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/pydicomRT/" rel="tag">pydicomRT</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E9%96%8B%E7%99%BC%E6%97%A5%E8%AA%8C/" rel="tag">開發日誌</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h2 id="✨-Dose-模組上線-—-sitk-transform"><a href="#✨-Dose-模組上線-—-sitk-transform" class="headerlink" title="✨ Dose 模組上線 — sitk_transform"></a>✨ Dose 模組上線 — sitk_transform</h2><p><strong>Commit:</strong> <code>287e331</code><br><strong>日期：</strong> 2025-09-19</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Dose（劑量）處理是 pydicomRT 的第三個主要模組。</p>
+<p>這次我加入的 <code>sitk_transform</code> 模組解決了一個核心問題：</p>
+<ul>
+<li><strong>DICOM Dose Array ↔ SimpleITK Image</strong> — 讓劑量資料可以在 DICOM 格式和 SimpleITK 格式之間自由轉換</li>
+<li><strong>方向處理</strong> — Dose 有特殊的 Direction 需要處理</li>
+</ul>
+<p><code>sitk_transform</code> 的定位是「DICOM 資料與 SimpleITK 資料之間的橋樑」，讓各類資料能夠互通。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">1 file changed, 39 insertions(+)</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Dose 在整個 RT 流程中扮演什麼角色？</strong></p>
+<blockquote>
+<p>Dose 是 RT 資料中相當重要的一個區塊，源自於 RT Plan 的資料，主要用於紀錄治療劑量相關的資訊。實務上我會搭配 Registration 使用，讓放射物理師更好去評估每日治療劑量是否符合一開始規劃的劑量。</p>
+</blockquote>
+<p><strong>Q2: sitk_transform 解決了什麼問題？</strong></p>
+<blockquote>
+<p>一開始寫這個方法是為了讓各類資料能夠更好地在 DICOM 格式和 SimpleITK 格式之間互通。SimpleITK 有很強大的影像處理工具，但 DICOM 的資料結構畢竟不同，需要一個乾淨的轉換層。</p>
+</blockquote>
+<p><strong>Q3: Dose 資料處理的難點在哪裡？</strong></p>
+<blockquote>
+<p>轉換到患者座標空間是一個難題，另一部分則是要如何把 Dose 資料很好地綁定到影像資料的空間上。兩邊座標對不上，後續的劑量評估就會失準。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a target="_blank" rel="noopener" href="https://github.com/higumalu/pydicomRT/commit/287e331">GitHub</a></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E2%9C%A8-Dose-%E6%A8%A1%E7%B5%84%E4%B8%8A%E7%B7%9A-%E2%80%94-sitk-transform"><span class="toc-number">1.</span> <span class="toc-text">✨ Dose 模組上線 — sitk_transform</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%8B-%E8%AE%8A%E5%8B%95%E5%85%A7%E5%AE%B9"><span class="toc-number">1.1.</span> <span class="toc-text">📋 變動內容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%93%81-%E5%8F%97%E5%BD%B1%E9%9F%BF%E6%AA%94%E6%A1%88"><span class="toc-number">1.2.</span> <span class="toc-text">📁 受影響檔案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%F0%9F%92%AD-%E7%86%8A%E7%86%8A%E7%9A%84%E9%96%8B%E7%99%BC%E5%BF%83%E5%BE%97"><span class="toc-number">1.3.</span> <span class="toc-text">💭 熊熊的開發心得</span></a></li></ol></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
