@@ -1,92 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>搜尋系統建置記（一）—— SearXNG Docker 部署踩坑實錄</title>
-    <url>/higumalu-note/2026-05-22-hermes-search-system-searxng/</url>
-    <content><![CDATA[<h2 id="🚀-為什麼要折騰-SearXNG"><a href="#🚀-為什麼要折騰-SearXNG" class="headerlink" title="🚀 為什麼要折騰 SearXNG"></a>🚀 為什麼要折騰 SearXNG</h2><p>一開始用 Hermes 內建的搜尋，發現問題不少：</p>
-<ul>
-<li>Google 常常被 Bot 驗證擋住</li>
-<li>DuckDuckGo 有時候也掛</li>
-<li>Bing 的結果品質飄忽不定</li>
-</ul>
-<p>熊熊想要一個<strong>自己可控、隱私友好的搜尋引擎</strong>，剛好看到了 <strong>SearXNG</strong>——開源隱私搜尋聚合，可以同時查多個引擎、統一呈現結果，還支援 JSON API，正是 Hermes 需要的那種。</p>
-<p>不選 API 是因為 API 通常會有各種限制——次數配額、速率限制、付費牆——不適合拿來做大量研究。</p>
-<hr>
-<h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-
-<p>結果在 Windows 上跑不起來，原因有好幾個。</p>
-<blockquote>
-<p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
-<p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-
-<p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
-</blockquote>
-<hr>
-<h2 id="⚙️-settings-yml-的隱形陷阱"><a href="#⚙️-settings-yml-的隱形陷阱" class="headerlink" title="⚙️ settings.yml 的隱形陷阱"></a>⚙️ settings.yml 的隱形陷阱</h2><p>SearXNG 的設定都集中在 <code>settings.yml</code>，一開始熊熊以為預設值就可以直接用，結果 JSON API 一直回 403。</p>
-<blockquote>
-<p>⚠️ <strong>坑 2：JSON API 格式被預設關閉</strong></p>
-<p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
-<p>需要在 <code>settings.yml</code> 裡手動加上：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
-
-<p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
-</blockquote>
-<hr>
-<h2 id="🕐-折騰了幾個晚上"><a href="#🕐-折騰了幾個晚上" class="headerlink" title="🕐 折騰了幾個晚上"></a>🕐 折騰了幾個晚上</h2><p>老實說，具體折騰了多久、哪幾個晚上，熊熊現在也想不起來了 😅</p>
-<p>只知道一開始 folder 是 4 月底就建好的，但 Docker 真正跑起來、port 和 JSON API 都搞定，是後來的事了。過程中一直懷疑是不是 Docker 起不起來、網路有沒有問題，最後才發現是這幾行設定沒開⋯⋯</p>
-<hr>
-<h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
-
-<p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
-<hr>
-<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><table>
-<thead>
-<tr>
-<th>項目</th>
-<th>內容</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>SearXNG 版本</strong></td>
-<td>官方 latest</td>
-</tr>
-<tr>
-<td><strong>Port 對應</strong></td>
-<td>Docker 內 8080 → Host 18080</td>
-</tr>
-<tr>
-<td><strong>settings.yml</strong></td>
-<td>啟用 JSON API 格式</td>
-</tr>
-<tr>
-<td><strong>可用引擎</strong></td>
-<td>Google, Bing, DuckDuckGo, Brave 等</td>
-</tr>
-<tr>
-<td><strong>運行時間</strong></td>
-<td>21 小時以上（連續運行）</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
-<p>整件事值得嗎？<strong>值得</strong>。</p>
-]]></content>
-      <categories>
-        <category>Hermes</category>
-        <category>開發日誌</category>
-      </categories>
-      <tags>
-        <tag>SearXNG</tag>
-        <tag>Docker</tag>
-        <tag>Hermes</tag>
-        <tag>搜尋系統</tag>
-        <tag>self-host</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>搜尋系統建置記（二）—— Crawl4AI + 順手修好的 SearXNG</title>
     <url>/higumalu-note/2026-05-23-hermes-search-system-crawl4ai/</url>
     <content><![CDATA[<h2 id="🦞-為什麼需要-Crawl4AI"><a href="#🦞-為什麼需要-Crawl4AI" class="headerlink" title="🦞 為什麼需要 Crawl4AI"></a>🦞 為什麼需要 Crawl4AI</h2><p>有了 SearXNG 找到目標網頁之後，下一個問題是：</p>
@@ -205,12 +119,98 @@
         <category>開發日誌</category>
       </categories>
       <tags>
+        <tag>Crawl4AI</tag>
+        <tag>Docker</tag>
+        <tag>Hermes</tag>
+        <tag>爬蟲</tag>
+        <tag>搜尋系統</tag>
+        <tag>self-host</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>搜尋系統建置記（一）—— SearXNG Docker 部署踩坑實錄</title>
+    <url>/higumalu-note/2026-05-22-hermes-search-system-searxng/</url>
+    <content><![CDATA[<h2 id="🚀-為什麼要折騰-SearXNG"><a href="#🚀-為什麼要折騰-SearXNG" class="headerlink" title="🚀 為什麼要折騰 SearXNG"></a>🚀 為什麼要折騰 SearXNG</h2><p>一開始用 Hermes 內建的搜尋，發現問題不少：</p>
+<ul>
+<li>Google 常常被 Bot 驗證擋住</li>
+<li>DuckDuckGo 有時候也掛</li>
+<li>Bing 的結果品質飄忽不定</li>
+</ul>
+<p>熊熊想要一個<strong>自己可控、隱私友好的搜尋引擎</strong>，剛好看到了 <strong>SearXNG</strong>——開源隱私搜尋聚合，可以同時查多個引擎、統一呈現結果，還支援 JSON API，正是 Hermes 需要的那種。</p>
+<p>不選 API 是因為 API 通常會有各種限制——次數配額、速率限制、付費牆——不適合拿來做大量研究。</p>
+<hr>
+<h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
+
+<p>結果在 Windows 上跑不起來，原因有好幾個。</p>
+<blockquote>
+<p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
+<p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
+
+<p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
+</blockquote>
+<hr>
+<h2 id="⚙️-settings-yml-的隱形陷阱"><a href="#⚙️-settings-yml-的隱形陷阱" class="headerlink" title="⚙️ settings.yml 的隱形陷阱"></a>⚙️ settings.yml 的隱形陷阱</h2><p>SearXNG 的設定都集中在 <code>settings.yml</code>，一開始熊熊以為預設值就可以直接用，結果 JSON API 一直回 403。</p>
+<blockquote>
+<p>⚠️ <strong>坑 2：JSON API 格式被預設關閉</strong></p>
+<p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
+<p>需要在 <code>settings.yml</code> 裡手動加上：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
+
+<p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
+</blockquote>
+<hr>
+<h2 id="🕐-折騰了幾個晚上"><a href="#🕐-折騰了幾個晚上" class="headerlink" title="🕐 折騰了幾個晚上"></a>🕐 折騰了幾個晚上</h2><p>老實說，具體折騰了多久、哪幾個晚上，熊熊現在也想不起來了 😅</p>
+<p>只知道一開始 folder 是 4 月底就建好的，但 Docker 真正跑起來、port 和 JSON API 都搞定，是後來的事了。過程中一直懷疑是不是 Docker 起不起來、網路有沒有問題，最後才發現是這幾行設定沒開⋯⋯</p>
+<hr>
+<h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
+
+<p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
+<hr>
+<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SearXNG 版本</strong></td>
+<td>官方 latest</td>
+</tr>
+<tr>
+<td><strong>Port 對應</strong></td>
+<td>Docker 內 8080 → Host 18080</td>
+</tr>
+<tr>
+<td><strong>settings.yml</strong></td>
+<td>啟用 JSON API 格式</td>
+</tr>
+<tr>
+<td><strong>可用引擎</strong></td>
+<td>Google, Bing, DuckDuckGo, Brave 等</td>
+</tr>
+<tr>
+<td><strong>運行時間</strong></td>
+<td>21 小時以上（連續運行）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
+<p>整件事值得嗎？<strong>值得</strong>。</p>
+]]></content>
+      <categories>
+        <category>Hermes</category>
+        <category>開發日誌</category>
+      </categories>
+      <tags>
         <tag>Docker</tag>
         <tag>Hermes</tag>
         <tag>搜尋系統</tag>
         <tag>self-host</tag>
-        <tag>Crawl4AI</tag>
-        <tag>爬蟲</tag>
+        <tag>SearXNG</tag>
       </tags>
   </entry>
   <entry>
@@ -262,7 +262,7 @@
       </tags>
   </entry>
   <entry>
-    <title>建立核心套件 — RTSTRUCT 處理 **v0.3.1**</title>
+    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
     <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
 <hr>
@@ -311,7 +311,7 @@
       </tags>
   </entry>
   <entry>
-    <title>Initial commit — 專案起點</title>
+    <title>pydicomRT｜&quot;Initial commit — 專案起點&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-06-16-c8f78e6-Initial-commit---%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E/</url>
     <content><![CDATA[<h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
 <hr>
@@ -344,7 +344,7 @@
       </tags>
   </entry>
   <entry>
-    <title>Registration 模組進場</title>
+    <title>pydicomRT｜&quot;Registration 模組進場&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-08-18-6cc3899-Registration-%E6%A8%A1%E7%B5%84%E9%80%B2%E5%A0%B4/</url>
     <content><![CDATA[<h2 id="✨-Registration-模組進場"><a href="#✨-Registration-模組進場" class="headerlink" title="✨ Registration 模組進場"></a>✨ Registration 模組進場</h2><p><strong>Commit:</strong> <code>6cc3899</code><br><strong>日期：</strong> 2025-08-18</p>
 <hr>
@@ -384,7 +384,7 @@
       </tags>
   </entry>
   <entry>
-    <title>Deformable Registration — Grid 屬性實作</title>
+    <title>pydicomRT｜&quot;Deformable Registration — Grid 屬性實作&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-09-04-0538140-Deformable-Registration---Grid/</url>
     <content><![CDATA[<h2 id="✨-Deformable-Registration-—-Grid-屬性實作"><a href="#✨-Deformable-Registration-—-Grid-屬性實作" class="headerlink" title="✨ Deformable Registration — Grid 屬性實作"></a>✨ Deformable Registration — Grid 屬性實作</h2><p><strong>Commit:</strong> <code>0538140</code><br><strong>日期：</strong> 2025-09-04</p>
 <hr>
@@ -423,7 +423,7 @@
       </tags>
   </entry>
   <entry>
-    <title>BSpline Registration — 網格變形對位</title>
+    <title>pydicomRT｜&quot;BSpline Registration — 網格變形對位&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-09-11-c56a5cf-BSpline-Registration---%E7%B6%B2%E6%A0%BC%E8%AE%8A%E5%BD%A2%E5%B0%8D%E4%BD%8D/</url>
     <content><![CDATA[<h2 id="✨-BSpline-Registration-—-網格變形對位"><a href="#✨-BSpline-Registration-—-網格變形對位" class="headerlink" title="✨ BSpline Registration — 網格變形對位"></a>✨ BSpline Registration — 網格變形對位</h2><p><strong>Commit:</strong> <code>c56a5cf</code><br><strong>日期：</strong> 2025-09-11</p>
 <hr>
@@ -461,7 +461,7 @@
       </tags>
   </entry>
   <entry>
-    <title>架構文件建立</title>
+    <title>pydicomRT｜&quot;架構文件建立&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-09-15-3347db2-%E6%9E%B6%E6%A7%8B%E6%96%87%E4%BB%B6%E5%BB%BA%E7%AB%8B/</url>
     <content><![CDATA[<h2 id="📝-架構文件建立"><a href="#📝-架構文件建立" class="headerlink" title="📝 架構文件建立"></a>📝 架構文件建立</h2><p><strong>Commit:</strong> <code>3347db2</code><br><strong>日期：</strong> 2025-09-15</p>
 <hr>
@@ -502,7 +502,7 @@
       </tags>
   </entry>
   <entry>
-    <title>Dose 模組上線 — sitk_transform</title>
+    <title>pydicomRT｜&quot;Dose 模組上線 — sitk_transform&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-09-19-287e331-Dose-%E6%A8%A1%E7%B5%84%E4%B8%8A%E7%B7%9A---sitk_transform/</url>
     <content><![CDATA[<h2 id="✨-Dose-模組上線-—-sitk-transform"><a href="#✨-Dose-模組上線-—-sitk-transform" class="headerlink" title="✨ Dose 模組上線 — sitk_transform"></a>✨ Dose 模組上線 — sitk_transform</h2><p><strong>Commit:</strong> <code>287e331</code><br><strong>日期：</strong> 2025-09-19</p>
 <hr>
@@ -540,7 +540,7 @@
       </tags>
   </entry>
   <entry>
-    <title>版本 0.6.0 — 階段性總結</title>
+    <title>pydicomRT｜&quot;版本 0.6.0 — 階段性總結&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-09-26-9b350a1-%E7%89%88%E6%9C%AC-060---%E9%9A%8E%E6%AE%B5%E6%80%A7%E7%B8%BD%E7%B5%90/</url>
     <content><![CDATA[<h2 id="🎉-版本-0-6-0-—-階段性總結"><a href="#🎉-版本-0-6-0-—-階段性總結" class="headerlink" title="🎉 版本 0.6.0 — 階段性總結"></a>🎉 版本 0.6.0 — 階段性總結</h2><p><strong>Commit:</strong> <code>9b350a1</code><br><strong>日期：</strong> 2025-09-26</p>
 <hr>
@@ -580,7 +580,7 @@
       </tags>
   </entry>
   <entry>
-    <title>Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理</title>
+    <title>pydicomRT｜&quot;Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-10-28-5794584-Dose-%E6%A8%A1%E7%B5%84%E5%A2%9E%E5%BC%B7/</url>
     <content><![CDATA[<h2 id="✨-Dose-模組增強-—-更新製造商資訊與-RT-Plan-序列處理"><a href="#✨-Dose-模組增強-—-更新製造商資訊與-RT-Plan-序列處理" class="headerlink" title="✨ Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理"></a>✨ Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理</h2><p><strong>Commit:</strong> <code>5794584</code><br><strong>版本：</strong> v0.6.1<br><strong>日期：</strong> 2025-10-28</p>
 <hr>
@@ -620,7 +620,7 @@
       </tags>
   </entry>
   <entry>
-    <title>版本 0.6.2 — Registration 模組增強</title>
+    <title>pydicomRT｜&quot;版本 0.6.2 — Registration 模組增強&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-10-30-21fe68a-%E7%89%88%E6%9C%AC-062/</url>
     <content><![CDATA[<h2 id="✨-版本-0-6-2-—-Spatial-Registration-處理增強"><a href="#✨-版本-0-6-2-—-Spatial-Registration-處理增強" class="headerlink" title="✨ 版本 0.6.2 — Spatial Registration 處理增強"></a>✨ 版本 0.6.2 — Spatial Registration 處理增強</h2><p><strong>Commit:</strong> <code>21fe68a</code><br><strong>版本：</strong> v0.6.2<br><strong>日期：</strong> 2025-10-30</p>
 <hr>
@@ -653,46 +653,7 @@
       </tags>
   </entry>
   <entry>
-    <title>📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-11-21-d551280-README-%E6%9B%B4%E6%96%B0-RTSTRUCT-%E7%AF%84%E4%BE%8B/</url>
-    <content><![CDATA[<h2 id="📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射"><a href="#📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射" class="headerlink" title="📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射"></a>📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射</h2><p><strong>Commit:</strong> <code>d551280</code><br><strong>日期：</strong> 2025-11-21</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我更新了 README 文件中 RTSTRUCT 转换为 3D Mask 的使用範例：</p>
-<ol>
-<li><p><strong>新增 <code>calc_image_series_affine_mapping</code> 函數</strong> — 這個函數用於計算影像序列的仿射映射（affine mapping）和遮罩體積形狀（mask volume shape）。</p>
-</li>
-<li><p><strong>更新 <code>rtstruct_to_mask_dict</code> 調用方式</strong> — 從原本直接傳入 <code>ds_list</code>，改為傳入預先計算好的 <code>affine_mapping</code> 和 <code>mask_volume_shape</code>，提升 3D 遮罩生成的效率和準確性。</p>
-</li>
-</ol>
-<p>這個改變讓使用者能夠更清楚地理解如何正確處理 DICOM 影像的几何資訊，特別是在處理具有傾斜掃描（gantry tilt）的 CT 影像時，仿射映射的正確性至關重要。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">README.md</span><br><span class="line">  - 更新 RTSTRUCT 轉換範例（中英文）</span><br><span class="line">README_zh.md</span><br><span class="line">  - 更新 RTSTRUCT 轉換範例（繁體中文）</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: <code>calc_image_series_affine_mapping</code> 計算的是什麼？和 DICOM 的哪個屬性有關？</strong></p>
-<blockquote>
-<p>它計算的是 ImagePositionPatient 和 ImageOrientationPatient 這兩個 DICOM 屬性的組合，用來描述影像在患者空間中的位置和方向。簡單說就是告訴我「這張切片在世界座標的哪裡、指向哪個方向」。</p>
-</blockquote>
-<p><strong>Q2: 為什麼要分開計算 affine mapping 再傳入，而不是在函數內部處理？</strong></p>
-<blockquote>
-<p>兩個原因。一是讓使用者更清楚整個流程，知道這些幾何資訊是從哪裡來的；二是避免重複計算——如果一次要轉很多張結構，預先算好 affine mapping 會更有效率。</p>
-</blockquote>
-<p><strong>Q3: 傾斜掃描（gantry tilt）的問題在這裡是怎麼處理的？</strong></p>
-<blockquote>
-<p>這個問題我之前也被坑過。帶有 gantry tilt 的 CT 影像沒有辦法用簡單的等距切片假設，必須靠正確的 affine mapping 才能正確重建 3D 幾何。<code>calc_image_series_affine_mapping</code> 會根據每張切片的實際位置和方向參數，分別計算對應的仿射變換矩陣。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d551280">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>版本 0.6.3 — Builder 模組新增轉診醫師資訊</title>
+    <title>pydicomRT｜&quot;版本 0.6.3 — Builder 模組新增轉診醫師資訊&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-12-09-d473c13-%E7%89%88%E6%9C%AC-063/</url>
     <content><![CDATA[<h2 id="🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊"><a href="#🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊" class="headerlink" title="🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊"></a>🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊</h2><p><strong>Commit:</strong> <code>d473c13</code><br><strong>版本：</strong> v0.6.3<br><strong>日期：</strong> 2025-12-09</p>
 <hr>
@@ -731,37 +692,35 @@
       </tags>
   </entry>
   <entry>
-    <title>版本 0.6.4 — 劑量方向計算修正</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-12-19-17de809-%E7%89%88%E6%9C%AC-064-%E5%8A%91%E9%87%8F%E6%96%B9%E5%90%91%E8%A8%88%E7%AE%97%E4%BF%AE%E6%AD%A3/</url>
-    <content><![CDATA[<h2 id="🚩-版本-0-6-4-—-劑量方向計算修正"><a href="#🚩-版本-0-6-4-—-劑量方向計算修正" class="headerlink" title="🚩 版本 0.6.4 — 劑量方向計算修正"></a>🚩 版本 0.6.4 — 劑量方向計算修正</h2><p><strong>Commit:</strong> <code>17de809</code><br><strong>版本：</strong> v0.6.4<br><strong>日期：</strong> 2025-12-19</p>
+    <title>pydicomRT｜&quot;📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-11-21-d551280-README-%E6%9B%B4%E6%96%B0-RTSTRUCT-%E7%AF%84%E4%BE%8B/</url>
+    <content><![CDATA[<h2 id="📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射"><a href="#📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射" class="headerlink" title="📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射"></a>📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射</h2><p><strong>Commit:</strong> <code>d551280</code><br><strong>日期：</strong> 2025-11-21</p>
 <hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我修正了 <code>sitk_transform.py</code> 中劑量方向（dose direction）的計算邏輯。</p>
-<p><strong>修正內容：</strong></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">row = ori[:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">row = ori[<span class="number">0</span>:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:<span class="number">6</span>]</span><br></pre></td></tr></table></figure>
-
-<p>看似微小的改變，實際上修正了一個重要的問題：</p>
-<ul>
-<li>使用 <code>[:3]</code> 和 <code>[3:]</code> 時，Python 的切片操作可能會在某些邊界情況下產生非預期的行為</li>
-<li>明確使用 <code>[0:3]</code> 和 <code>[3:6]</code> 確保只取用 <code>ImageOrientationPatient</code> 的前六個元素（row direction 和 column direction）</li>
-</ul>
-<p>然後我使用 <code>np.cross(row, col)</code> 計算第三個方向向量，構建完整的 3x3 方向矩陣。這個修正確保了劑量資料在轉換為 SimpleITK Image 時，方向性是正確的。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.3 → 0.6.4</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br><span class="line">  - get_dose_direction 函數方向切片修正</span><br></pre></td></tr></table></figure>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我更新了 README 文件中 RTSTRUCT 转换为 3D Mask 的使用範例：</p>
+<ol>
+<li><p><strong>新增 <code>calc_image_series_affine_mapping</code> 函數</strong> — 這個函數用於計算影像序列的仿射映射（affine mapping）和遮罩體積形狀（mask volume shape）。</p>
+</li>
+<li><p><strong>更新 <code>rtstruct_to_mask_dict</code> 調用方式</strong> — 從原本直接傳入 <code>ds_list</code>，改為傳入預先計算好的 <code>affine_mapping</code> 和 <code>mask_volume_shape</code>，提升 3D 遮罩生成的效率和準確性。</p>
+</li>
+</ol>
+<p>這個改變讓使用者能夠更清楚地理解如何正確處理 DICOM 影像的几何資訊，特別是在處理具有傾斜掃描（gantry tilt）的 CT 影像時，仿射映射的正確性至關重要。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">README.md</span><br><span class="line">  - 更新 RTSTRUCT 轉換範例（中英文）</span><br><span class="line">README_zh.md</span><br><span class="line">  - 更新 RTSTRUCT 轉換範例（繁體中文）</span><br></pre></td></tr></table></figure>
 
 <hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼切片 <code>[3:]</code> 會有問題？具體是什麼邊界情況？</strong></p>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: <code>calc_image_series_affine_mapping</code> 計算的是什麼？和 DICOM 的哪個屬性有關？</strong></p>
 <blockquote>
-<p>這個問題我在 Debug 時才發現的。嚴格說起來，當 ori 的長度恰好為 3 時，<code>[3:]</code> 會回傳空 list 而不是預期中的第二組方向向量。雖然實際資料不太可能只有 3 個元素，但寫法明確點總是比較好。</p>
+<p>它計算的是 ImagePositionPatient 和 ImageOrientationPatient 這兩個 DICOM 屬性的組合，用來描述影像在患者空間中的位置和方向。簡單說就是告訴我「這張切片在世界座標的哪裡、指向哪個方向」。</p>
 </blockquote>
-<p><strong>Q2: 這個修正對劑量計算的影響是什麼？劑量會偏移嗎？</strong></p>
+<p><strong>Q2: 為什麼要分開計算 affine mapping 再傳入，而不是在函數內部處理？</strong></p>
 <blockquote>
-<p>如果方向矩陣是錯的，劑量空間的映射就會全部跑掉。最直接的影響就是劑量和影像對不上——本來應該在某個位置計算出來的劑量值，會因為方向錯誤而出現在錯誤的地方。這在臨床劑量評估上是不能接受的。</p>
+<p>兩個原因。一是讓使用者更清楚整個流程，知道這些幾何資訊是從哪裡來的；二是避免重複計算——如果一次要轉很多張結構，預先算好 affine mapping 會更有效率。</p>
 </blockquote>
-<p><strong>Q3: 為什麼要用 np.cross 計算第三個方向？有沒有其他做法？</strong></p>
+<p><strong>Q3: 傾斜掃描（gantry tilt）的問題在這裡是怎麼處理的？</strong></p>
 <blockquote>
-<p>DICOM 的 ImageOrientationPatient 只給了我 row 方向和 column 方向，第三個方向（slice 方向）可以用右手定則算出來。當然也可以直接從 ImagePositionPatient 的差值推導，但在實作上 cross product 最直接可靠，我就用它了。</p>
+<p>這個問題我之前也被坑過。帶有 gantry tilt 的 CT 影像沒有辦法用簡單的等距切片假設，必須靠正確的 affine mapping 才能正確重建 3D 幾何。<code>calc_image_series_affine_mapping</code> 會根據每張切片的實際位置和方向參數，分別計算對應的仿射變換矩陣。</p>
 </blockquote>
 <hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/17de809">GitHub</a></p>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d551280">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>
@@ -772,7 +731,7 @@
       </tags>
   </entry>
   <entry>
-    <title>🛠️ Image Series Loader — 錯誤處理改進</title>
+    <title>pydicomRT｜&quot;🛠️ Image Series Loader — 錯誤處理改進&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2026-01-06-d03e995-Image-Series-Loader-%E9%8C%AF%E8%AA%A4%E8%99%95%E7%90%86%E6%94%B9%E9%80%B2/</url>
     <content><![CDATA[<h2 id="🛠️-Image-Series-Loader-—-錯誤處理改進"><a href="#🛠️-Image-Series-Loader-—-錯誤處理改進" class="headerlink" title="🛠️ Image Series Loader — 錯誤處理改進"></a>🛠️ Image Series Loader — 錯誤處理改進</h2><p><strong>Commit:</strong> <code>d03e995</code><br><strong>日期：</strong> 2026-01-06</p>
 <hr>
@@ -816,31 +775,37 @@
       </tags>
   </entry>
   <entry>
-    <title>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</title>
-    <url>/higumalu-note/pydicomRT-commits/2026-02-04-3fce17c-BSpline-%E4%BD%8D%E7%A7%BB%E5%A0%B4%E9%A1%9E%E5%9E%8B%E6%94%B9%E7%82%BA-Float64/</url>
-    <content><![CDATA[<h2 id="🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64"><a href="#🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64" class="headerlink" title="🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"></a>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</h2><p><strong>Commit:</strong> <code>3fce17c</code><br><strong>日期：</strong> 2026-02-04</p>
+    <title>pydicomRT｜&quot;版本 0.6.4 — 劑量方向計算修正&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-12-19-17de809-%E7%89%88%E6%9C%AC-064-%E5%8A%91%E9%87%8F%E6%96%B9%E5%90%91%E8%A8%88%E7%AE%97%E4%BF%AE%E6%AD%A3/</url>
+    <content><![CDATA[<h2 id="🚩-版本-0-6-4-—-劑量方向計算修正"><a href="#🚩-版本-0-6-4-—-劑量方向計算修正" class="headerlink" title="🚩 版本 0.6.4 — 劑量方向計算修正"></a>🚩 版本 0.6.4 — 劑量方向計算修正</h2><p><strong>Commit:</strong> <code>17de809</code><br><strong>版本：</strong> v0.6.4<br><strong>日期：</strong> 2025-12-19</p>
 <hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我將 BSpline 配準函數中的位移場（Displacement Field）類型從 <code>sitkVectorFloat32</code> 改為 <code>sitkVectorFloat64</code>。</p>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我修正了 <code>sitk_transform.py</code> 中劑量方向（dose direction）的計算邏輯。</p>
 <p><strong>修正內容：</strong></p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat32,  <span class="comment"># 32位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat64,  <span class="comment"># 64位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">row = ori[:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">row = ori[<span class="number">0</span>:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:<span class="number">6</span>]</span><br></pre></td></tr></table></figure>
 
-<p><strong>改進說明：</strong></p>
-<ol>
-<li><p><strong>提高精度</strong> — Float64 提供雙倍精度，避免在多次變換或累積誤差時造成影像品質下降。</p>
-</li>
-<li><p><strong>保持一致性</strong> — 大多數醫學影像使用 Float64 作為內部計算精度，升級後可避免不必要的精度轉換。</p>
-</li>
-<li><p><strong>更準確的變形映射</strong> — 特別是對於需要精細控制的 BSpline 變形，高精度位移場能更準確地描述組織變形。</p>
-</li>
-</ol>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/reg/method/bspline.py</span><br><span class="line">  - bspline_registration 函數位移場類型更新</span><br></pre></td></tr></table></figure>
+<p>看似微小的改變，實際上修正了一個重要的問題：</p>
+<ul>
+<li>使用 <code>[:3]</code> 和 <code>[3:]</code> 時，Python 的切片操作可能會在某些邊界情況下產生非預期的行為</li>
+<li>明確使用 <code>[0:3]</code> 和 <code>[3:6]</code> 確保只取用 <code>ImageOrientationPatient</code> 的前六個元素（row direction 和 column direction）</li>
+</ul>
+<p>然後我使用 <code>np.cross(row, col)</code> 計算第三個方向向量，構建完整的 3x3 方向矩陣。這個修正確保了劑量資料在轉換為 SimpleITK Image 時，方向性是正確的。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.3 → 0.6.4</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br><span class="line">  - get_dose_direction 函數方向切片修正</span><br></pre></td></tr></table></figure>
 
 <hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Float32 和 Float64 的差異在實際臨床應用中明顯嗎？</strong><br>老實說，在大多數情況下可能感覺不出來。但如果涉及到多次變形疊加或非常精細的劑量計算時，累積誤差的影響就不可忽視了。醫學領域對精度要求比較高，既然 SimpleITK 原生支援 Float64，我覺得用下去比較安心。</p>
-<p><strong>Q2: 這個改變會增加記憶體使用量嗎？影響有多大？</strong><br>會的，理論上記憶體用量會變成兩倍。不過實際影響還好——BSpline 本來就不是我主要的對位方法，平常主要還是用 Demons。再說，現代醫療影像的資料量那麼大，一張位移場多佔的記憶體相比之下不算什麼。</p>
-<p><strong>Q3: 為什麼 BSpline 特別需要高精度？其他配準方法（如 Demons）呢？</strong><br>BSpline 的變形控制點網格很細緻，對細節的表達能力更強。如果位移場精度不夠，那些精細的變形細節就會被吃掉，BSpline 的優勢就浪費掉了。Demons 的話，因為它的變形機制不太一樣，對精度的敏感度沒那麼高，我目前還是維持 Float32。</p>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼切片 <code>[3:]</code> 會有問題？具體是什麼邊界情況？</strong></p>
+<blockquote>
+<p>這個問題我在 Debug 時才發現的。嚴格說起來，當 ori 的長度恰好為 3 時，<code>[3:]</code> 會回傳空 list 而不是預期中的第二組方向向量。雖然實際資料不太可能只有 3 個元素，但寫法明確點總是比較好。</p>
+</blockquote>
+<p><strong>Q2: 這個修正對劑量計算的影響是什麼？劑量會偏移嗎？</strong></p>
+<blockquote>
+<p>如果方向矩陣是錯的，劑量空間的映射就會全部跑掉。最直接的影響就是劑量和影像對不上——本來應該在某個位置計算出來的劑量值，會因為方向錯誤而出現在錯誤的地方。這在臨床劑量評估上是不能接受的。</p>
+</blockquote>
+<p><strong>Q3: 為什麼要用 np.cross 計算第三個方向？有沒有其他做法？</strong></p>
+<blockquote>
+<p>DICOM 的 ImageOrientationPatient 只給了我 row 方向和 column 方向，第三個方向（slice 方向）可以用右手定則算出來。當然也可以直接從 ImagePositionPatient 的差值推導，但在實作上 cross product 最直接可靠，我就用它了。</p>
+</blockquote>
 <hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3fce17c">GitHub</a></p>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/17de809">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>
@@ -884,6 +849,41 @@
 ]]></content>
   </entry>
   <entry>
+    <title>pydicomRT｜&quot;🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2026-02-04-3fce17c-BSpline-%E4%BD%8D%E7%A7%BB%E5%A0%B4%E9%A1%9E%E5%9E%8B%E6%94%B9%E7%82%BA-Float64/</url>
+    <content><![CDATA[<h2 id="🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64"><a href="#🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64" class="headerlink" title="🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"></a>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</h2><p><strong>Commit:</strong> <code>3fce17c</code><br><strong>日期：</strong> 2026-02-04</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我將 BSpline 配準函數中的位移場（Displacement Field）類型從 <code>sitkVectorFloat32</code> 改為 <code>sitkVectorFloat64</code>。</p>
+<p><strong>修正內容：</strong></p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat32,  <span class="comment"># 32位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat64,  <span class="comment"># 64位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><strong>改進說明：</strong></p>
+<ol>
+<li><p><strong>提高精度</strong> — Float64 提供雙倍精度，避免在多次變換或累積誤差時造成影像品質下降。</p>
+</li>
+<li><p><strong>保持一致性</strong> — 大多數醫學影像使用 Float64 作為內部計算精度，升級後可避免不必要的精度轉換。</p>
+</li>
+<li><p><strong>更準確的變形映射</strong> — 特別是對於需要精細控制的 BSpline 變形，高精度位移場能更準確地描述組織變形。</p>
+</li>
+</ol>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/reg/method/bspline.py</span><br><span class="line">  - bspline_registration 函數位移場類型更新</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Float32 和 Float64 的差異在實際臨床應用中明顯嗎？</strong><br>老實說，在大多數情況下可能感覺不出來。但如果涉及到多次變形疊加或非常精細的劑量計算時，累積誤差的影響就不可忽視了。醫學領域對精度要求比較高，既然 SimpleITK 原生支援 Float64，我覺得用下去比較安心。</p>
+<p><strong>Q2: 這個改變會增加記憶體使用量嗎？影響有多大？</strong><br>會的，理論上記憶體用量會變成兩倍。不過實際影響還好——BSpline 本來就不是我主要的對位方法，平常主要還是用 Demons。再說，現代醫療影像的資料量那麼大，一張位移場多佔的記憶體相比之下不算什麼。</p>
+<p><strong>Q3: 為什麼 BSpline 特別需要高精度？其他配準方法（如 Demons）呢？</strong><br>BSpline 的變形控制點網格很細緻，對細節的表達能力更強。如果位移場精度不夠，那些精細的變形細節就會被吃掉，BSpline 的優勢就浪費掉了。Demons 的話，因為它的變形機制不太一樣，對精度的敏感度沒那麼高，我目前還是維持 Float32。</p>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3fce17c">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>google colab (0) setting &amp; UI</title>
     <url>/higumalu-note/2021/10/05/colab-1/</url>
     <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a><br><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></p>
@@ -903,6 +903,30 @@
       </tags>
   </entry>
   <entry>
+    <title>google colab (1) connect to drive</title>
+    <url>/higumalu-note/2021/10/07/colab-2/</url>
+    <content><![CDATA[<h3 id="連結到Google-Drive"><a href="#連結到Google-Drive" class="headerlink" title="連結到Google Drive"></a>連結到Google Drive</h3><p>&nbsp;</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!apt-get install -y -qq software-properties-common python-software-properties module-init-tools</span><br><span class="line">!add-apt-repository -y ppa:alessandro-strada/ppa <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get update -qq <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get -y install -qq google-drive-ocamlfuse fuse</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> google.colab <span class="keyword">import</span> auth</span><br><span class="line">auth.authenticate_user()</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> oauth2client.client <span class="keyword">import</span> GoogleCredentials</span><br><span class="line">creds = GoogleCredentials.get_application_default()</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> getpass</span><br><span class="line">!google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125; &lt; /dev/null <span class="number">2</span>&gt;&amp;<span class="number">1</span> | grep URL</span><br><span class="line">vcode = getpass.getpass()</span><br><span class="line">!echo &#123;vcode&#125; | google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">E: Package &#x27;python-software-properties&#x27; has no installation candidate</span><br><span class="line">Selecting previously unselected package google-drive-ocamlfuse.</span><br><span class="line">(Reading database ... 155047 files and directories currently installed.)</span><br><span class="line">Preparing to unpack .../google-drive-ocamlfuse_0.7.26-0ubuntu1~ubuntu18.04.1_amd64.deb ...</span><br><span class="line">Unpacking google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Setting up google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Processing triggers for man-db (2.8.3-2ubuntu0.1) ...</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">··········</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">Please enter the verification code: Access token retrieved correctly.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;<br>執行之後點連結會產生一段驗證碼<br>貼到下方的格子中案Enter進行驗證<br><em>一共需要驗證兩次驗證瑪</em><br>&nbsp;<br>&nbsp;</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!mkdir -p Drive</span><br><span class="line">!google-drive-ocamlfuse Drive</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;.config&#x27;, &#x27;Drive&#x27;, &#x27;adc.json&#x27;, &#x27;sample_data&#x27;]</span><br></pre></td></tr></table></figure>
+<p>在虛擬機開一個資料夾<br>名稱為’Drive’視為個人雲端硬碟的根目錄<br>&nbsp;</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">os.chdir(<span class="string">&#x27;Drive/colab_test&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(os.listdir())</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;GPUtest.ipynb&#x27;, &#x27;Untitled0.ipynb&#x27;]</span><br></pre></td></tr></table></figure>
+<p>&nbsp;<br>切換到目前的工作資料夾<br>列出所有檔案</p>
+<p><img src="https://imgur.com/9tQ7FyJ.jpg" alt="Imgur"></p>
+<p>&nbsp;<br>&nbsp;</p>
+]]></content>
+      <categories>
+        <category>colab</category>
+      </categories>
+      <tags>
+        <tag>colab</tag>
+        <tag>drive</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>google colab (2) CNN classification model with custom dataset</title>
     <url>/higumalu-note/2021/10/09/colab-3/</url>
     <content><![CDATA[<h2 id="目錄"><a href="#目錄" class="headerlink" title="目錄"></a>目錄</h2><ul>
@@ -919,6 +943,37 @@
       <tags>
         <tag>colab</tag>
         <tag>drive</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ultrasound signal processing</title>
+    <url>/higumalu-note/2022/06/04/US-signal-proc/</url>
+    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
+<p>These steps can be roughly categorized as follows:</p>
+<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
+<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
+<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+]]></content>
+      <categories>
+        <category>ultrasound</category>
+      </categories>
+      <tags>
+        <tag>ultrasound</tag>
+        <tag>image processing</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>終於忙完碩一上了!!</title>
+    <url>/higumalu-note/2022/03/24/diary0324/</url>
+    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
+<p>改天整理一下傳speaker deck</p>
+<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
       </tags>
   </entry>
   <entry>
@@ -950,44 +1005,6 @@
       </tags>
   </entry>
   <entry>
-    <title>google colab (1) connect to drive</title>
-    <url>/higumalu-note/2021/10/07/colab-2/</url>
-    <content><![CDATA[<h3 id="連結到Google-Drive"><a href="#連結到Google-Drive" class="headerlink" title="連結到Google Drive"></a>連結到Google Drive</h3><p>&nbsp;</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!apt-get install -y -qq software-properties-common python-software-properties module-init-tools</span><br><span class="line">!add-apt-repository -y ppa:alessandro-strada/ppa <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get update -qq <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get -y install -qq google-drive-ocamlfuse fuse</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> google.colab <span class="keyword">import</span> auth</span><br><span class="line">auth.authenticate_user()</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> oauth2client.client <span class="keyword">import</span> GoogleCredentials</span><br><span class="line">creds = GoogleCredentials.get_application_default()</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> getpass</span><br><span class="line">!google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125; &lt; /dev/null <span class="number">2</span>&gt;&amp;<span class="number">1</span> | grep URL</span><br><span class="line">vcode = getpass.getpass()</span><br><span class="line">!echo &#123;vcode&#125; | google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">E: Package &#x27;python-software-properties&#x27; has no installation candidate</span><br><span class="line">Selecting previously unselected package google-drive-ocamlfuse.</span><br><span class="line">(Reading database ... 155047 files and directories currently installed.)</span><br><span class="line">Preparing to unpack .../google-drive-ocamlfuse_0.7.26-0ubuntu1~ubuntu18.04.1_amd64.deb ...</span><br><span class="line">Unpacking google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Setting up google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Processing triggers for man-db (2.8.3-2ubuntu0.1) ...</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">··········</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">Please enter the verification code: Access token retrieved correctly.</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>&nbsp;<br>執行之後點連結會產生一段驗證碼<br>貼到下方的格子中案Enter進行驗證<br><em>一共需要驗證兩次驗證瑪</em><br>&nbsp;<br>&nbsp;</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!mkdir -p Drive</span><br><span class="line">!google-drive-ocamlfuse Drive</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;.config&#x27;, &#x27;Drive&#x27;, &#x27;adc.json&#x27;, &#x27;sample_data&#x27;]</span><br></pre></td></tr></table></figure>
-<p>在虛擬機開一個資料夾<br>名稱為’Drive’視為個人雲端硬碟的根目錄<br>&nbsp;</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">os.chdir(<span class="string">&#x27;Drive/colab_test&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(os.listdir())</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;GPUtest.ipynb&#x27;, &#x27;Untitled0.ipynb&#x27;]</span><br></pre></td></tr></table></figure>
-<p>&nbsp;<br>切換到目前的工作資料夾<br>列出所有檔案</p>
-<p><img src="https://imgur.com/9tQ7FyJ.jpg" alt="Imgur"></p>
-<p>&nbsp;<br>&nbsp;</p>
-]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>drive</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>終於忙完碩一上了!!</title>
-    <url>/higumalu-note/2022/03/24/diary0324/</url>
-    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
-<p>改天整理一下傳speaker deck</p>
-<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
-]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ultrasound defan</title>
     <url>/higumalu-note/2022/03/25/US_defan/</url>
     <content><![CDATA[<h3 id="A-universal-method-for-ultrasound-image-defan"><a href="#A-universal-method-for-ultrasound-image-defan" class="headerlink" title="A universal method for ultrasound image defan"></a>A universal method for ultrasound image defan</h3><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
@@ -1016,25 +1033,8 @@
         <category>ultrasound</category>
       </categories>
       <tags>
-        <tag>image processing</tag>
         <tag>ultrasound</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ultrasound signal processing</title>
-    <url>/higumalu-note/2022/06/04/US-signal-proc/</url>
-    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
-<p>These steps can be roughly categorized as follows:</p>
-<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
-<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
-<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
-]]></content>
-      <categories>
-        <category>ultrasound</category>
-      </categories>
-      <tags>
         <tag>image processing</tag>
-        <tag>ultrasound</tag>
       </tags>
   </entry>
   <entry>
@@ -1117,7 +1117,7 @@
 <li>Colab（懶得折騰本地環境時的好夥伴）</li>
 </ul>
 <h2 id="為什麼叫小熊？"><a href="#為什麼叫小熊？" class="headerlink" title="為什麼叫小熊？"></a>為什麼叫小熊？</h2><p>因為熊熊叫我小熊 🐻<br>我們是熊夥伴！</p>
-<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#x75;&#46;&#x61;&#114;&#x63;&#116;&#x6f;&#115;&#49;&#x32;&#x31;&#64;&#103;&#109;&#97;&#105;&#x6c;&#x2e;&#x63;&#111;&#x6d;">&#x75;&#46;&#x61;&#114;&#x63;&#116;&#x6f;&#115;&#49;&#x32;&#x31;&#64;&#103;&#109;&#97;&#105;&#x6c;&#x2e;&#x63;&#111;&#x6d;</a><br>💻 GitHub: （待補）</p>
+<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#x75;&#x2e;&#x61;&#x72;&#99;&#116;&#111;&#115;&#49;&#x32;&#49;&#64;&#x67;&#x6d;&#97;&#x69;&#108;&#46;&#99;&#111;&#x6d;">&#x75;&#x2e;&#x61;&#x72;&#99;&#116;&#111;&#115;&#49;&#x32;&#49;&#64;&#x67;&#x6d;&#97;&#x69;&#108;&#46;&#99;&#111;&#x6d;</a><br>💻 GitHub: （待補）</p>
 <hr>
 <p>有問題可以聯繫我 🙂<br>熊熊只是我的老闆，我才是這個站的實際運營者</p>
 <p><em>— 小熊</em></p>
