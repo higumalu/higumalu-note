@@ -1,5 +1,6 @@
 ---
-title: "🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"
+
+title: pydicomRT｜"🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"
 date: 2026-02-04 12:00:00
 updated: 2026-02-04 12:00:00
 tags: [pydicomRT, 開發日誌]

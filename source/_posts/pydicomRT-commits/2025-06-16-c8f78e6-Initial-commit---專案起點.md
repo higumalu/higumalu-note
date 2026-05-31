@@ -1,5 +1,6 @@
 ---
-title: "Initial commit — 專案起點"
+
+title: pydicomRT｜"Initial commit — 專案起點"
 date: 2025-06-16 12:00:00
 categories: [pydicomRT]
 tags: [pydicomRT, 開發日誌]

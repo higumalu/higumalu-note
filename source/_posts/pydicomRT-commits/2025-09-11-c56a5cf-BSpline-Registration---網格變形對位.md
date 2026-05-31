@@ -1,5 +1,6 @@
 ---
-title: "BSpline Registration — 網格變形對位"
+
+title: pydicomRT｜"BSpline Registration — 網格變形對位"
 date: 2025-09-11 12:00:00
 categories: [pydicomRT]
 tags: [pydicomRT, 開發日誌]

@@ -1,5 +1,6 @@
 ---
-title: "📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射"
+
+title: pydicomRT｜"📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射"
 date: 2025-11-21 12:00:00
 updated: 2025-11-21 12:00:00
 tags: [pydicomRT, 開發日誌]

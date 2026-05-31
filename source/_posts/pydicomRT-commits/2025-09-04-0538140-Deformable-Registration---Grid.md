@@ -1,5 +1,6 @@
 ---
-title: "Deformable Registration — Grid 屬性實作"
+
+title: pydicomRT｜"Deformable Registration — Grid 屬性實作"
 date: 2025-09-04 12:00:00
 categories: [pydicomRT]
 tags: [pydicomRT, 開發日誌]
