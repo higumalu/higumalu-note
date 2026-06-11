@@ -192,5 +192,5 @@ Dynamic Workflows 的核心洞察是：**單一 Agent 解決不了複雜任務�
 ---
 
 *本系列文基於 Claude Blog 文章：*
-- *[A harness for every task: Dynamic workflows in Claude Code](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows)*
-- *[Introducing dynamic workflows](https://claude.com/blog/introducing-dynamic-workflows)*
+- *[A harness for every task: Dynamic workflows in Claude Code](https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code)*
+- *[Introducing dynamic workflows](https://claude.com/blog/introducing-dynamic-workflows-in-claude-code)*
