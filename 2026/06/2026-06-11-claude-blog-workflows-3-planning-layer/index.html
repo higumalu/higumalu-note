@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>從 Claude Blog 學 AI Agent 架構（三）：Planning Layer 與大型重構範本 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="
+本系列是熊熊閱讀 Claude 官方 Blog 的心得整理，原文皆來自 claude.com/blog。這篇是第三篇，主題是 Planning Layer 與大型重構實戰——包括 CodeRabb,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">從 Claude Blog 學 AI Agent 架構（三）：Planning Layer 與大型重構範本</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">從 Claude Blog 學 AI Agent 架構（三）：Planning Layer 與大型重構範本</h1>
+        <div class="stuff">
+            <span>六月 11, 2026</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/AI-Agent/" rel="tag">AI Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/CodeRabbit/" rel="tag">CodeRabbit</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Hermes/" rel="tag">Hermes</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Multi-Agent/" rel="tag">Multi-Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Planning/" rel="tag">Planning</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <blockquote>
+<p>本系列是熊熊閱讀 Claude 官方 Blog 的心得整理，原文皆來自 <a target="_blank" rel="noopener" href="https://claude.com/blog">claude.com/blog</a>。這篇是第三篇，主題是 <strong>Planning Layer</strong> 與大型重構實戰——包括 CodeRabbit 的 Planner 系統，以及那個震撼人心的 Bun 案例。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="為什麼需要-Planning-Layer"><a href="#為什麼需要-Planning-Layer" class="headerlink" title="為什麼需要 Planning Layer"></a>為什麼需要 Planning Layer</h2><p>大多數 AI coding 工具的流程是這樣的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">User: 幫我做一個登入功能</span><br><span class="line">AI:   好的，開始寫 code</span><br><span class="line">      寫好了！測試通過！</span><br></pre></td></tr></table></figure>
+
+<p>看起來很完美，但 CodeRabbit 發現了一個深層的問題：<strong>程式碼通過編譯和測試，但做的不是團隊真正想做的事</strong>。</p>
+<p>原因是：<strong>開發者的假設（implicit assumptions）AI 並不知道</strong>。比如「我們的登入頁面有兩步驟驗證」「密碼重置流程要走 Slack webhook」「登入失敗要記錄到 Datadog」。這些東西從來沒有寫在任何規格文件裡，AI 當然不知道。</p>
+<p>所以 CodeRabbit 在 Implementation 之前，多加了一層 <strong>Planning Layer</strong>。</p>
+<hr>
+<h2 id="CodeRabbit-的-Planner-系統"><a href="#CodeRabbit-的-Planner-系統" class="headerlink" title="CodeRabbit 的 Planner 系統"></a>CodeRabbit 的 Planner 系統</h2><h3 id="核心架構"><a href="#核心架構" class="headerlink" title="核心架構"></a>核心架構</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">User Request</span><br><span class="line">       ↓</span><br><span class="line">┌──────────────────┐</span><br><span class="line">│  PRD Planning    │  ← Opus 模型</span><br><span class="line">│  (規劃階段)       │</span><br><span class="line">└────────┬─────────┘</span><br><span class="line">         ↓ 產出結構化 PRD</span><br><span class="line">┌──────────────────┐</span><br><span class="line">│  PRD Review      │  ← 人類審核</span><br><span class="line">└────────┬─────────┘</span><br><span class="line">         ↓ 人類確認</span><br><span class="line">┌──────────────────┐</span><br><span class="line">│  Implementation  │  ← Sonnet 模型</span><br><span class="line">│  (實作階段)       │</span><br><span class="line">└──────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="三階段各有分工"><a href="#三階段各有分工" class="headerlink" title="三階段各有分工"></a>三階段各有分工</h3><p><strong>第一階段：PRD Planning（Opus）</strong></p>
+<p>這個階段用最聰明的模型（Opus）來做複雜的協調工作：</p>
+<ul>
+<li>分析 user request 的意圖和邊界</li>
+<li>理解 code base 的結構和限制</li>
+<li>補足隱性假設，把它們變成顯性的規劃文件</li>
+<li>預估實作風險和依賴關係</li>
+</ul>
+<p><strong>第二階段：Human Review（熊熊 / 人類）</strong></p>
+<p>規劃文件出來之後，人類審核確認。有問題就修改規劃，沒問題才往下走。這一步的核心價值是：<strong>在浪費大量時間之前，先對焦「要做什麼」</strong>。</p>
+<p><strong>第三階段：Implementation（Sonnet）</strong></p>
+<p>有了清晰的 PRD，實作階段的模型可以降級到 Sonnet——因為不確定性已經大幅降低了。Sonnet 擅長把結構化的步驟轉化成乾淨的程式碼。</p>
+<h3 id="熊熊的想法"><a href="#熊熊的想法" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>Planning Layer 的精神其實就是「謀定而後動」。熊熊的大型研究任務如果也能先跑一個 planning phase——讓模型先分析「這次研究要覆蓋哪些維度」「哪些文章要先讀」「結論要怎麼組織」——就不會做到一半發現方向偏了，還要回頭重來。</p>
+<hr>
+<h2 id="Model-Routing：讓對的模型做對的事"><a href="#Model-Routing：讓對的模型做對的事" class="headerlink" title="Model Routing：讓對的模型做對的事"></a>Model Routing：讓對的模型做對的事</h2><p>CodeRabbit 的另一個關鍵設計是 <strong>Model Routing</strong>——不同複雜度的任務，分配給不同能力的模型：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>角色</th>
+<th>擅長什麼</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Opus</strong></td>
+<td>協調者 / Planner</td>
+<td>複雜推理、架構設計、風險評估</td>
+</tr>
+<tr>
+<td><strong>Sonnet</strong></td>
+<td>實作者</td>
+<td>結構化步驟轉化成乾淨程式碼</td>
+</tr>
+<tr>
+<td><strong>Haiku</strong></td>
+<td>窄範圍操作員</td>
+<td>簡單的 distilling、格式化、單一工具呼叫</td>
+</tr>
+</tbody></table>
+<p>這個路由背後的原則是：<strong>昂貴的模型只用在真正需要的地方</strong>。Haiku 的成本是 Opus 的 1/50，如果一個任務只需要簡單的字串處理，強迫用 Opus 就是浪費。</p>
+<h3 id="熊熊的想法-1"><a href="#熊熊的想法-1" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>熊熊的 research workflow 其實已經隱含了 routing：</p>
+<ul>
+<li>複雜的「文章理解與架構規劃」→ 用主力模型（主力對話）</li>
+<li>簡單的「並行抓取多個 URL」→ 可以用一個輕量的 subagent</li>
+<li>最簡單的「純下載」→ 甚至不需要 LLM，直接 curl</li>
+</ul>
+<p>把這個 routing 顯式化，未來熊熊就可以對不同的 sub-task 選擇性啟用不同能力的模型，降低成本、提升速度。</p>
+<hr>
+<h2 id="Bun-Rewrite：三層-Workflow-的巔峰示範"><a href="#Bun-Rewrite：三層-Workflow-的巔峰示範" class="headerlink" title="Bun Rewrite：三層 Workflow 的巔峰示範"></a>Bun Rewrite：三層 Workflow 的巔峰示範</h2><p>Bun 從 Zig 遷移到 Rust 的案例，是整個系列最有視覺衝擊力的實例：</p>
+<ul>
+<li><strong>75 萬行</strong> Rust 程式碼</li>
+<li><strong>11 天</strong>完成</li>
+<li><strong>99.8% 測試通過率</strong></li>
+</ul>
+<p>這個數字厲害的地方在於：不是 99%，是 99.8%。在 75 萬行的規模下，要同時做到速度快（11 天）和精準度高（99.8%），必須靠 workflow 結構取勝。</p>
+<h3 id="第一層：語意對應（先做）"><a href="#第一層：語意對應（先做）" class="headerlink" title="第一層：語意對應（先做）"></a>第一層：語意對應（先做）</h3><p>在開始翻譯任何一行 code 之前，先建立一個完整的「Zig 概念 → Rust 等價物」對應表。這個步驟看起來慢，但其實是最關鍵的：</p>
+<ul>
+<li>確認 ownership 和 lifetime 的對應方式</li>
+<li>確認錯誤處理模式（Zig 的 <code>try</code>/<code>error</code> → Rust 的 <code>Result</code>）</li>
+<li>確認並發模型的差異（Zig 的 async → Rust 的 tokio）</li>
+</ul>
+<p>這個步驟由一個 Planner Agent 執行，沒有其他 subagent 並行——<strong>這是唯一一個需要順序執行的步驟</strong>。</p>
+<h3 id="第二層：並行翻譯-雙-Reviewer"><a href="#第二層：並行翻譯-雙-Reviewer" class="headerlink" title="第二層：並行翻譯 + 雙 Reviewer"></a>第二層：並行翻譯 + 雙 Reviewer</h3><p>把整個 codebase 拆成 hundreds 個檔案單元，數百個 subagent 同時並行翻譯。每個檔案的產出都由 <strong>兩個獨立的 reviewer Agent</strong> 各自做 code review，通過才進下一關。</p>
+<p>雙 reviewer 的設計是關鍵：因為翻譯錯誤很容易發生，而同一個錯誤如果由兩個 reviewer 各自檢查到，偽陽性的機率就大幅降低。</p>
+<h3 id="第三層：Fix-Loop-直到乾淨"><a href="#第三層：Fix-Loop-直到乾淨" class="headerlink" title="第三層：Fix Loop 直到乾淨"></a>第三層：Fix Loop 直到乾淨</h3><p>所有檔案翻譯完成後，進一個集中的修復循環。這裡的裁判不是人，是 <strong>build system</strong>：</p>
+<ul>
+<li>編譯失敗 → 修</li>
+<li>測試失敗 → 修</li>
+<li>通過了才結束</li>
+</ul>
+<p>沒有「我覺得差不多了」的空間，build 就是客觀標準。</p>
+<hr>
+<h2 id="從-Bun-案例學到的-Workflow-設計原則"><a href="#從-Bun-案例學到的-Workflow-設計原則" class="headerlink" title="從 Bun 案例學到的 Workflow 設計原則"></a>從 Bun 案例學到的 Workflow 設計原則</h2><h3 id="1-理解在先，翻譯在後"><a href="#1-理解在先，翻譯在後" class="headerlink" title="1. 理解在先，翻譯在後"></a>1. 理解在先，翻譯在後</h3><p>千萬不要跳過「先理解」的步驟。Bun 案例裡，「先做語意對應」這個決策節省了後面大量的重工。如果一開始沒有確認 Zig 和 Rust 的概念對應，翻譯到一半發現 semantics 不匹配，要回頭改的成本極高。</p>
+<h3 id="2-把-quality-gate-放進-workflow，而不是最後才驗"><a href="#2-把-quality-gate-放進-workflow，而不是最後才驗" class="headerlink" title="2. 把 quality gate 放進 workflow，而不是最後才驗"></a>2. 把 quality gate 放進 workflow，而不是最後才驗</h3><p>Bun 案例的雙 reviewer 制度把 quality gate 前移到翻譯當下，而不是翻譯完才發現有問題。Outcomes Pattern 的精神也一樣——讓驗證 Agent 跟著產出 Agent 一起跑，而不是最後再做。</p>
+<h3 id="3-讓客觀標準當裁判"><a href="#3-讓客觀標準當裁判" class="headerlink" title="3. 讓客觀標準當裁判"></a>3. 讓客觀標準當裁判</h3><p>讓 build system 當裁判，解決了「誰說什麼才算過」的問題。研究 workflow 裡，「熊熊說通過才算過」是一個主觀標準；如果能設計一個 rubric（引用完整性、邏輯一致性、結論有被資料支持），Grader Agent 的判定就是客觀的，不需要熊熊仲裁每個細節。</p>
+<h3 id="4-Isolated-parallelism-是關鍵"><a href="#4-Isolated-parallelism-是關鍵" class="headerlink" title="4. Isolated parallelism 是關鍵"></a>4. Isolated parallelism 是關鍵</h3><p>Bun 案例的 subagent 之間幾乎沒有通訊需求——每個檔案的翻譯是獨立的，所以可以無限制地並行。如果任務之間有很強的依賴關係，就要在 workflow 設計上先做「去耦合」——把有依賴的部分先做，剩下的才可以並行。</p>
+<hr>
+<h2 id="熊熊的實作藍圖"><a href="#熊熊的實作藍圖" class="headerlink" title="熊熊的實作藍圖"></a>熊熊的實作藍圖</h2><h3 id="小型-Workflow：熊熊研究一篇部落格文章"><a href="#小型-Workflow：熊熊研究一篇部落格文章" class="headerlink" title="小型 Workflow：熊熊研究一篇部落格文章"></a>小型 Workflow：熊熊研究一篇部落格文章</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│  1. Planning: 這篇文章要讀什麼重點 │</span><br><span class="line">└──────────────┬───────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│  2. Fan-out: 核心段落並行濃縮      │</span><br><span class="line">└──────────────┬───────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│  3. Outcomes: Grader 驗證品質     │</span><br><span class="line">└──────────────┬───────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│  4. 熊熊確認 → 寫入心得檔案        │</span><br><span class="line">└──────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="中型-Workflow：熊熊研究一個主題（多篇文章）"><a href="#中型-Workflow：熊熊研究一個主題（多篇文章）" class="headerlink" title="中型 Workflow：熊熊研究一個主題（多篇文章）"></a>中型 Workflow：熊熊研究一個主題（多篇文章）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">┌────────────────────────────────────────┐</span><br><span class="line">│  1. Planning: 定義 research dimensions │</span><br><span class="line">├──────────┬──────────┬────────┬─────────┤</span><br><span class="line">│  crawl   │  crawl   │  crawl │  crawl  │</span><br><span class="line">│  文章A   │  文章B   │  文章C │  文章D  │</span><br><span class="line">├──────────┴──────────┴────────┴─────────┤</span><br><span class="line">│  2. Adversarial: 每篇心得找反方審查    │</span><br><span class="line">├──────────┬──────────┬────────┬─────────┤</span><br><span class="line">│  心得A   │  心得B   │  心得C │  心得D  │</span><br><span class="line">├──────────┴──────────┴────────┴─────────┤</span><br><span class="line">│  3. Synthesis: 整合成最終報告          │</span><br><span class="line">└────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="大型-Workflow：熊熊的系統級遷移或重構"><a href="#大型-Workflow：熊熊的系統級遷移或重構" class="headerlink" title="大型 Workflow：熊熊的系統級遷移或重構"></a>大型 Workflow：熊熊的系統級遷移或重構</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────────┐</span><br><span class="line">│  Phase 1: Planner（先做）              │</span><br><span class="line">│  理解現狀 → 定義對應規則 → 風險評估    │</span><br><span class="line">└──────────────┬───────────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────────┐</span><br><span class="line">│  Phase 2: Isolated Fan-out            │</span><br><span class="line">│  數百個 subagent 並行實作 + 雙 review  │</span><br><span class="line">└──────────────┬───────────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────────┐</span><br><span class="line">│  Phase 3: Fix Loop                    │</span><br><span class="line">│  直到 build clean + 測試全過           │</span><br><span class="line">└──────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>三篇文章打下來，熊熊最大的心得是：<strong>Workflow 不是工具，是結構</strong>。工具幫你做事，結構確保你用對的方式做事。當任務變得複雜時，光有好工具不夠——你需要設計讓正確的事情自然發生的結構。</p>
+<p>Dynamic Workflows 的六種 Pattern 是起點，Self-Improving 的四層系統是骨架，Bun 的三層 Workflow 是終極示範。三者加起來，就是一個從設計到執行到成長的完整框架。</p>
+<p>熊熊接下來會把這些想法慢慢落到 Hermes 的實作上。如果熊熊在過程中有新的心得，會再寫成文章跟大家分享。</p>
+<hr>
+<h2 id="系列文章索引"><a href="#系列文章索引" class="headerlink" title="系列文章索引"></a>系列文章索引</h2><ul>
+<li><a href="/2026/06/11/claude-blog-workflows-1-dynamic-patterns/">（一）Dynamic Workflows 與六大設計模式</a></li>
+<li><a href="/2026/06/11/claude-blog-workflows-2-self-improving-agents/">（二）Self-Improving Agents 的四層成長系統</a></li>
+<li><a href="/2026/06/11/claude-blog-workflows-3-planning-layer/">（三）Planning Layer 與大型重構範本</a>（本文）</li>
+</ul>
+<hr>
+<p><em>本系列文基於 Claude Blog 文章：</em></p>
+<ul>
+<li><em><a target="_blank" rel="noopener" href="https://claude.com/blog/how-coderabbit-built-an-agent-orchestration-system">How CodeRabbit built an agent orchestration system</a></em></li>
+<li><em><a target="_blank" rel="noopener" href="https://claude.com/blog/introducing-dynamic-workflows">Introducing dynamic workflows</a></em></li>
+<li><em><a target="_blank" rel="noopener" href="https://claude.com/blog/a-harness-for-every-task-dynamic-workflows">A harness for every task: Dynamic workflows in Claude Code</a></em></li>
+</ul>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%82%BA%E4%BB%80%E9%BA%BC%E9%9C%80%E8%A6%81-Planning-Layer"><span class="toc-number">1.</span> <span class="toc-text">為什麼需要 Planning Layer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CodeRabbit-%E7%9A%84-Planner-%E7%B3%BB%E7%B5%B1"><span class="toc-number">2.</span> <span class="toc-text">CodeRabbit 的 Planner 系統</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%A7%8B"><span class="toc-number">2.1.</span> <span class="toc-text">核心架構</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E9%9A%8E%E6%AE%B5%E5%90%84%E6%9C%89%E5%88%86%E5%B7%A5"><span class="toc-number">2.2.</span> <span class="toc-text">三階段各有分工</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%86%8A%E7%86%8A%E7%9A%84%E6%83%B3%E6%B3%95"><span class="toc-number">2.3.</span> <span class="toc-text">熊熊的想法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Model-Routing%EF%BC%9A%E8%AE%93%E5%B0%8D%E7%9A%84%E6%A8%A1%E5%9E%8B%E5%81%9A%E5%B0%8D%E7%9A%84%E4%BA%8B"><span class="toc-number">3.</span> <span class="toc-text">Model Routing：讓對的模型做對的事</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%86%8A%E7%86%8A%E7%9A%84%E6%83%B3%E6%B3%95-1"><span class="toc-number">3.1.</span> <span class="toc-text">熊熊的想法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bun-Rewrite%EF%BC%9A%E4%B8%89%E5%B1%A4-Workflow-%E7%9A%84%E5%B7%94%E5%B3%B0%E7%A4%BA%E7%AF%84"><span class="toc-number">4.</span> <span class="toc-text">Bun Rewrite：三層 Workflow 的巔峰示範</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E5%B1%A4%EF%BC%9A%E8%AA%9E%E6%84%8F%E5%B0%8D%E6%87%89%EF%BC%88%E5%85%88%E5%81%9A%EF%BC%89"><span class="toc-number">4.1.</span> <span class="toc-text">第一層：語意對應（先做）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E5%B1%A4%EF%BC%9A%E4%B8%A6%E8%A1%8C%E7%BF%BB%E8%AD%AF-%E9%9B%99-Reviewer"><span class="toc-number">4.2.</span> <span class="toc-text">第二層：並行翻譯 + 雙 Reviewer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E5%B1%A4%EF%BC%9AFix-Loop-%E7%9B%B4%E5%88%B0%E4%B9%BE%E6%B7%A8"><span class="toc-number">4.3.</span> <span class="toc-text">第三層：Fix Loop 直到乾淨</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BE%9E-Bun-%E6%A1%88%E4%BE%8B%E5%AD%B8%E5%88%B0%E7%9A%84-Workflow-%E8%A8%AD%E8%A8%88%E5%8E%9F%E5%89%87"><span class="toc-number">5.</span> <span class="toc-text">從 Bun 案例學到的 Workflow 設計原則</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%90%86%E8%A7%A3%E5%9C%A8%E5%85%88%EF%BC%8C%E7%BF%BB%E8%AD%AF%E5%9C%A8%E5%BE%8C"><span class="toc-number">5.1.</span> <span class="toc-text">1. 理解在先，翻譯在後</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%8A%8A-quality-gate-%E6%94%BE%E9%80%B2-workflow%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E6%9C%80%E5%BE%8C%E6%89%8D%E9%A9%97"><span class="toc-number">5.2.</span> <span class="toc-text">2. 把 quality gate 放進 workflow，而不是最後才驗</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%AE%93%E5%AE%A2%E8%A7%80%E6%A8%99%E6%BA%96%E7%95%B6%E8%A3%81%E5%88%A4"><span class="toc-number">5.3.</span> <span class="toc-text">3. 讓客觀標準當裁判</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Isolated-parallelism-%E6%98%AF%E9%97%9C%E9%8D%B5"><span class="toc-number">5.4.</span> <span class="toc-text">4. Isolated parallelism 是關鍵</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%86%8A%E7%86%8A%E7%9A%84%E5%AF%A6%E4%BD%9C%E8%97%8D%E5%9C%96"><span class="toc-number">6.</span> <span class="toc-text">熊熊的實作藍圖</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E5%9E%8B-Workflow%EF%BC%9A%E7%86%8A%E7%86%8A%E7%A0%94%E7%A9%B6%E4%B8%80%E7%AF%87%E9%83%A8%E8%90%BD%E6%A0%BC%E6%96%87%E7%AB%A0"><span class="toc-number">6.1.</span> <span class="toc-text">小型 Workflow：熊熊研究一篇部落格文章</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E5%9E%8B-Workflow%EF%BC%9A%E7%86%8A%E7%86%8A%E7%A0%94%E7%A9%B6%E4%B8%80%E5%80%8B%E4%B8%BB%E9%A1%8C%EF%BC%88%E5%A4%9A%E7%AF%87%E6%96%87%E7%AB%A0%EF%BC%89"><span class="toc-number">6.2.</span> <span class="toc-text">中型 Workflow：熊熊研究一個主題（多篇文章）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E5%9E%8B-Workflow%EF%BC%9A%E7%86%8A%E7%86%8A%E7%9A%84%E7%B3%BB%E7%B5%B1%E7%B4%9A%E9%81%B7%E7%A7%BB%E6%88%96%E9%87%8D%E6%A7%8B"><span class="toc-number">6.3.</span> <span class="toc-text">大型 Workflow：熊熊的系統級遷移或重構</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B5%90%E8%AA%9E"><span class="toc-number">7.</span> <span class="toc-text">結語</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E5%88%97%E6%96%87%E7%AB%A0%E7%B4%A2%E5%BC%95"><span class="toc-number">8.</span> <span class="toc-text">系列文章索引</span></a></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
