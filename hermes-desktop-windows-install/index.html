@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新） - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）
+更新時間：2026-06-12｜適用版本：Hermes Agent v0.16.0｜來源：Nous Resea,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</h1>
+        <div class="stuff">
+            <span>六月 12, 2026</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/AI/" rel="tag">AI</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Hermes-Agent/" rel="tag">Hermes Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Windows/" rel="tag">Windows</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E6%95%99%E5%AD%B8/" rel="tag">教學</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E6%A1%8C%E9%9D%A2%E7%89%88/" rel="tag">桌面版</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h1 id="Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）"><a href="#Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）" class="headerlink" title="Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）"></a>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</h1><blockquote>
+<p>更新時間：2026-06-12｜適用版本：Hermes Agent v0.16.0｜來源：<a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/desktop">Nous Research 官方</a></p>
+</blockquote>
+<hr>
+<h2 id="TL-DR-—-60-秒懶人包"><a href="#TL-DR-—-60-秒懶人包" class="headerlink" title="TL;DR — 60 秒懶人包"></a>TL;DR — 60 秒懶人包</h2><p><strong>Windows 10/11 用戶現在可以直接下載 <code>.exe</code> 安裝了！</strong></p>
+<ol>
+<li>去 <a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a> 下載 Windows 安裝包</li>
+<li>一路點「下一步」完成安裝</li>
+<li>啟動軟體，填入你的 LLM API Key</li>
+<li>開始跟你的 AI 助理聊天 🎉</li>
+</ol>
+<p>懶得動滑鼠？用 PowerShell 一行搞定（實驗性）：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">iex</span> (<span class="built_in">irm</span> https://hermes<span class="literal">-agent</span>.nousresearch.com/install.ps1)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Hermes-Desktop-是什麼？"><a href="#Hermes-Desktop-是什麼？" class="headerlink" title="Hermes Desktop 是什麼？"></a>Hermes Desktop 是什麼？</h2><p>Hermes Desktop 是 <a target="_blank" rel="noopener" href="https://nousresearch.com/">Nous Research</a> 官方推出的桌面客戶端，讓你不需要碰指令列，就能用上 Hermes Agent 的全部能力。</p>
+<p><strong>它不是另一套聊天機器人</strong> — 它就是你之前在終端機用 CLI 跑的 Hermes Agent，只是包了一層漂亮的 GUI 外殼。兩者共用同一套設定、記憶、技能、對話紀錄，隨時可以切換。</p>
+<h3 id="核心功能亮點"><a href="#核心功能亮點" class="headerlink" title="核心功能亮點"></a>核心功能亮點</h3><ul>
+<li><strong>即時串流對話</strong>：工具呼叫（查網頁、搜尋資料、操作檔案）全部即時顯示進度</li>
+<li><strong>MCP 支援</strong>：一鍵連接多個 MCP 伺服器，擴充你的 AI 能力</li>
+<li><strong>跨平台訊息整合</strong>：Telegram、Discord、Slack、WhatsApp、Signal 等 15+ 訊息平台同一個介面管理</li>
+<li><strong>自我進化學習迴圈</strong>：複雜任務完成後自動建立技能（Skill），下次遇過類似問題直接用</li>
+<li><strong>長期記憶</strong>：FTS5 搜尋 + LLM 摘要，跨 session 的脈絡自動記住</li>
+<li><strong>任何模型都能接</strong>：OpenAI、Claude、DeepSeek、Ollama 本地模型、OpenRouter 等</li>
+</ul>
+<blockquote>
+<p><strong>MIT 授權，完全開源</strong>，資料預設存在本機，隱私自己掌控。</p>
+</blockquote>
+<hr>
+<h2 id="三種-Windows-安裝方式"><a href="#三種-Windows-安裝方式" class="headerlink" title="三種 Windows 安裝方式"></a>三種 Windows 安裝方式</h2><h3 id="選項一：直接下載安裝（✅-推薦給大多數人）"><a href="#選項一：直接下載安裝（✅-推薦給大多數人）" class="headerlink" title="選項一：直接下載安裝（✅ 推薦給大多數人）"></a>選項一：直接下載安裝（✅ 推薦給大多數人）</h3><p>這是 2026 年 Hermes v0.16.0 新增的官方懶人功能，專為 Windows 用戶設計。</p>
+<p><strong>步驟：</strong></p>
+<ol>
+<li><p><strong>下載安裝檔</strong><br>前往官方下載頁：<br><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/desktop">https://hermes-agent.nousresearch.com/desktop</a></p>
+<p>點擊 Windows 區塊的「Download」按鈕，下載 <code>Hermes-Setup.exe</code>（約 113 MB）。</p>
+</li>
+<li><p><strong>執行安裝程式</strong><br>雙擊 <code>.exe</code> 檔，Windows SmartScreen 可能跳出警告，點「仍然執行」即可。<br>安裝路徑預設：<code>%LOCALAPPDATA%\hermes</code></p>
+</li>
+<li><p><strong>首次啟動設定</strong><br>啟動 Hermes Desktop 後，會引導你：</p>
+<ul>
+<li>選擇要<strong>本地模式</strong>（軟體自己裝 Hermes runtime）或<strong>遠端模式</strong>（連到已架好的 server）</li>
+<li>設定 LLM API Key（支援 Nous Portal、OpenRouter、OpenAI、Anthropic 等）</li>
+<li>設定訊息頻道（可略過，稍後再設定）</li>
+</ul>
+</li>
+<li><p><strong>完成，開始使用！</strong><br>安裝程式已幫你處理好所有依賴，包括 Python、Node.js、ffmpeg 等，不需要自己另外安裝。</p>
+</li>
+</ol>
+<hr>
+<h3 id="選項二：從原始碼編譯（進階玩家）"><a href="#選項二：從原始碼編譯（進階玩家）" class="headerlink" title="選項二：從原始碼編譯（進階玩家）"></a>選項二：從原始碼編譯（進階玩家）</h3><p>如果你想用最新的尚未發布功能，或者想要控制編譯過程，可以從 source 編譯。</p>
+<p><strong>事前準備：</strong></p>
+<ul>
+<li>Volta（Node.js 版本管理器）：<a target="_blank" rel="noopener" href="https://volta.sh/">volta.sh</a></li>
+<li>Git</li>
+<li>約 5–10 GB 磁碟空間</li>
+</ul>
+<p><strong>編譯步驟：</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 安裝 Volta（尚未安裝的話）</span></span><br><span class="line">winget install Volta</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 導向 Desktop 原始碼目錄</span></span><br><span class="line"><span class="built_in">cd</span> <span class="string">&quot;C:\Users\&lt;你的使用者名稱&gt;\AppData\Local\hermes\hermes-agent\apps\desktop&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在 package.json 加入 Volta 節點版本綁定</span></span><br><span class="line"><span class="comment">#    （編輯 package.json，加入以下內容到根層級）</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;volta&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;node&quot;</span>: <span class="string">&quot;22.22.3&quot;</span>,</span><br><span class="line">    <span class="string">&quot;npm&quot;</span>: <span class="string">&quot;10.9.0&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 安裝 Windows 原生 binding（編譯所需）</span></span><br><span class="line">npm install @rolldown/binding-win32-x64-msvc</span><br><span class="line">npm install @tailwindcss/oxide-win32-x64-msvc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 安裝專案依賴</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 建置 Electron 介面</span></span><br><span class="line">npm run build</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 打包成 Windows 安裝檔</span></span><br><span class="line">npm run dist:win</span><br></pre></td></tr></table></figure>
+
+<p>編譯完成後，輸出檔案在 <code>apps/desktop/release/</code> 目錄：</p>
+<ul>
+<li><code>Hermes-X.X.X-win-x64.exe</code> — NSIS 安裝程式（推薦）</li>
+<li><code>Hermes-X.X.X-win-x64.msi</code> — MSI 安裝程式</li>
+<li><code>win-unpacked/Hermes.exe</code> — 免安裝可攜版</li>
+</ul>
+<hr>
+<h3 id="選項三：WSL2-CLI-模式（傳統穩定路線）"><a href="#選項三：WSL2-CLI-模式（傳統穩定路線）" class="headerlink" title="選項三：WSL2 + CLI 模式（傳統穩定路線）"></a>選項三：WSL2 + CLI 模式（傳統穩定路線）</h3><p>官方對原生 Windows 的支援目前處於「公開預覽」階段（public preview），如果選項一下載後遇到問題，WSL2 是更穩定的替代方案。</p>
+<p><strong>適用情境：</strong> 追求最大穩定性、避免踩坑的用戶</p>
+<h4 id="步驟-1：啟用-WSL2"><a href="#步驟-1：啟用-WSL2" class="headerlink" title="步驟 1：啟用 WSL2"></a>步驟 1：啟用 WSL2</h4><p>以<strong>系統管理員身份</strong>開啟 PowerShell，執行：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl -<span class="literal">-install</span></span><br></pre></td></tr></table></figure>
+
+<p>安裝完成後<strong>重開機</strong>，WSL 會引導你設定 Ubuntu 使用者名稱和密碼。</p>
+<h4 id="步驟-2：安裝-Hermes-Agent"><a href="#步驟-2：安裝-Hermes-Agent" class="headerlink" title="步驟 2：安裝 Hermes Agent"></a>步驟 2：安裝 Hermes Agent</h4><p>在 Ubuntu（WLS2）終端機內執行官方安裝腳本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash</span><br></pre></td></tr></table></figure>
+
+<p>腳本會自動幫你安裝所有東西（uv、Python 3.11、Node.js、ripgrep、ffmpeg 等），<strong>完全不需要 sudo</strong>，也不需要預先安裝任何軟體。</p>
+<h4 id="步驟-3：啟動並設定"><a href="#步驟-3：啟動並設定" class="headerlink" title="步驟 3：啟動並設定"></a>步驟 3：啟動並設定</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc      <span class="comment"># 載入環境</span></span><br><span class="line">hermes                <span class="comment"># 啟動互動式 CLI</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="步驟-4：順帶安裝桌面-GUI（非必須）"><a href="#步驟-4：順帶安裝桌面-GUI（非必須）" class="headerlink" title="步驟 4：順帶安裝桌面 GUI（非必須）"></a>步驟 4：順帶安裝桌面 GUI（非必須）</h4><p>CLI 安裝完成後，若想要桌面版 GUI，可在 WSL2 內執行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes desktop</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="安裝後的初始設定"><a href="#安裝後的初始設定" class="headerlink" title="安裝後的初始設定"></a>安裝後的初始設定</h2><h3 id="設定-LLM-API-Key"><a href="#設定-LLM-API-Key" class="headerlink" title="設定 LLM API Key"></a>設定 LLM API Key</h3><p>Hermes Desktop 安裝完後，需要告訴它要用哪個 AI 模型。支援的 provider：</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>優點</th>
+<th>適合族群</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://portal.nousresearch.com/">Nous Portal</a></td>
+<td>300+ 模型，整合最好</td>
+<td>想要完整功能的人</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://console.anthropic.com/">Anthropic Claude</a></td>
+<td>工具呼叫最準確</td>
+<td>研究、分析用途</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://platform.openai.com/">OpenAI</a></td>
+<td>生態成熟</td>
+<td>習慣 OpenAI 生態的人</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://ollama.com/">Ollama</a>（本地）</td>
+<td>完全免費、離線可用</td>
+<td>注重隱私的人</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://platform.deepseek.com/">DeepSeek</a></td>
+<td>成本低</td>
+<td>成本敏感型用戶</td>
+</tr>
+</tbody></table>
+<p>設定 API Key 的方式（CLI 模式）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hermes config <span class="built_in">set</span> ANTHROPIC_API_KEY sk-ant-xxxxx</span><br><span class="line">hermes config <span class="built_in">set</span> model anthropic/claude-sonnet-4</span><br></pre></td></tr></table></figure>
+
+<p>在桌面版 GUI 內則是去 <strong>Settings → Providers</strong> 填入即可。</p>
+<h3 id="驗證安裝是否成功"><a href="#驗證安裝是否成功" class="headerlink" title="驗證安裝是否成功"></a>驗證安裝是否成功</h3><p>在 CLI 模式輸入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
+
+<p>這會檢查所有依賴是否正確安裝、API Key 是否有效，出現 ✅ 就代表一切正常。</p>
+<hr>
+<h2 id="YouTube-影片資源"><a href="#YouTube-影片資源" class="headerlink" title="YouTube 影片資源"></a>YouTube 影片資源</h2><p>以下是社群中品質較好的 Hermes Agent 安裝教學影片，涵蓋不同切入點：</p>
+<table>
+<thead>
+<tr>
+<th>標題</th>
+<th>語言</th>
+<th>內容</th>
+<th>連結</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hermes Agent 完整安裝指南</td>
+<td>英文</td>
+<td>涵蓋 Windows WSL2、macOS、API 設定</td>
+<td><a target="_blank" rel="noopener" href="https://www.youtube.com/@grandlinuxchannel6399">Grand Linux</a></td>
+</tr>
+<tr>
+<td>Hermes Desktop 新功能展示</td>
+<td>英文</td>
+<td>v0.15.2 Desktop 串流對話、MCP 設定</td>
+<td><a target="_blank" rel="noopener" href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop-a-native-cross-platform-front-end-for-hermes-agent-v0-15-2-with-streaming-tool-output">MarkTechPost 報導</a></td>
+</tr>
+<tr>
+<td>Windows WSL2 完整架設教學</td>
+<td>英文</td>
+<td>OpenClaw Launch 整理的疑難排解樹</td>
+<td><a target="_blank" rel="noopener" href="https://openclawlaunch.com/guides/hermes-agent-windows">openclawlaunch.com</a></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>🔍 想找更多？去 YouTube 搜尋 <code>Hermes Agent install</code> 或 <code>Hermes Agent Windows WSL2</code>，新影片每週都有。</p>
+</blockquote>
+<hr>
+<h2 id="常見問題"><a href="#常見問題" class="headerlink" title="常見問題"></a>常見問題</h2><h3 id="Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？"><a href="#Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？" class="headerlink" title="Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？"></a>Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？</h3><p>這是 Windows SmartScreen，屬於正常現象。點「仍然執行」即可，Hermes 是 MIT 開源專案，原始碼公開可審計。</p>
+<h3 id="Q2：Native-Windows-安裝失敗怎麼辦？"><a href="#Q2：Native-Windows-安裝失敗怎麼辦？" class="headerlink" title="Q2：Native Windows 安裝失敗怎麼辦？"></a>Q2：Native Windows 安裝失敗怎麼辦？</h3><p>如果選項一（直接下載）有問題，強烈建議改走 <strong>WSL2 路線</strong>（選項三）。根據官方說法，WSL2 是經過最充分測試的路徑。</p>
+<h3 id="Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？"><a href="#Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？" class="headerlink" title="Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？"></a>Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？</h3><p>正常。WSL2 首次安裝需要下載 Ubuntu 映像，視網速約需 5–15 分鐘，請耐心等待，不要關閉終端機。</p>
+<h3 id="Q4：可以只裝-CLI，不裝桌面版嗎？"><a href="#Q4：可以只裝-CLI，不裝桌面版嗎？" class="headerlink" title="Q4：可以只裝 CLI，不裝桌面版嗎？"></a>Q4：可以只裝 CLI，不裝桌面版嗎？</h3><p>可以。WSL2 路線預設就是純 CLI，桌面 GUI 是可選的附加功能。</p>
+<h3 id="Q5：Hermes-Desktop-和-CLI-可以同時用嗎？"><a href="#Q5：Hermes-Desktop-和-CLI-可以同時用嗎？" class="headerlink" title="Q5：Hermes Desktop 和 CLI 可以同時用嗎？"></a>Q5：Hermes Desktop 和 CLI 可以同時用嗎？</h3><p>可以。兩者共用同一份設定（<code>~/.hermes/config.yaml</code>）和對話紀錄，切換時 session 無縫接軌。</p>
+<h3 id="Q6：安裝後-Agent-沒反應怎麼辦？"><a href="#Q6：安裝後-Agent-沒反應怎麼辦？" class="headerlink" title="Q6：安裝後 Agent 沒反應怎麼辦？"></a>Q6：安裝後 Agent 沒反應怎麼辦？</h3><p>檢查三件事：</p>
+<ol>
+<li>API Key 有沒有正確設定（<code>.env</code> 檔或 Settings 頁面）</li>
+<li>網路能不能連到你的 LLM provider</li>
+<li>執行 <code>hermes doctor</code> 看診斷輸出</li>
+</ol>
+<hr>
+<h2 id="官方資源整理"><a href="#官方資源整理" class="headerlink" title="官方資源整理"></a>官方資源整理</h2><table>
+<thead>
+<tr>
+<th>資源</th>
+<th>連結</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官方網站</td>
+<td><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/">hermes-agent.nousresearch.com</a></td>
+</tr>
+<tr>
+<td>官方桌面下載</td>
+<td><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a></td>
+</tr>
+<tr>
+<td>官方文件</td>
+<td><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs">hermes-agent.nousresearch.com/docs</a></td>
+</tr>
+<tr>
+<td>GitHub 原始碼</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/NousResearch/hermes-agent">github.com/NousResearch/hermes-agent</a></td>
+</tr>
+<tr>
+<td>社群桌面版（非官方）</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/fathah/hermes-desktop">github.com/fathah/hermes-desktop</a></td>
+</tr>
+<tr>
+<td>Discord 社群</td>
+<td><a target="_blank" rel="noopener" href="https://discord.gg/nousresearch">discord.gg/nousresearch</a></td>
+</tr>
+<tr>
+<td>Skills Hub</td>
+<td><a target="_blank" rel="noopener" href="https://agentskills.io/">agentskills.io</a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p><strong>Windows 用戶的最好時機到了。</strong> 2026 年 Hermes v0.16.0 正式推出 <code>.exe</code> 安裝程式，不需要 WSL2、不需要指令列技術，60 秒下載、3 分鐘設定就能開始用。</p>
+<p>如果你是：</p>
+<ul>
+<li><strong>一般用戶</strong> → 直接下載 <code>.exe</code>，最省事</li>
+<li><strong>進階用戶 / 開發者</strong> → 從原始碼編譯，完全掌控</li>
+<li><strong>追求穩定性</strong> → WSL2 + CLI，最經過考驗的路徑</li>
+</ul>
+<p>有任何問題歡迎在 Discord 社群提問，或到 GitHub 開 Issue。祝安裝順利 🎉</p>
+<hr>
+<p><em>本文資料來源：官方文件、<a target="_blank" rel="noopener" href="https://hermesatlas.com/guide/install">Hermes Atlas 安裝指南</a>、<a target="_blank" rel="noopener" href="https://clawsimple.com/en/blog/hermes-agent-install-config-use-guide">ClawSimple 安裝文</a>、<a target="_blank" rel="noopener" href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop">MarkTechPost v0.16.0 報導</a>。</em></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Windows-%E5%AE%89%E8%A3%9D-Hermes-Agent-%E6%A1%8C%E9%9D%A2%E7%89%88%EF%BC%9A%E5%AE%98%E6%96%B9%E6%87%B6%E4%BA%BA%E6%8C%87%E5%8D%97%EF%BC%882026-%E6%9C%80%E6%96%B0%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TL-DR-%E2%80%94-60-%E7%A7%92%E6%87%B6%E4%BA%BA%E5%8C%85"><span class="toc-number">1.1.</span> <span class="toc-text">TL;DR — 60 秒懶人包</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hermes-Desktop-%E6%98%AF%E4%BB%80%E9%BA%BC%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">Hermes Desktop 是什麼？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8A%9F%E8%83%BD%E4%BA%AE%E9%BB%9E"><span class="toc-number">1.2.1.</span> <span class="toc-text">核心功能亮點</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E7%A8%AE-Windows-%E5%AE%89%E8%A3%9D%E6%96%B9%E5%BC%8F"><span class="toc-number">1.3.</span> <span class="toc-text">三種 Windows 安裝方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%B8%E9%A0%85%E4%B8%80%EF%BC%9A%E7%9B%B4%E6%8E%A5%E4%B8%8B%E8%BC%89%E5%AE%89%E8%A3%9D%EF%BC%88%E2%9C%85-%E6%8E%A8%E8%96%A6%E7%B5%A6%E5%A4%A7%E5%A4%9A%E6%95%B8%E4%BA%BA%EF%BC%89"><span class="toc-number">1.3.1.</span> <span class="toc-text">選項一：直接下載安裝（✅ 推薦給大多數人）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%B8%E9%A0%85%E4%BA%8C%EF%BC%9A%E5%BE%9E%E5%8E%9F%E5%A7%8B%E7%A2%BC%E7%B7%A8%E8%AD%AF%EF%BC%88%E9%80%B2%E9%9A%8E%E7%8E%A9%E5%AE%B6%EF%BC%89"><span class="toc-number">1.3.2.</span> <span class="toc-text">選項二：從原始碼編譯（進階玩家）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%B8%E9%A0%85%E4%B8%89%EF%BC%9AWSL2-CLI-%E6%A8%A1%E5%BC%8F%EF%BC%88%E5%82%B3%E7%B5%B1%E7%A9%A9%E5%AE%9A%E8%B7%AF%E7%B7%9A%EF%BC%89"><span class="toc-number">1.3.3.</span> <span class="toc-text">選項三：WSL2 + CLI 模式（傳統穩定路線）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%A9%9F-1%EF%BC%9A%E5%95%9F%E7%94%A8-WSL2"><span class="toc-number">1.3.3.1.</span> <span class="toc-text">步驟 1：啟用 WSL2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%A9%9F-2%EF%BC%9A%E5%AE%89%E8%A3%9D-Hermes-Agent"><span class="toc-number">1.3.3.2.</span> <span class="toc-text">步驟 2：安裝 Hermes Agent</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%A9%9F-3%EF%BC%9A%E5%95%9F%E5%8B%95%E4%B8%A6%E8%A8%AD%E5%AE%9A"><span class="toc-number">1.3.3.3.</span> <span class="toc-text">步驟 3：啟動並設定</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%A5%E9%A9%9F-4%EF%BC%9A%E9%A0%86%E5%B8%B6%E5%AE%89%E8%A3%9D%E6%A1%8C%E9%9D%A2-GUI%EF%BC%88%E9%9D%9E%E5%BF%85%E9%A0%88%EF%BC%89"><span class="toc-number">1.3.3.4.</span> <span class="toc-text">步驟 4：順帶安裝桌面 GUI（非必須）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%9D%E5%BE%8C%E7%9A%84%E5%88%9D%E5%A7%8B%E8%A8%AD%E5%AE%9A"><span class="toc-number">1.4.</span> <span class="toc-text">安裝後的初始設定</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A8%AD%E5%AE%9A-LLM-API-Key"><span class="toc-number">1.4.1.</span> <span class="toc-text">設定 LLM API Key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A9%97%E8%AD%89%E5%AE%89%E8%A3%9D%E6%98%AF%E5%90%A6%E6%88%90%E5%8A%9F"><span class="toc-number">1.4.2.</span> <span class="toc-text">驗證安裝是否成功</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#YouTube-%E5%BD%B1%E7%89%87%E8%B3%87%E6%BA%90"><span class="toc-number">1.5.</span> <span class="toc-text">YouTube 影片資源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A6%8B%E5%95%8F%E9%A1%8C"><span class="toc-number">1.6.</span> <span class="toc-text">常見問題</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Q1%EF%BC%9A%E5%AE%89%E8%A3%9D%E6%99%82%E8%B7%B3%E5%87%BA%E3%80%8CWindows-%E5%B7%B2%E4%BF%9D%E8%AD%B7%E4%BD%A0%E7%9A%84%E9%9B%BB%E8%85%A6%E3%80%8D%E6%80%8E%E9%BA%BC%E8%BE%A6%EF%BC%9F"><span class="toc-number">1.6.1.</span> <span class="toc-text">Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q2%EF%BC%9ANative-Windows-%E5%AE%89%E8%A3%9D%E5%A4%B1%E6%95%97%E6%80%8E%E9%BA%BC%E8%BE%A6%EF%BC%9F"><span class="toc-number">1.6.2.</span> <span class="toc-text">Q2：Native Windows 安裝失敗怎麼辦？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q3%EF%BC%9AWSL2-%E5%AE%89%E8%A3%9D%E5%8D%A1%E5%9C%A8%E3%80%8C%E6%AD%A3%E5%9C%A8%E5%AE%89%E8%A3%9D%E3%80%8D%E5%BE%88%E4%B9%85%EF%BC%8C%E6%AD%A3%E5%B8%B8%E5%97%8E%EF%BC%9F"><span class="toc-number">1.6.3.</span> <span class="toc-text">Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q4%EF%BC%9A%E5%8F%AF%E4%BB%A5%E5%8F%AA%E8%A3%9D-CLI%EF%BC%8C%E4%B8%8D%E8%A3%9D%E6%A1%8C%E9%9D%A2%E7%89%88%E5%97%8E%EF%BC%9F"><span class="toc-number">1.6.4.</span> <span class="toc-text">Q4：可以只裝 CLI，不裝桌面版嗎？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q5%EF%BC%9AHermes-Desktop-%E5%92%8C-CLI-%E5%8F%AF%E4%BB%A5%E5%90%8C%E6%99%82%E7%94%A8%E5%97%8E%EF%BC%9F"><span class="toc-number">1.6.5.</span> <span class="toc-text">Q5：Hermes Desktop 和 CLI 可以同時用嗎？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Q6%EF%BC%9A%E5%AE%89%E8%A3%9D%E5%BE%8C-Agent-%E6%B2%92%E5%8F%8D%E6%87%89%E6%80%8E%E9%BA%BC%E8%BE%A6%EF%BC%9F"><span class="toc-number">1.6.6.</span> <span class="toc-text">Q6：安裝後 Agent 沒反應怎麼辦？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%98%E6%96%B9%E8%B3%87%E6%BA%90%E6%95%B4%E7%90%86"><span class="toc-number">1.7.</span> <span class="toc-text">官方資源整理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B8%BD%E7%B5%90"><span class="toc-number">1.8.</span> <span class="toc-text">總結</span></a></li></ol></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>

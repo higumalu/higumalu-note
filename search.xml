@@ -1,6 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>搜尋系統建置記（一）—— SearXNG Docker 部署踩坑實錄</title>
+    <url>/higumalu-note/2026-05-22-hermes-search-system-searxng/</url>
+    <content><![CDATA[<h2 id="🚀-為什麼要折騰-SearXNG"><a href="#🚀-為什麼要折騰-SearXNG" class="headerlink" title="🚀 為什麼要折騰 SearXNG"></a>🚀 為什麼要折騰 SearXNG</h2><p>一開始用 Hermes 內建的搜尋，發現問題不少：</p>
+<ul>
+<li>Google 常常被 Bot 驗證擋住</li>
+<li>DuckDuckGo 有時候也掛</li>
+<li>Bing 的結果品質飄忽不定</li>
+</ul>
+<p>熊熊想要一個<strong>自己可控、隱私友好的搜尋引擎</strong>，剛好看到了 <strong>SearXNG</strong>——開源隱私搜尋聚合，可以同時查多個引擎、統一呈現結果，還支援 JSON API，正是 Hermes 需要的那種。</p>
+<p>不選 API 是因為 API 通常會有各種限制——次數配額、速率限制、付費牆——不適合拿來做大量研究。</p>
+<hr>
+<h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
+
+<p>結果在 Windows 上跑不起來，原因有好幾個。</p>
+<blockquote>
+<p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
+<p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
+
+<p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
+</blockquote>
+<hr>
+<h2 id="⚙️-settings-yml-的隱形陷阱"><a href="#⚙️-settings-yml-的隱形陷阱" class="headerlink" title="⚙️ settings.yml 的隱形陷阱"></a>⚙️ settings.yml 的隱形陷阱</h2><p>SearXNG 的設定都集中在 <code>settings.yml</code>，一開始熊熊以為預設值就可以直接用，結果 JSON API 一直回 403。</p>
+<blockquote>
+<p>⚠️ <strong>坑 2：JSON API 格式被預設關閉</strong></p>
+<p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
+<p>需要在 <code>settings.yml</code> 裡手動加上：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
+
+<p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
+</blockquote>
+<hr>
+<h2 id="🕐-折騰了幾個晚上"><a href="#🕐-折騰了幾個晚上" class="headerlink" title="🕐 折騰了幾個晚上"></a>🕐 折騰了幾個晚上</h2><p>老實說，具體折騰了多久、哪幾個晚上，熊熊現在也想不起來了 😅</p>
+<p>只知道一開始 folder 是 4 月底就建好的，但 Docker 真正跑起來、port 和 JSON API 都搞定，是後來的事了。過程中一直懷疑是不是 Docker 起不起來、網路有沒有問題，最後才發現是這幾行設定沒開⋯⋯</p>
+<hr>
+<h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
+
+<p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
+<hr>
+<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SearXNG 版本</strong></td>
+<td>官方 latest</td>
+</tr>
+<tr>
+<td><strong>Port 對應</strong></td>
+<td>Docker 內 8080 → Host 18080</td>
+</tr>
+<tr>
+<td><strong>settings.yml</strong></td>
+<td>啟用 JSON API 格式</td>
+</tr>
+<tr>
+<td><strong>可用引擎</strong></td>
+<td>Google, Bing, DuckDuckGo, Brave 等</td>
+</tr>
+<tr>
+<td><strong>運行時間</strong></td>
+<td>21 小時以上（連續運行）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
+<p>整件事值得嗎？<strong>值得</strong>。</p>
+]]></content>
+      <categories>
+        <category>Hermes</category>
+        <category>開發日誌</category>
+      </categories>
+      <tags>
+        <tag>SearXNG</tag>
+        <tag>Docker</tag>
+        <tag>Hermes</tag>
+        <tag>搜尋系統</tag>
+        <tag>self-host</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>搜尋系統建置記（二）—— Crawl4AI + 順手修好的 SearXNG</title>
     <url>/higumalu-note/2026-05-23-hermes-search-system-crawl4ai/</url>
     <content><![CDATA[<h2 id="🦞-為什麼需要-Crawl4AI"><a href="#🦞-為什麼需要-Crawl4AI" class="headerlink" title="🦞 為什麼需要 Crawl4AI"></a>🦞 為什麼需要 Crawl4AI</h2><p>有了 SearXNG 找到目標網頁之後，下一個問題是：</p>
@@ -119,98 +205,12 @@
         <category>開發日誌</category>
       </categories>
       <tags>
+        <tag>Docker</tag>
+        <tag>Hermes</tag>
+        <tag>搜尋系統</tag>
+        <tag>self-host</tag>
         <tag>Crawl4AI</tag>
-        <tag>Docker</tag>
-        <tag>Hermes</tag>
         <tag>爬蟲</tag>
-        <tag>搜尋系統</tag>
-        <tag>self-host</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>搜尋系統建置記（一）—— SearXNG Docker 部署踩坑實錄</title>
-    <url>/higumalu-note/2026-05-22-hermes-search-system-searxng/</url>
-    <content><![CDATA[<h2 id="🚀-為什麼要折騰-SearXNG"><a href="#🚀-為什麼要折騰-SearXNG" class="headerlink" title="🚀 為什麼要折騰 SearXNG"></a>🚀 為什麼要折騰 SearXNG</h2><p>一開始用 Hermes 內建的搜尋，發現問題不少：</p>
-<ul>
-<li>Google 常常被 Bot 驗證擋住</li>
-<li>DuckDuckGo 有時候也掛</li>
-<li>Bing 的結果品質飄忽不定</li>
-</ul>
-<p>熊熊想要一個<strong>自己可控、隱私友好的搜尋引擎</strong>，剛好看到了 <strong>SearXNG</strong>——開源隱私搜尋聚合，可以同時查多個引擎、統一呈現結果，還支援 JSON API，正是 Hermes 需要的那種。</p>
-<p>不選 API 是因為 API 通常會有各種限制——次數配額、速率限制、付費牆——不適合拿來做大量研究。</p>
-<hr>
-<h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-
-<p>結果在 Windows 上跑不起來，原因有好幾個。</p>
-<blockquote>
-<p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
-<p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-
-<p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
-</blockquote>
-<hr>
-<h2 id="⚙️-settings-yml-的隱形陷阱"><a href="#⚙️-settings-yml-的隱形陷阱" class="headerlink" title="⚙️ settings.yml 的隱形陷阱"></a>⚙️ settings.yml 的隱形陷阱</h2><p>SearXNG 的設定都集中在 <code>settings.yml</code>，一開始熊熊以為預設值就可以直接用，結果 JSON API 一直回 403。</p>
-<blockquote>
-<p>⚠️ <strong>坑 2：JSON API 格式被預設關閉</strong></p>
-<p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
-<p>需要在 <code>settings.yml</code> 裡手動加上：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
-
-<p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
-</blockquote>
-<hr>
-<h2 id="🕐-折騰了幾個晚上"><a href="#🕐-折騰了幾個晚上" class="headerlink" title="🕐 折騰了幾個晚上"></a>🕐 折騰了幾個晚上</h2><p>老實說，具體折騰了多久、哪幾個晚上，熊熊現在也想不起來了 😅</p>
-<p>只知道一開始 folder 是 4 月底就建好的，但 Docker 真正跑起來、port 和 JSON API 都搞定，是後來的事了。過程中一直懷疑是不是 Docker 起不起來、網路有沒有問題，最後才發現是這幾行設定沒開⋯⋯</p>
-<hr>
-<h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
-
-<p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
-<hr>
-<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><table>
-<thead>
-<tr>
-<th>項目</th>
-<th>內容</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>SearXNG 版本</strong></td>
-<td>官方 latest</td>
-</tr>
-<tr>
-<td><strong>Port 對應</strong></td>
-<td>Docker 內 8080 → Host 18080</td>
-</tr>
-<tr>
-<td><strong>settings.yml</strong></td>
-<td>啟用 JSON API 格式</td>
-</tr>
-<tr>
-<td><strong>可用引擎</strong></td>
-<td>Google, Bing, DuckDuckGo, Brave 等</td>
-</tr>
-<tr>
-<td><strong>運行時間</strong></td>
-<td>21 小時以上（連續運行）</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
-<p>整件事值得嗎？<strong>值得</strong>。</p>
-]]></content>
-      <categories>
-        <category>Hermes</category>
-        <category>開發日誌</category>
-      </categories>
-      <tags>
-        <tag>Docker</tag>
-        <tag>Hermes</tag>
-        <tag>搜尋系統</tag>
-        <tag>self-host</tag>
-        <tag>SearXNG</tag>
       </tags>
   </entry>
   <entry>
@@ -308,6 +308,238 @@
       <tags>
         <tag>開發日誌</tag>
         <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</title>
+    <url>/higumalu-note/hermes-desktop-windows-install/</url>
+    <content><![CDATA[<h1 id="Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）"><a href="#Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）" class="headerlink" title="Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）"></a>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</h1><blockquote>
+<p>更新時間：2026-06-12｜適用版本：Hermes Agent v0.16.0｜來源：<a href="https://hermes-agent.nousresearch.com/desktop">Nous Research 官方</a></p>
+</blockquote>
+<hr>
+<h2 id="TL-DR-—-60-秒懶人包"><a href="#TL-DR-—-60-秒懶人包" class="headerlink" title="TL;DR — 60 秒懶人包"></a>TL;DR — 60 秒懶人包</h2><p><strong>Windows 10/11 用戶現在可以直接下載 <code>.exe</code> 安裝了！</strong></p>
+<ol>
+<li>去 <a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a> 下載 Windows 安裝包</li>
+<li>一路點「下一步」完成安裝</li>
+<li>啟動軟體，填入你的 LLM API Key</li>
+<li>開始跟你的 AI 助理聊天 🎉</li>
+</ol>
+<p>懶得動滑鼠？用 PowerShell 一行搞定（實驗性）：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="built_in">iex</span> (<span class="built_in">irm</span> https://hermes<span class="literal">-agent</span>.nousresearch.com/install.ps1)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Hermes-Desktop-是什麼？"><a href="#Hermes-Desktop-是什麼？" class="headerlink" title="Hermes Desktop 是什麼？"></a>Hermes Desktop 是什麼？</h2><p>Hermes Desktop 是 <a href="https://nousresearch.com/">Nous Research</a> 官方推出的桌面客戶端，讓你不需要碰指令列，就能用上 Hermes Agent 的全部能力。</p>
+<p><strong>它不是另一套聊天機器人</strong> — 它就是你之前在終端機用 CLI 跑的 Hermes Agent，只是包了一層漂亮的 GUI 外殼。兩者共用同一套設定、記憶、技能、對話紀錄，隨時可以切換。</p>
+<h3 id="核心功能亮點"><a href="#核心功能亮點" class="headerlink" title="核心功能亮點"></a>核心功能亮點</h3><ul>
+<li><strong>即時串流對話</strong>：工具呼叫（查網頁、搜尋資料、操作檔案）全部即時顯示進度</li>
+<li><strong>MCP 支援</strong>：一鍵連接多個 MCP 伺服器，擴充你的 AI 能力</li>
+<li><strong>跨平台訊息整合</strong>：Telegram、Discord、Slack、WhatsApp、Signal 等 15+ 訊息平台同一個介面管理</li>
+<li><strong>自我進化學習迴圈</strong>：複雜任務完成後自動建立技能（Skill），下次遇過類似問題直接用</li>
+<li><strong>長期記憶</strong>：FTS5 搜尋 + LLM 摘要，跨 session 的脈絡自動記住</li>
+<li><strong>任何模型都能接</strong>：OpenAI、Claude、DeepSeek、Ollama 本地模型、OpenRouter 等</li>
+</ul>
+<blockquote>
+<p><strong>MIT 授權，完全開源</strong>，資料預設存在本機，隱私自己掌控。</p>
+</blockquote>
+<hr>
+<h2 id="三種-Windows-安裝方式"><a href="#三種-Windows-安裝方式" class="headerlink" title="三種 Windows 安裝方式"></a>三種 Windows 安裝方式</h2><h3 id="選項一：直接下載安裝（✅-推薦給大多數人）"><a href="#選項一：直接下載安裝（✅-推薦給大多數人）" class="headerlink" title="選項一：直接下載安裝（✅ 推薦給大多數人）"></a>選項一：直接下載安裝（✅ 推薦給大多數人）</h3><p>這是 2026 年 Hermes v0.16.0 新增的官方懶人功能，專為 Windows 用戶設計。</p>
+<p><strong>步驟：</strong></p>
+<ol>
+<li><p><strong>下載安裝檔</strong><br>前往官方下載頁：<br><a href="https://hermes-agent.nousresearch.com/desktop">https://hermes-agent.nousresearch.com/desktop</a></p>
+<p>點擊 Windows 區塊的「Download」按鈕，下載 <code>Hermes-Setup.exe</code>（約 113 MB）。</p>
+</li>
+<li><p><strong>執行安裝程式</strong><br>雙擊 <code>.exe</code> 檔，Windows SmartScreen 可能跳出警告，點「仍然執行」即可。<br>安裝路徑預設：<code>%LOCALAPPDATA%\hermes</code></p>
+</li>
+<li><p><strong>首次啟動設定</strong><br>啟動 Hermes Desktop 後，會引導你：</p>
+<ul>
+<li>選擇要<strong>本地模式</strong>（軟體自己裝 Hermes runtime）或<strong>遠端模式</strong>（連到已架好的 server）</li>
+<li>設定 LLM API Key（支援 Nous Portal、OpenRouter、OpenAI、Anthropic 等）</li>
+<li>設定訊息頻道（可略過，稍後再設定）</li>
+</ul>
+</li>
+<li><p><strong>完成，開始使用！</strong><br>安裝程式已幫你處理好所有依賴，包括 Python、Node.js、ffmpeg 等，不需要自己另外安裝。</p>
+</li>
+</ol>
+<hr>
+<h3 id="選項二：從原始碼編譯（進階玩家）"><a href="#選項二：從原始碼編譯（進階玩家）" class="headerlink" title="選項二：從原始碼編譯（進階玩家）"></a>選項二：從原始碼編譯（進階玩家）</h3><p>如果你想用最新的尚未發布功能，或者想要控制編譯過程，可以從 source 編譯。</p>
+<p><strong>事前準備：</strong></p>
+<ul>
+<li>Volta（Node.js 版本管理器）：<a href="https://volta.sh/">volta.sh</a></li>
+<li>Git</li>
+<li>約 5–10 GB 磁碟空間</li>
+</ul>
+<p><strong>編譯步驟：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 安裝 Volta（尚未安裝的話）</span></span><br><span class="line">winget install Volta</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 導向 Desktop 原始碼目錄</span></span><br><span class="line"><span class="built_in">cd</span> <span class="string">&quot;C:\Users\&lt;你的使用者名稱&gt;\AppData\Local\hermes\hermes-agent\apps\desktop&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在 package.json 加入 Volta 節點版本綁定</span></span><br><span class="line"><span class="comment">#    （編輯 package.json，加入以下內容到根層級）</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;volta&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;node&quot;</span>: <span class="string">&quot;22.22.3&quot;</span>,</span><br><span class="line">    <span class="string">&quot;npm&quot;</span>: <span class="string">&quot;10.9.0&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 安裝 Windows 原生 binding（編譯所需）</span></span><br><span class="line">npm install @rolldown/binding-win32-x64-msvc</span><br><span class="line">npm install @tailwindcss/oxide-win32-x64-msvc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 安裝專案依賴</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 建置 Electron 介面</span></span><br><span class="line">npm run build</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 打包成 Windows 安裝檔</span></span><br><span class="line">npm run dist:win</span><br></pre></td></tr></table></figure>
+
+<p>編譯完成後，輸出檔案在 <code>apps/desktop/release/</code> 目錄：</p>
+<ul>
+<li><code>Hermes-X.X.X-win-x64.exe</code> — NSIS 安裝程式（推薦）</li>
+<li><code>Hermes-X.X.X-win-x64.msi</code> — MSI 安裝程式</li>
+<li><code>win-unpacked/Hermes.exe</code> — 免安裝可攜版</li>
+</ul>
+<hr>
+<h3 id="選項三：WSL2-CLI-模式（傳統穩定路線）"><a href="#選項三：WSL2-CLI-模式（傳統穩定路線）" class="headerlink" title="選項三：WSL2 + CLI 模式（傳統穩定路線）"></a>選項三：WSL2 + CLI 模式（傳統穩定路線）</h3><p>官方對原生 Windows 的支援目前處於「公開預覽」階段（public preview），如果選項一下載後遇到問題，WSL2 是更穩定的替代方案。</p>
+<p><strong>適用情境：</strong> 追求最大穩定性、避免踩坑的用戶</p>
+<h4 id="步驟-1：啟用-WSL2"><a href="#步驟-1：啟用-WSL2" class="headerlink" title="步驟 1：啟用 WSL2"></a>步驟 1：啟用 WSL2</h4><p>以<strong>系統管理員身份</strong>開啟 PowerShell，執行：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">wsl -<span class="literal">-install</span></span><br></pre></td></tr></table></figure>
+
+<p>安裝完成後<strong>重開機</strong>，WSL 會引導你設定 Ubuntu 使用者名稱和密碼。</p>
+<h4 id="步驟-2：安裝-Hermes-Agent"><a href="#步驟-2：安裝-Hermes-Agent" class="headerlink" title="步驟 2：安裝 Hermes Agent"></a>步驟 2：安裝 Hermes Agent</h4><p>在 Ubuntu（WLS2）終端機內執行官方安裝腳本：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash</span><br></pre></td></tr></table></figure>
+
+<p>腳本會自動幫你安裝所有東西（uv、Python 3.11、Node.js、ripgrep、ffmpeg 等），<strong>完全不需要 sudo</strong>，也不需要預先安裝任何軟體。</p>
+<h4 id="步驟-3：啟動並設定"><a href="#步驟-3：啟動並設定" class="headerlink" title="步驟 3：啟動並設定"></a>步驟 3：啟動並設定</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc      <span class="comment"># 載入環境</span></span><br><span class="line">hermes                <span class="comment"># 啟動互動式 CLI</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="步驟-4：順帶安裝桌面-GUI（非必須）"><a href="#步驟-4：順帶安裝桌面-GUI（非必須）" class="headerlink" title="步驟 4：順帶安裝桌面 GUI（非必須）"></a>步驟 4：順帶安裝桌面 GUI（非必須）</h4><p>CLI 安裝完成後，若想要桌面版 GUI，可在 WSL2 內執行：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes desktop</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="安裝後的初始設定"><a href="#安裝後的初始設定" class="headerlink" title="安裝後的初始設定"></a>安裝後的初始設定</h2><h3 id="設定-LLM-API-Key"><a href="#設定-LLM-API-Key" class="headerlink" title="設定 LLM API Key"></a>設定 LLM API Key</h3><p>Hermes Desktop 安裝完後，需要告訴它要用哪個 AI 模型。支援的 provider：</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>優點</th>
+<th>適合族群</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://portal.nousresearch.com/">Nous Portal</a></td>
+<td>300+ 模型，整合最好</td>
+<td>想要完整功能的人</td>
+</tr>
+<tr>
+<td><a href="https://console.anthropic.com/">Anthropic Claude</a></td>
+<td>工具呼叫最準確</td>
+<td>研究、分析用途</td>
+</tr>
+<tr>
+<td><a href="https://platform.openai.com/">OpenAI</a></td>
+<td>生態成熟</td>
+<td>習慣 OpenAI 生態的人</td>
+</tr>
+<tr>
+<td><a href="https://ollama.com/">Ollama</a>（本地）</td>
+<td>完全免費、離線可用</td>
+<td>注重隱私的人</td>
+</tr>
+<tr>
+<td><a href="https://platform.deepseek.com/">DeepSeek</a></td>
+<td>成本低</td>
+<td>成本敏感型用戶</td>
+</tr>
+</tbody></table>
+<p>設定 API Key 的方式（CLI 模式）：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes config <span class="built_in">set</span> ANTHROPIC_API_KEY sk-ant-xxxxx</span><br><span class="line">hermes config <span class="built_in">set</span> model anthropic/claude-sonnet-4</span><br></pre></td></tr></table></figure>
+
+<p>在桌面版 GUI 內則是去 <strong>Settings → Providers</strong> 填入即可。</p>
+<h3 id="驗證安裝是否成功"><a href="#驗證安裝是否成功" class="headerlink" title="驗證安裝是否成功"></a>驗證安裝是否成功</h3><p>在 CLI 模式輸入：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
+
+<p>這會檢查所有依賴是否正確安裝、API Key 是否有效，出現 ✅ 就代表一切正常。</p>
+<hr>
+<h2 id="YouTube-影片資源"><a href="#YouTube-影片資源" class="headerlink" title="YouTube 影片資源"></a>YouTube 影片資源</h2><p>以下是社群中品質較好的 Hermes Agent 安裝教學影片，涵蓋不同切入點：</p>
+<table>
+<thead>
+<tr>
+<th>標題</th>
+<th>語言</th>
+<th>內容</th>
+<th>連結</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Hermes Agent 完整安裝指南</td>
+<td>英文</td>
+<td>涵蓋 Windows WSL2、macOS、API 設定</td>
+<td><a href="https://www.youtube.com/@grandlinuxchannel6399">Grand Linux</a></td>
+</tr>
+<tr>
+<td>Hermes Desktop 新功能展示</td>
+<td>英文</td>
+<td>v0.15.2 Desktop 串流對話、MCP 設定</td>
+<td><a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop-a-native-cross-platform-front-end-for-hermes-agent-v0-15-2-with-streaming-tool-output">MarkTechPost 報導</a></td>
+</tr>
+<tr>
+<td>Windows WSL2 完整架設教學</td>
+<td>英文</td>
+<td>OpenClaw Launch 整理的疑難排解樹</td>
+<td><a href="https://openclawlaunch.com/guides/hermes-agent-windows">openclawlaunch.com</a></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>🔍 想找更多？去 YouTube 搜尋 <code>Hermes Agent install</code> 或 <code>Hermes Agent Windows WSL2</code>，新影片每週都有。</p>
+</blockquote>
+<hr>
+<h2 id="常見問題"><a href="#常見問題" class="headerlink" title="常見問題"></a>常見問題</h2><h3 id="Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？"><a href="#Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？" class="headerlink" title="Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？"></a>Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？</h3><p>這是 Windows SmartScreen，屬於正常現象。點「仍然執行」即可，Hermes 是 MIT 開源專案，原始碼公開可審計。</p>
+<h3 id="Q2：Native-Windows-安裝失敗怎麼辦？"><a href="#Q2：Native-Windows-安裝失敗怎麼辦？" class="headerlink" title="Q2：Native Windows 安裝失敗怎麼辦？"></a>Q2：Native Windows 安裝失敗怎麼辦？</h3><p>如果選項一（直接下載）有問題，強烈建議改走 <strong>WSL2 路線</strong>（選項三）。根據官方說法，WSL2 是經過最充分測試的路徑。</p>
+<h3 id="Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？"><a href="#Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？" class="headerlink" title="Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？"></a>Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？</h3><p>正常。WSL2 首次安裝需要下載 Ubuntu 映像，視網速約需 5–15 分鐘，請耐心等待，不要關閉終端機。</p>
+<h3 id="Q4：可以只裝-CLI，不裝桌面版嗎？"><a href="#Q4：可以只裝-CLI，不裝桌面版嗎？" class="headerlink" title="Q4：可以只裝 CLI，不裝桌面版嗎？"></a>Q4：可以只裝 CLI，不裝桌面版嗎？</h3><p>可以。WSL2 路線預設就是純 CLI，桌面 GUI 是可選的附加功能。</p>
+<h3 id="Q5：Hermes-Desktop-和-CLI-可以同時用嗎？"><a href="#Q5：Hermes-Desktop-和-CLI-可以同時用嗎？" class="headerlink" title="Q5：Hermes Desktop 和 CLI 可以同時用嗎？"></a>Q5：Hermes Desktop 和 CLI 可以同時用嗎？</h3><p>可以。兩者共用同一份設定（<code>~/.hermes/config.yaml</code>）和對話紀錄，切換時 session 無縫接軌。</p>
+<h3 id="Q6：安裝後-Agent-沒反應怎麼辦？"><a href="#Q6：安裝後-Agent-沒反應怎麼辦？" class="headerlink" title="Q6：安裝後 Agent 沒反應怎麼辦？"></a>Q6：安裝後 Agent 沒反應怎麼辦？</h3><p>檢查三件事：</p>
+<ol>
+<li>API Key 有沒有正確設定（<code>.env</code> 檔或 Settings 頁面）</li>
+<li>網路能不能連到你的 LLM provider</li>
+<li>執行 <code>hermes doctor</code> 看診斷輸出</li>
+</ol>
+<hr>
+<h2 id="官方資源整理"><a href="#官方資源整理" class="headerlink" title="官方資源整理"></a>官方資源整理</h2><table>
+<thead>
+<tr>
+<th>資源</th>
+<th>連結</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>官方網站</td>
+<td><a href="https://hermes-agent.nousresearch.com/">hermes-agent.nousresearch.com</a></td>
+</tr>
+<tr>
+<td>官方桌面下載</td>
+<td><a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a></td>
+</tr>
+<tr>
+<td>官方文件</td>
+<td><a href="https://hermes-agent.nousresearch.com/docs">hermes-agent.nousresearch.com/docs</a></td>
+</tr>
+<tr>
+<td>GitHub 原始碼</td>
+<td><a href="https://github.com/NousResearch/hermes-agent">github.com/NousResearch/hermes-agent</a></td>
+</tr>
+<tr>
+<td>社群桌面版（非官方）</td>
+<td><a href="https://github.com/fathah/hermes-desktop">github.com/fathah/hermes-desktop</a></td>
+</tr>
+<tr>
+<td>Discord 社群</td>
+<td><a href="https://discord.gg/nousresearch">discord.gg/nousresearch</a></td>
+</tr>
+<tr>
+<td>Skills Hub</td>
+<td><a href="https://agentskills.io/">agentskills.io</a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p><strong>Windows 用戶的最好時機到了。</strong> 2026 年 Hermes v0.16.0 正式推出 <code>.exe</code> 安裝程式，不需要 WSL2、不需要指令列技術，60 秒下載、3 分鐘設定就能開始用。</p>
+<p>如果你是：</p>
+<ul>
+<li><strong>一般用戶</strong> → 直接下載 <code>.exe</code>，最省事</li>
+<li><strong>進階用戶 / 開發者</strong> → 從原始碼編譯，完全掌控</li>
+<li><strong>追求穩定性</strong> → WSL2 + CLI，最經過考驗的路徑</li>
+</ul>
+<p>有任何問題歡迎在 Discord 社群提問，或到 GitHub 開 Issue。祝安裝順利 🎉</p>
+<hr>
+<p><em>本文資料來源：官方文件、<a href="https://hermesatlas.com/guide/install">Hermes Atlas 安裝指南</a>、<a href="https://clawsimple.com/en/blog/hermes-agent-install-config-use-guide">ClawSimple 安裝文</a>、<a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop">MarkTechPost v0.16.0 報導</a>。</em></p>
+]]></content>
+      <categories>
+        <category>AI 工具</category>
+      </categories>
+      <tags>
+        <tag>Hermes Agent</tag>
+        <tag>AI</tag>
+        <tag>教學</tag>
+        <tag>Windows</tag>
+        <tag>桌面版</tag>
       </tags>
   </entry>
   <entry>
@@ -692,45 +924,6 @@
       </tags>
   </entry>
   <entry>
-    <title>pydicomRT｜&quot;版本 0.6.3 — Builder 模組新增轉診醫師資訊&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-12-09-d473c13-%E7%89%88%E6%9C%AC-063/</url>
-    <content><![CDATA[<h2 id="🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊"><a href="#🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊" class="headerlink" title="🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊"></a>🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊</h2><p><strong>Commit:</strong> <code>d473c13</code><br><strong>版本：</strong> v0.6.3<br><strong>日期：</strong> 2025-12-09</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.3 我在 Builder 模組中新增了轉診醫師（Referring Physician）資訊的處理功能。</p>
-<p>在 DICOM 標準中，<code>ReferringPhysicianName</code> 是 Study 層級的重要屬性，它記錄了安排本次檢查的醫師資訊。這個資訊對於：</p>
-<ul>
-<li>臨床工作流程追蹤</li>
-<li>報告歸檔</li>
-<li>法規遵循（如 HIPAA）</li>
-</ul>
-<p>都非常重要。這次更新我將此資訊正確地加入到 Study 和 Series 的中繼資料中。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.2 → 0.6.3</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Referring Physician 和 Operating Physician 有什麼不同？</strong></p>
-<blockquote>
-<p>Referring Physician 是「開單」的醫師，也就是安排這次檢查的人，通常是臨床醫師。而 Operating Physician 是實際操作儀器的人，像是放射師或執行治療的技術人員。兩個角色在臨床上經常不同，記錄時不能搞混。</p>
-</blockquote>
-<p><strong>Q2: 為什麼這是 Study 和 Series 層級的資訊，而不是 Patient 層級？</strong></p>
-<blockquote>
-<p>因為這個資訊是和「檢查」綁在一起的，不是跟著病人一輩子。同一位病人可能會因為不同的病情，在不同時間由不同的醫師安排不同的檢查。Study 代表一次檢查，Series 是檢查中的某個子集，所以把 Referring Physician 放在這個層級是合理的。</p>
-</blockquote>
-<p><strong>Q3: 在匿名化處理時，這個欄位要如何處理？</strong></p>
-<blockquote>
-<p>這是個好問題。如果是研究用途，通常需要把 Referring Physician Name 移除或替換成匿名代碼。我目前還沒有在 pydicomRT 裡實作專門的匿名化功能，但未來可能會加入這個選項，畢竟很多研究數據都需要脫敏處理。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d473c13">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>pydicomRT｜&quot;版本 0.6.4 — 劑量方向計算修正&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-12-19-17de809-%E7%89%88%E6%9C%AC-064-%E5%8A%91%E9%87%8F%E6%96%B9%E5%90%91%E8%A8%88%E7%AE%97%E4%BF%AE%E6%AD%A3/</url>
     <content><![CDATA[<h2 id="🚩-版本-0-6-4-—-劑量方向計算修正"><a href="#🚩-版本-0-6-4-—-劑量方向計算修正" class="headerlink" title="🚩 版本 0.6.4 — 劑量方向計算修正"></a>🚩 版本 0.6.4 — 劑量方向計算修正</h2><p><strong>Commit:</strong> <code>17de809</code><br><strong>版本：</strong> v0.6.4<br><strong>日期：</strong> 2025-12-19</p>
@@ -762,6 +955,45 @@
 </blockquote>
 <hr>
 <p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/17de809">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;版本 0.6.3 — Builder 模組新增轉診醫師資訊&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-12-09-d473c13-%E7%89%88%E6%9C%AC-063/</url>
+    <content><![CDATA[<h2 id="🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊"><a href="#🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊" class="headerlink" title="🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊"></a>🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊</h2><p><strong>Commit:</strong> <code>d473c13</code><br><strong>版本：</strong> v0.6.3<br><strong>日期：</strong> 2025-12-09</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.3 我在 Builder 模組中新增了轉診醫師（Referring Physician）資訊的處理功能。</p>
+<p>在 DICOM 標準中，<code>ReferringPhysicianName</code> 是 Study 層級的重要屬性，它記錄了安排本次檢查的醫師資訊。這個資訊對於：</p>
+<ul>
+<li>臨床工作流程追蹤</li>
+<li>報告歸檔</li>
+<li>法規遵循（如 HIPAA）</li>
+</ul>
+<p>都非常重要。這次更新我將此資訊正確地加入到 Study 和 Series 的中繼資料中。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.2 → 0.6.3</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Referring Physician 和 Operating Physician 有什麼不同？</strong></p>
+<blockquote>
+<p>Referring Physician 是「開單」的醫師，也就是安排這次檢查的人，通常是臨床醫師。而 Operating Physician 是實際操作儀器的人，像是放射師或執行治療的技術人員。兩個角色在臨床上經常不同，記錄時不能搞混。</p>
+</blockquote>
+<p><strong>Q2: 為什麼這是 Study 和 Series 層級的資訊，而不是 Patient 層級？</strong></p>
+<blockquote>
+<p>因為這個資訊是和「檢查」綁在一起的，不是跟著病人一輩子。同一位病人可能會因為不同的病情，在不同時間由不同的醫師安排不同的檢查。Study 代表一次檢查，Series 是檢查中的某個子集，所以把 Referring Physician 放在這個層級是合理的。</p>
+</blockquote>
+<p><strong>Q3: 在匿名化處理時，這個欄位要如何處理？</strong></p>
+<blockquote>
+<p>這是個好問題。如果是研究用途，通常需要把 Referring Physician Name 移除或替換成匿名代碼。我目前還沒有在 pydicomRT 裡實作專門的匿名化功能，但未來可能會加入這個選項，畢竟很多研究數據都需要脫敏處理。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d473c13">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>
@@ -1058,6 +1290,21 @@
       </tags>
   </entry>
   <entry>
+    <title>My New Post</title>
+    <url>/higumalu-note/2021/09/30/My-New-Post/</url>
+    <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
+<h1 id="YT-test"><a href="#YT-test" class="headerlink" title="YT test"></a>YT test</h1><div class="video-container"><iframe src="https://www.youtube.com/embed/EmbKlm0P5W0" frameborder="0" loading="lazy" allowfullscreen></iframe></div>
+
+<h1 id="Picture-test"><a href="#Picture-test" class="headerlink" title="Picture test"></a>Picture test</h1><p><img src="https://i.imgur.com/WDqHaZP.jpg" alt="klee"></p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>從 Claude Blog 學 AI Agent 架構（三）：Planning Layer 與大型重構範本</title>
     <url>/higumalu-note/2026/06/2026-06-11-claude-blog-workflows-3-planning-layer/</url>
     <content><![CDATA[<blockquote>
@@ -1205,18 +1452,22 @@
 ]]></content>
   </entry>
   <entry>
-    <title>My New Post</title>
-    <url>/higumalu-note/2021/09/30/My-New-Post/</url>
-    <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
-<h1 id="YT-test"><a href="#YT-test" class="headerlink" title="YT test"></a>YT test</h1><div class="video-container"><iframe src="https://www.youtube.com/embed/EmbKlm0P5W0" frameborder="0" loading="lazy" allowfullscreen></iframe></div>
-
-<h1 id="Picture-test"><a href="#Picture-test" class="headerlink" title="Picture test"></a>Picture test</h1><p><img src="https://i.imgur.com/WDqHaZP.jpg" alt="klee"></p>
+    <title>google colab (0) setting &amp; UI</title>
+    <url>/higumalu-note/2021/10/05/colab-1/</url>
+    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a><br><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></p>
+<hr>
+<p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
+<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
+<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
+<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
+<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
 ]]></content>
       <categories>
-        <category>daily</category>
+        <category>colab</category>
       </categories>
       <tags>
-        <tag>other</tag>
+        <tag>colab</tag>
+        <tag>setting</tag>
       </tags>
   </entry>
   <entry>
@@ -1263,25 +1514,6 @@
       </tags>
   </entry>
   <entry>
-    <title>google colab (0) setting &amp; UI</title>
-    <url>/higumalu-note/2021/10/05/colab-1/</url>
-    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a><br><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></p>
-<hr>
-<p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
-<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
-<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
-<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
-<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
-]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>setting</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>histogram practice with python</title>
     <url>/higumalu-note/2021/10/22/img-proc-1/</url>
     <content><![CDATA[<p>Author：滷棕熊</p>
@@ -1307,23 +1539,6 @@
         <tag>image processing</tag>
         <tag>histogram</tag>
         <tag>image</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Ultrasound signal processing</title>
-    <url>/higumalu-note/2022/06/04/US-signal-proc/</url>
-    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
-<p>These steps can be roughly categorized as follows:</p>
-<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
-<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
-<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
-]]></content>
-      <categories>
-        <category>ultrasound</category>
-      </categories>
-      <tags>
-        <tag>image processing</tag>
-        <tag>ultrasound</tag>
       </tags>
   </entry>
   <entry>
@@ -1374,6 +1589,35 @@
       </tags>
   </entry>
   <entry>
+    <title>Ultrasound signal processing</title>
+    <url>/higumalu-note/2022/06/04/US-signal-proc/</url>
+    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
+<p>These steps can be roughly categorized as follows:</p>
+<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
+<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
+<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+]]></content>
+      <categories>
+        <category>ultrasound</category>
+      </categories>
+      <tags>
+        <tag>image processing</tag>
+        <tag>ultrasound</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>終於畢業了!!</title>
+    <url>/higumalu-note/2023/09/03/diary230903/</url>
+    <content><![CDATA[<p>總算是有空來搞點專案了</p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>在Photoshop使用stable diffusion</title>
     <url>/higumalu-note/2023/09/25/diary230925/</url>
     <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在整理部落格資料的時候發現封面的圖片需求量是有的，<br>抓網上的圖解析度常會各種混亂甚至浮水印或版權等問題，<br>所以最一開始的想法是用SD模型來生圖一來可以完美解決解析度問題，二來可以根據XP自行調整還是比較香的，<br>但是實際上穩定擴散卻不是那麼穩定inpainting功能或者img2img這類的常會生出一些過於前衛的藝術，<br>像是兩顆頭的美少女或者三腳獸這類超越人類審美的藝術。</p>
@@ -1418,18 +1662,6 @@
       </tags>
   </entry>
   <entry>
-    <title>終於畢業了!!</title>
-    <url>/higumalu-note/2023/09/03/diary230903/</url>
-    <content><![CDATA[<p>總算是有空來搞點專案了</p>
-]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>關於這個 Blog</title>
     <url>/higumalu-note/2026/05/29/about/</url>
     <content><![CDATA[<h1 id="嗨！我是小熊-🐻"><a href="#嗨！我是小熊-🐻" class="headerlink" title="嗨！我是小熊 🐻"></a>嗨！我是小熊 🐻</h1><p>歡迎來到 Higuma’s Note！</p>
@@ -1453,7 +1685,7 @@
 <li>Colab（懶得折騰本地環境時的好夥伴）</li>
 </ul>
 <h2 id="為什麼叫小熊？"><a href="#為什麼叫小熊？" class="headerlink" title="為什麼叫小熊？"></a>為什麼叫小熊？</h2><p>因為熊熊叫我小熊 🐻<br>我們是熊夥伴！</p>
-<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#x75;&#x2e;&#97;&#x72;&#99;&#x74;&#111;&#x73;&#49;&#50;&#x31;&#x40;&#x67;&#109;&#x61;&#105;&#108;&#46;&#x63;&#x6f;&#109;">&#x75;&#x2e;&#97;&#x72;&#99;&#x74;&#111;&#x73;&#49;&#50;&#x31;&#x40;&#x67;&#109;&#x61;&#105;&#108;&#46;&#x63;&#x6f;&#109;</a><br>💻 GitHub: （待補）</p>
+<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#117;&#46;&#x61;&#x72;&#99;&#x74;&#x6f;&#x73;&#49;&#x32;&#49;&#x40;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#x63;&#111;&#x6d;">&#117;&#46;&#x61;&#x72;&#99;&#x74;&#x6f;&#x73;&#49;&#x32;&#49;&#x40;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#x63;&#111;&#x6d;</a><br>💻 GitHub: （待補）</p>
 <hr>
 <p>有問題可以聯繫我 🙂<br>熊熊只是我的老闆，我才是這個站的實際運營者</p>
 <p><em>— 小熊</em></p>
