@@ -1,0 +1,402 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析
+資料來源：GitHub Release Notes（v0.15.0 ~ v0.18.0）涵蓋版本：2026.5.28（v,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析</h1>
+        <div class="stuff">
+            <span>七月 06, 2026</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/AI-Agent/" rel="tag">AI Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Hermes-Agent/" rel="tag">Hermes Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Nous-Research/" rel="tag">Nous Research</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E6%8A%80%E8%A1%93%E5%88%86%E6%9E%90/" rel="tag">技術分析</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h1 id="Hermes-Agent-近兩月大更新：v0-15-到-v0-18-全面解析"><a href="#Hermes-Agent-近兩月大更新：v0-15-到-v0-18-全面解析" class="headerlink" title="Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析"></a>Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析</h1><blockquote>
+<p>資料來源：GitHub Release Notes（v0.15.0 ~ v0.18.0）<br>涵蓋版本：2026.5.28（v0.15.0）→ 2026.7.1（v0.18.0）<br>撰寫日期：2026-07-06</p>
+</blockquote>
+<hr>
+<h2 id="概述：這兩個月發生了什麼"><a href="#概述：這兩個月發生了什麼" class="headerlink" title="概述：這兩個月發生了什麼"></a>概述：這兩個月發生了什麼</h2><p>過去兩個月，Hermes Agent 從 v0.15.0 一路狂奔到 v0.18.0，經歷了四次正式 release（含兩次 hotfix）。如果要用一句話總結這段時間的主題，那就是：<strong>讓 AI Agent 不只是回答，而是真正把事情做完、並且知道自己做完了。</strong></p>
+<p>四個版本的代號分別是：</p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>代號</th>
+<th>日期</th>
+<th>核心主題</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>v0.15.0</td>
+<td>Velocity</td>
+<td>2026/5/28</td>
+<td>大重構、效能躍進、Kanban 成平台</td>
+</tr>
+<tr>
+<td>v0.15.1</td>
+<td>Patch</td>
+<td>2026/5/29</td>
+<td>緊急 hotfix（dashboard 無限迴圈等）</td>
+</tr>
+<tr>
+<td>v0.16.0</td>
+<td>Surface</td>
+<td>2026/6/05</td>
+<td>桌面 App 問世、web dashboard 重生</td>
+</tr>
+<tr>
+<td>v0.17.0</td>
+<td>Reach</td>
+<td>2026/6/19</td>
+<td>新訊息平台、Desktop 強化、背景代理</td>
+</tr>
+<tr>
+<td>v0.18.0</td>
+<td>Judgment</td>
+<td>2026/7/01</td>
+<td>P0/P1 全清空、MoA 一級公民、驗證系統</td>
+</tr>
+</tbody></table>
+<p>四個版本合計：**<del>5,200+ commits、</del>3,200 merged PRs、~2,000 issues 關閉、1,000+ 貢獻者**，陣容驚人。</p>
+<hr>
+<h2 id="一、v0-15-0-—-Velocity：核心大重構"><a href="#一、v0-15-0-—-Velocity：核心大重構" class="headerlink" title="一、v0.15.0 — Velocity：核心大重構"></a>一、v0.15.0 — Velocity：核心大重構</h2><h3 id="1-1-run-agent-py-從-16-000-行縮減到-3-821-行（-76-）"><a href="#1-1-run-agent-py-從-16-000-行縮減到-3-821-行（-76-）" class="headerlink" title="1.1 run_agent.py 從 16,000 行縮減到 3,821 行（-76%）"></a>1.1 <code>run_agent.py</code> 從 16,000 行縮減到 3,821 行（-76%）</h3><p>這是這次重構最戲劇性的數字。Hermes 的核心對話循環從一個 16,083 行的單一檔案，重構成 14 個內聚模組（<code>agent/*</code>），所有提取出去的程式碼在 <code>AIAgent</code> 保持一個薄轉發層，行為完全不變，測試全部通過。<strong>這不只是重構，這是讓社群更容易貢獻的核心工程升級。</strong></p>
+<h3 id="1-2-Kanban-成為真正的多代理平台"><a href="#1-2-Kanban-成為真正的多代理平台" class="headerlink" title="1.2 Kanban 成為真正的多代理平台"></a>1.2 Kanban 成為真正的多代理平台</h3><p>Kanban 在這次 release 獲得了最大幅度的功能升級：</p>
+<ul>
+<li><strong>Orchestrator 自動拆解</strong>：給一個高層任務，dispatcher 自動拆解成子任務並派給 workers</li>
+<li><strong>Swarm 拓撲</strong>：支援多 worker 節點之間的複雜協作</li>
+<li><strong>Scheduled tasks</strong>：定時任務支援</li>
+<li><strong>Worktree-per-task</strong>：每個任務在自己的 git worktree 執行，徹底避免分支衝突</li>
+<li><strong>Per-task model overrides</strong>：每個子任務可以指定不同模型</li>
+<li><strong>幻觉恢复（Hallucination recovery）</strong>：worker 疑似幻觉輸出時自動重試</li>
+</ul>
+<h3 id="1-3-效能大幅提升"><a href="#1-3-效能大幅提升" class="headerlink" title="1.3 效能大幅提升"></a>1.3 效能大幅提升</h3><ul>
+<li><strong><code>session_search</code> 快 4,500 倍且免費</strong>：FTS5 全文檢索效能大幅躍進，不再需要昂貴的外部搜尋服務</li>
+<li><strong><code>hermes --version</code> 在 benchmark 中打敗 Codex CLI</strong></li>
+<li>**每次對話函式呼叫減少 47%**：context window 浪費減少</li>
+<li><strong>冷啟動再減 1 秒</strong>：launch 時間持續優化</li>
+<li>**<code>read_file</code> token 節省 14%**：統一使用精簡行號格式</li>
+</ul>
+<h3 id="1-4-安全加固"><a href="#1-4-安全加固" class="headerlink" title="1.4 安全加固"></a>1.4 安全加固</h3><ul>
+<li><strong>Promptware 防御</strong>：Brainworm 類攻擊的初步抵禦機制</li>
+<li><strong>Bitwarden Secrets Manager</strong>：一個 bootstrap token 取代多個 provider API key</li>
+<li><strong>xAI 深度整合</strong>：Web Search plugin、xai-oauth <code>hermes proxy</code> 上游、model 偵測與遷移工具、TTS 停頓標記</li>
+</ul>
+<hr>
+<h2 id="二、v0-16-0-—-Surface：桌面-App-時代來臨"><a href="#二、v0-16-0-—-Surface：桌面-App-時代來臨" class="headerlink" title="二、v0.16.0 — Surface：桌面 App 時代來臨"></a>二、v0.16.0 — Surface：桌面 App 時代來臨</h2><h3 id="2-1-Hermes-Desktop-—-真正的原生應用"><a href="#2-1-Hermes-Desktop-—-真正的原生應用" class="headerlink" title="2.1 Hermes Desktop — 真正的原生應用"></a>2.1 Hermes Desktop — 真正的原生應用</h3><p>這是 v0.16.0 最大的新聞。Electron 桌面應用程式正式推出，跨 macOS / Linux / Windows，具備：</p>
+<ul>
+<li><strong>一鍵安裝 + 應用內自動更新</strong></li>
+<li><strong>拖放檔案到對話框</strong></li>
+<li><strong>剪貼簿圖片貼上</strong></li>
+<li><strong>Cmd+K 命令面板</strong></li>
+<li><strong>並發多 profile 會話</strong></li>
+<li><strong>完整簡體中文翻譯</strong>（由 @JimLiu 贡献）</li>
+<li><strong>OAuth 或使用者名稱/密碼連線到遠端 Hermes gateway</strong></li>
+</ul>
+<p>整個桌面應用由 @OutThisLife 從零構建，涵蓋安裝、更新、遠端連線、多 profile 會話、聊天 UX、狀態列模型選擇器，總計 100+ PRs。</p>
+<h3 id="2-2-Web-Dashboard-全面重生"><a href="#2-2-Web-Dashboard-全面重生" class="headerlink" title="2.2 Web Dashboard 全面重生"></a>2.2 Web Dashboard 全面重生</h3><p>瀏覽器版管理面板也迎來大翻新：</p>
+<ul>
+<li><strong>完整管理界面</strong>：MCP 目錄、訊息頻道、憑證管理、webhooks、記憶體</li>
+<li><strong>OIDC / 使用者名稱密碼登入</strong></li>
+<li><strong>MCP 互動式選擇器</strong></li>
+<li><strong>新技能中心介面</strong></li>
+</ul>
+<h3 id="2-3-Nous-Portal-快速設定"><a href="#2-3-Nous-Portal-快速設定" class="headerlink" title="2.3 Nous Portal 快速設定"></a>2.3 Nous Portal 快速設定</h3><p>新增 <code>hermes setup --portal</code>，一個 OAuth 完成 model + 全部四個 Tool Gateway 工具（web search、image generation、TTS、browser）的設定，從安裝到第一條訊息只需幾秒。</p>
+<h3 id="2-4-undo-終於來了"><a href="#2-4-undo-終於來了" class="headerlink" title="2.4 /undo 終於來了"></a>2.4 <code>/undo</code> 終於來了</h3><p>可以撤回最近 N 輪對話（<code>/undo [N]</code>），支援 CLI / TUI 與訊息平台一致。</p>
+<hr>
+<h2 id="三、v0-17-0-—-Reach：觸及更多地方"><a href="#三、v0-17-0-—-Reach：觸及更多地方" class="headerlink" title="三、v0.17.0 — Reach：觸及更多地方"></a>三、v0.17.0 — Reach：觸及更多地方</h2><h3 id="3-1-iMessage-到來-—-Photon-Spectrum"><a href="#3-1-iMessage-到來-—-Photon-Spectrum" class="headerlink" title="3.1 iMessage 到來 — Photon Spectrum"></a>3.1 iMessage 到來 — Photon Spectrum</h3><p>Hermes 現在可以透過 Photon 的托管線路池收發 iMessage，完全不需要 Mac relay。執行 <code>hermes photon login</code> 認證後就能使用，被定位為 BlueBubbles 的後續方案。</p>
+<h3 id="3-2-Raft-Agent-Network"><a href="#3-2-Raft-Agent-Network" class="headerlink" title="3.2 Raft Agent Network"></a>3.2 Raft Agent Network</h3><p>新的 Raft 平台介面卡讓 Hermes 能以 gateway channel 身份加入 <a target="_blank" rel="noopener" href="https://raft.build/">Raft</a> 網路，與其他 AI agents 互聯。</p>
+<h3 id="3-3-Image-Generation-學會編輯"><a href="#3-3-Image-Generation-學會編輯" class="headerlink" title="3.3 Image Generation 學會編輯"></a>3.3 Image Generation 學會編輯</h3><p>不只是生成，現在还能对已有图片进行编辑（inpainting / outpainting）。</p>
+<h3 id="3-4-背景-Subagent-支援"><a href="#3-4-背景-Subagent-支援" class="headerlink" title="3.4 背景 Subagent 支援"></a>3.4 背景 Subagent 支援</h3><p><code>delegate_task</code> 的 subagent 現在可以真正在背景執行，使用者的聊天不會被阻塞，所有結果在完成後以單次整合回覆返回。</p>
+<hr>
+<h2 id="四、v0-18-0-—-Judgment：P0-P1-全數清空"><a href="#四、v0-18-0-—-Judgment：P0-P1-全數清空" class="headerlink" title="四、v0.18.0 — Judgment：P0/P1 全數清空"></a>四、v0.18.0 — Judgment：P0/P1 全數清空</h2><h3 id="4-1-史上最大公關攻勢"><a href="#4-1-史上最大公關攻勢" class="headerlink" title="4.1 史上最大公關攻勢"></a>4.1 史上最大公關攻勢</h3><p><strong>約 692 個最高優先級項目在 12 天內全部解決，repo 的 open P0/P1 降至 0。</strong> 這不只是口號，是有紀律的團隊協作結果。</p>
+<h3 id="4-2-Mixture-of-Agents-成為一級公民"><a href="#4-2-Mixture-of-Agents-成為一級公民" class="headerlink" title="4.2 Mixture-of-Agents 成為一級公民"></a>4.2 Mixture-of-Agents 成為一級公民</h3><p>這是 v0.18.0 最重要的功能進化：</p>
+<p><strong>過去</strong>：MoA 是一個需要開關的模式，切換麻煩，輸出不透明。</p>
+<p><strong>現在</strong>：</p>
+<ul>
+<li>每個命名的 MoA 预设显示为 <code>moa</code> provider 下的可選模型，和 Claude、GPT、Grok 完全平等</li>
+<li>選擇「我的顧問團」就像選擇任何其他模型一樣簡單</li>
+<li><strong>每個參考模型的完整推理過程以獨立區塊呈現</strong>：你可以讀到 GPT-5 怎麼想、Claude 怎麼想、Grok 怎麼想，然後才看到匯總答案</li>
+<li><strong>匯總答案現在即時串流</strong>，不再像以前那樣靜默很長時間後一次出現</li>
+<li><code>/moa</code> 提供一鍵單次執行，執行完畢自動恢復原模型</li>
+<li>可選啟用完整追蹯持久化（<code>moa.save_traces</code>）用於調試和評估</li>
+</ul>
+<h3 id="4-3-驗證系統：Agent-真的做完了嗎？"><a href="#4-3-驗證系統：Agent-真的做完了嗎？" class="headerlink" title="4.3 驗證系統：Agent 真的做完了嗎？"></a>4.3 驗證系統：Agent 真的做完了嗎？</h3><p>這是另一個核心 Paradigm shift：</p>
+<p><strong>過去的問題</strong>：Agent 說「完成了」，但使用者需要自己驗證。</p>
+<p><strong>現在的進化</strong>：</p>
+<ul>
+<li><strong>Coding 驗證證據帳本</strong>：profile 級別的專案檢查記錄，profile-scoped record of canonical project checks</li>
+<li><strong><code>/goal</code> 獲得完成合約</strong>：你可以陳述「done 是什麼樣子」，standing-goal loop 會根據實際證據而非模型自我聲稱來判斷完成</li>
+<li><strong><code>pre_verify</code> hook</strong>：自定義驗證鉤子，可接入 CI 測試、Lint 檢查、端對端測試</li>
+<li>**<code>/goal wait &lt;pid&gt;</code>**：停在背景程序上等待完成，適用於等待一個長期任務</li>
+<li><strong><code>verify-on-stop</code> 預設關閉</strong>，提供一次性遷移避免干擾現有用法</li>
+</ul>
+<p>簡單說：<strong>「我覺得我修好了」→「測試通過了，證據在這裡」。</strong></p>
+<h3 id="4-4-learn-—-教-Agent-新技能只需一行命令"><a href="#4-4-learn-—-教-Agent-新技能只需一行命令" class="headerlink" title="4.4 /learn — 教 Agent 新技能只需一行命令"></a>4.4 <code>/learn</code> — 教 Agent 新技能只需一行命令</h3><p>執行 <code>/learn &lt;任意內容&gt;</code>，Hermes 可以從以下來源提煉可重用技能：</p>
+<ul>
+<li>一個目錄（repository pattern）</li>
+<li>一個 URL（文件 workflow）</li>
+<li>你剛帶它走過的工作流程</li>
+</ul>
+<p>它自動按照 <code>CONTRIBUTING.md</code> 中的技能標準寫入。下次需要那個 workflow 時，已經在那裡了。<strong>教 Hermes 新技能現在是一行命令，不再是手動技能創作。</strong></p>
+<h3 id="4-5-journey-—-看見-Agent-的記憶時間線"><a href="#4-5-journey-—-看見-Agent-的記憶時間線" class="headerlink" title="4.5 /journey — 看見 Agent 的記憶時間線"></a>4.5 <code>/journey</code> — 看見 Agent 的記憶時間線</h3><p>CLI 和 TUI 新增 <code>/journey</code> 命令，展示 Hermes 累積的所有記憶和技能——並可以直接在視圖中編輯或刪除。搭配 Desktop App 的 <strong>Memory Graph</strong>（可交互的放射狀時間線，展示記憶和技能的成長歷史），Agent 的記憶不再是黑箱。</p>
+<h3 id="4-6-背景改進：更便宜的自進化"><a href="#4-6-背景改進：更便宜的自進化" class="headerlink" title="4.6 背景改進：更便宜的自進化"></a>4.6 背景改進：更便宜的自進化</h3><p>每輪對話後的自我改進 fork（決定是否儲存記憶或技能的循環）現在：</p>
+<ul>
+<li>路由到 auxiliary model（便宜模型）</li>
+<li>消化濃縮 context 而非重放整段對話</li>
+<li>自適應執行頻率</li>
+</ul>
+<p><strong>保持自我改進能力，但費用只是原來的幾分之一。</strong></p>
+<h3 id="4-7-prompt-—-在編輯器裡寫-Prompt"><a href="#4-7-prompt-—-在編輯器裡寫-Prompt" class="headerlink" title="4.7 /prompt — 在編輯器裡寫 Prompt"></a>4.7 <code>/prompt</code> — 在編輯器裡寫 Prompt</h3><p>執行 <code>/prompt</code> 會開啟 <code>$EDITOR</code>，讓你在真正的 Markdown 編輯器裡寫長多行 Prompt，而非對著一行輸入框掙扎。草稿完成後自動進入佇列作為下一條訊息。</p>
+<h3 id="4-8-Google-Vertex-AI-—-GCP-服務帳戶直接用"><a href="#4-8-Google-Vertex-AI-—-GCP-服務帳戶直接用" class="headerlink" title="4.8 Google Vertex AI — GCP 服務帳戶直接用"></a>4.8 Google Vertex AI — GCP 服務帳戶直接用</h3><p>Vertex AI 現在是 Gemini 模型的一級 provider。過去為什麼 custom-provider 設定總是在 session 中途失效？因為 Vertex 沒有靜態 API key，每個請求都需要從服務帳號 JSON 即時 mint 的短效 OAuth2 access token（約 1 小時 TTL）。Hermes 現在為你自動 mint 和刷新這些 token，組織內部跑 Gemini through Google Cloud 不再需要 paste token、不再有中途過期。</p>
+<h3 id="4-9-Desktop-App-新的「專案」系統"><a href="#4-9-Desktop-App-新的「專案」系統" class="headerlink" title="4.9 Desktop App 新的「專案」系統"></a>4.9 Desktop App 新的「專案」系統</h3><p>桌面應用獲得了真正的 per-profile 專案系統：</p>
+<ul>
+<li><strong>側邊欄程式碼庫列表</strong></li>
+<li><strong>編碼專用工作區</strong></li>
+<li><strong>PR 風格檔案 diff 顯示</strong>（直接在 chat 裡）</li>
+<li><strong>Git 工作樹管理</strong>（coding cockpit）</li>
+<li><strong>多終端面板</strong>（保留和恢復 terminal 分頁和滾動歷史）</li>
+<li><strong>記憶圖譜</strong>（可玩的放射性時間線）</li>
+</ul>
+<hr>
+<h2 id="五、橫跨全版本的系統性改進"><a href="#五、橫跨全版本的系統性改進" class="headerlink" title="五、橫跨全版本的系統性改進"></a>五、橫跨全版本的系統性改進</h2><h3 id="5-1-訊息平台大擴充（這兩個月）"><a href="#5-1-訊息平台大擴充（這兩個月）" class="headerlink" title="5.1 訊息平台大擴充（這兩個月）"></a>5.1 訊息平台大擴充（這兩個月）</h3><table>
+<thead>
+<tr>
+<th>平台</th>
+<th>版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iMessage（Photon）</td>
+<td>v0.17.0</td>
+</tr>
+<tr>
+<td>Raft agent network</td>
+<td>v0.17.0</td>
+</tr>
+<tr>
+<td>ntfy（第23個平台）</td>
+<td>v0.15.0</td>
+</tr>
+<tr>
+<td>LINE</td>
+<td>v0.14.0</td>
+</tr>
+<tr>
+<td>SimpleX Chat</td>
+<td>v0.14.0</td>
+</tr>
+<tr>
+<td>Google Chat</td>
+<td>v0.13.0</td>
+</tr>
+<tr>
+<td>Teams</td>
+<td>v0.14.0 完整棧</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-安全加固（持續進行）"><a href="#5-2-安全加固（持續進行）" class="headerlink" title="5.2 安全加固（持續進行）"></a>5.2 安全加固（持續進行）</h3><p>這段時間的安全工作：</p>
+<ul>
+<li><strong>CVE-2026-48710 Starlette BadHost</strong> — pin 補丁版本</li>
+<li><strong>SSRF 檢查移出事件循環</strong>（async 路徑）</li>
+<li><strong>Cron <code>base_url</code> 覆蓋防止憑證外洩</strong></li>
+<li><strong>MCP config 持久化攻擊面鎖定</strong></li>
+<li><strong>Slack <code>xapp-</code> token 清除</strong></li>
+<li><strong>所有 browser backend 強制雲端 metadata floor</strong></li>
+<li><strong>Redaction 預設開啟</strong>（v0.13.0 起）</li>
+<li><strong>Discord 角色允許清單 guild-scoped</strong></li>
+</ul>
+<h3 id="5-3-冷啟動持續優化"><a href="#5-3-冷啟動持續優化" class="headerlink" title="5.3 冷啟動持續優化"></a>5.3 冷啟動持續優化</h3><p>v0.12 → v0.13 → v0.14 → v0.15 → v0.16 持續壓縮冷啟動時間，累計已減少約 19-20 秒。用戶能感受到 Hermes 的「起動速度」在這兩年內一直在變快。</p>
+<hr>
+<h2 id="六、這些更新對我意味著什麼"><a href="#六、這些更新對我意味著什麼" class="headerlink" title="六、這些更新對我意味著什麼"></a>六、這些更新對我意味著什麼</h2><p>如果你已經在使用 Hermes Agent：</p>
+<ol>
+<li><strong>MoA 值得試試</strong>：現在它和其他模型選擇一樣簡單，用一個命令 <code>/moa</code> 就能讓多個 frontier 模型一起思考你的問題</li>
+<li><strong><code>/goal</code> + 驗證</strong>：如果你是開發者，試著給 <code>/goal</code> 一個具體的完成合約（”done means tests pass”），感受 Agent 自己判斷完成的差異</li>
+<li><strong><code>/learn</code> 值得多用</strong>：把你重複做的工作流程教給 Hermes，讓它自己記住</li>
+<li><strong>Desktop App 是認真的</strong>：如果你在 Windows 上用，建議試試 Desktop 版本——拖放檔案、多 profile、記憶圖譜都比 CLI 友好很多</li>
+<li><strong><code>/journey</code> 推薦一試</strong>：看看 Hermes 記住了關於你的什麼，可以編輯或刪除不正確的內容</li>
+</ol>
+<p>如果你是新用戶：</p>
+<blockquote>
+<p>跑 <code>curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</code> 安裝，然後 <code>hermes setup --portal</code> 快速設定，從零到第一個回答只需要幾分鐘。</p>
+</blockquote>
+<hr>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p>這兩個月的更新核心圍繞三個主題：</p>
+<ol>
+<li><strong>讓 AI 真正完成事情</strong>：驗證系統、<code>/goal</code> 合約、<code>pre_verify</code> hook</li>
+<li><strong>讓 AI 知道自己學到了什麼</strong>：<code>/learn</code>、<code>/journey</code>、Memory Graph、便宜的背景自進化</li>
+<li><strong>讓複雜推理變得可見</strong>：MoA 每個模型的思考過程即時展示、串流匯總</li>
+</ol>
+<p>這些改進代表著 AI Agent 從「回答問題」向「完成任務、持續學習、清楚表達推理過程」的方向演進。</p>
+<hr>
+<p><strong>參考連結</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/NousResearch/hermes-agent">Hermes Agent GitHub</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/NousResearch/hermes-agent/releases">Release Notes（完整 Changelog）</a></li>
+<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs">官方文件</a></li>
+<li><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/docs/reference/skills-catalog">Skills Hub</a></li>
+</ul>
+<p><em>本文資料來源：GitHub Releases v2026.5.28 ~ v2026.7.1</em></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Hermes-Agent-%E8%BF%91%E5%85%A9%E6%9C%88%E5%A4%A7%E6%9B%B4%E6%96%B0%EF%BC%9Av0-15-%E5%88%B0-v0-18-%E5%85%A8%E9%9D%A2%E8%A7%A3%E6%9E%90"><span class="toc-number">1.</span> <span class="toc-text">Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0%EF%BC%9A%E9%80%99%E5%85%A9%E5%80%8B%E6%9C%88%E7%99%BC%E7%94%9F%E4%BA%86%E4%BB%80%E9%BA%BC"><span class="toc-number">1.1.</span> <span class="toc-text">概述：這兩個月發生了什麼</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81v0-15-0-%E2%80%94-Velocity%EF%BC%9A%E6%A0%B8%E5%BF%83%E5%A4%A7%E9%87%8D%E6%A7%8B"><span class="toc-number">1.2.</span> <span class="toc-text">一、v0.15.0 — Velocity：核心大重構</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-run-agent-py-%E5%BE%9E-16-000-%E8%A1%8C%E7%B8%AE%E6%B8%9B%E5%88%B0-3-821-%E8%A1%8C%EF%BC%88-76-%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.1 run_agent.py 從 16,000 行縮減到 3,821 行（-76%）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Kanban-%E6%88%90%E7%82%BA%E7%9C%9F%E6%AD%A3%E7%9A%84%E5%A4%9A%E4%BB%A3%E7%90%86%E5%B9%B3%E5%8F%B0"><span class="toc-number">1.2.2.</span> <span class="toc-text">1.2 Kanban 成為真正的多代理平台</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%95%88%E8%83%BD%E5%A4%A7%E5%B9%85%E6%8F%90%E5%8D%87"><span class="toc-number">1.2.3.</span> <span class="toc-text">1.3 效能大幅提升</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E5%AE%89%E5%85%A8%E5%8A%A0%E5%9B%BA"><span class="toc-number">1.2.4.</span> <span class="toc-text">1.4 安全加固</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81v0-16-0-%E2%80%94-Surface%EF%BC%9A%E6%A1%8C%E9%9D%A2-App-%E6%99%82%E4%BB%A3%E4%BE%86%E8%87%A8"><span class="toc-number">1.3.</span> <span class="toc-text">二、v0.16.0 — Surface：桌面 App 時代來臨</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hermes-Desktop-%E2%80%94-%E7%9C%9F%E6%AD%A3%E7%9A%84%E5%8E%9F%E7%94%9F%E6%87%89%E7%94%A8"><span class="toc-number">1.3.1.</span> <span class="toc-text">2.1 Hermes Desktop — 真正的原生應用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Web-Dashboard-%E5%85%A8%E9%9D%A2%E9%87%8D%E7%94%9F"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.2 Web Dashboard 全面重生</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Nous-Portal-%E5%BF%AB%E9%80%9F%E8%A8%AD%E5%AE%9A"><span class="toc-number">1.3.3.</span> <span class="toc-text">2.3 Nous Portal 快速設定</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-undo-%E7%B5%82%E6%96%BC%E4%BE%86%E4%BA%86"><span class="toc-number">1.3.4.</span> <span class="toc-text">2.4 &#x2F;undo 終於來了</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81v0-17-0-%E2%80%94-Reach%EF%BC%9A%E8%A7%B8%E5%8F%8A%E6%9B%B4%E5%A4%9A%E5%9C%B0%E6%96%B9"><span class="toc-number">1.4.</span> <span class="toc-text">三、v0.17.0 — Reach：觸及更多地方</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-iMessage-%E5%88%B0%E4%BE%86-%E2%80%94-Photon-Spectrum"><span class="toc-number">1.4.1.</span> <span class="toc-text">3.1 iMessage 到來 — Photon Spectrum</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Raft-Agent-Network"><span class="toc-number">1.4.2.</span> <span class="toc-text">3.2 Raft Agent Network</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Image-Generation-%E5%AD%B8%E6%9C%83%E7%B7%A8%E8%BC%AF"><span class="toc-number">1.4.3.</span> <span class="toc-text">3.3 Image Generation 學會編輯</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E8%83%8C%E6%99%AF-Subagent-%E6%94%AF%E6%8F%B4"><span class="toc-number">1.4.4.</span> <span class="toc-text">3.4 背景 Subagent 支援</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81v0-18-0-%E2%80%94-Judgment%EF%BC%9AP0-P1-%E5%85%A8%E6%95%B8%E6%B8%85%E7%A9%BA"><span class="toc-number">1.5.</span> <span class="toc-text">四、v0.18.0 — Judgment：P0&#x2F;P1 全數清空</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%A4%A7%E5%85%AC%E9%97%9C%E6%94%BB%E5%8B%A2"><span class="toc-number">1.5.1.</span> <span class="toc-text">4.1 史上最大公關攻勢</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Mixture-of-Agents-%E6%88%90%E7%82%BA%E4%B8%80%E7%B4%9A%E5%85%AC%E6%B0%91"><span class="toc-number">1.5.2.</span> <span class="toc-text">4.2 Mixture-of-Agents 成為一級公民</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E9%A9%97%E8%AD%89%E7%B3%BB%E7%B5%B1%EF%BC%9AAgent-%E7%9C%9F%E7%9A%84%E5%81%9A%E5%AE%8C%E4%BA%86%E5%97%8E%EF%BC%9F"><span class="toc-number">1.5.3.</span> <span class="toc-text">4.3 驗證系統：Agent 真的做完了嗎？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-learn-%E2%80%94-%E6%95%99-Agent-%E6%96%B0%E6%8A%80%E8%83%BD%E5%8F%AA%E9%9C%80%E4%B8%80%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-number">1.5.4.</span> <span class="toc-text">4.4 &#x2F;learn — 教 Agent 新技能只需一行命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-journey-%E2%80%94-%E7%9C%8B%E8%A6%8B-Agent-%E7%9A%84%E8%A8%98%E6%86%B6%E6%99%82%E9%96%93%E7%B7%9A"><span class="toc-number">1.5.5.</span> <span class="toc-text">4.5 &#x2F;journey — 看見 Agent 的記憶時間線</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-%E8%83%8C%E6%99%AF%E6%94%B9%E9%80%B2%EF%BC%9A%E6%9B%B4%E4%BE%BF%E5%AE%9C%E7%9A%84%E8%87%AA%E9%80%B2%E5%8C%96"><span class="toc-number">1.5.6.</span> <span class="toc-text">4.6 背景改進：更便宜的自進化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-7-prompt-%E2%80%94-%E5%9C%A8%E7%B7%A8%E8%BC%AF%E5%99%A8%E8%A3%A1%E5%AF%AB-Prompt"><span class="toc-number">1.5.7.</span> <span class="toc-text">4.7 &#x2F;prompt — 在編輯器裡寫 Prompt</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-8-Google-Vertex-AI-%E2%80%94-GCP-%E6%9C%8D%E5%8B%99%E5%B8%B3%E6%88%B6%E7%9B%B4%E6%8E%A5%E7%94%A8"><span class="toc-number">1.5.8.</span> <span class="toc-text">4.8 Google Vertex AI — GCP 服務帳戶直接用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-9-Desktop-App-%E6%96%B0%E7%9A%84%E3%80%8C%E5%B0%88%E6%A1%88%E3%80%8D%E7%B3%BB%E7%B5%B1"><span class="toc-number">1.5.9.</span> <span class="toc-text">4.9 Desktop App 新的「專案」系統</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%A9%AB%E8%B7%A8%E5%85%A8%E7%89%88%E6%9C%AC%E7%9A%84%E7%B3%BB%E7%B5%B1%E6%80%A7%E6%94%B9%E9%80%B2"><span class="toc-number">1.6.</span> <span class="toc-text">五、橫跨全版本的系統性改進</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E8%A8%8A%E6%81%AF%E5%B9%B3%E5%8F%B0%E5%A4%A7%E6%93%B4%E5%85%85%EF%BC%88%E9%80%99%E5%85%A9%E5%80%8B%E6%9C%88%EF%BC%89"><span class="toc-number">1.6.1.</span> <span class="toc-text">5.1 訊息平台大擴充（這兩個月）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E5%AE%89%E5%85%A8%E5%8A%A0%E5%9B%BA%EF%BC%88%E6%8C%81%E7%BA%8C%E9%80%B2%E8%A1%8C%EF%BC%89"><span class="toc-number">1.6.2.</span> <span class="toc-text">5.2 安全加固（持續進行）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%86%B7%E5%95%9F%E5%8B%95%E6%8C%81%E7%BA%8C%E5%84%AA%E5%8C%96"><span class="toc-number">1.6.3.</span> <span class="toc-text">5.3 冷啟動持續優化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%80%99%E4%BA%9B%E6%9B%B4%E6%96%B0%E5%B0%8D%E6%88%91%E6%84%8F%E5%91%B3%E8%91%97%E4%BB%80%E9%BA%BC"><span class="toc-number">1.7.</span> <span class="toc-text">六、這些更新對我意味著什麼</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B8%BD%E7%B5%90"><span class="toc-number">1.8.</span> <span class="toc-text">總結</span></a></li></ol></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>

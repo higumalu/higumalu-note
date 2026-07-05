@@ -1,92 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>搜尋系統建置記（一）—— SearXNG Docker 部署踩坑實錄</title>
-    <url>/higumalu-note/2026-05-22-hermes-search-system-searxng/</url>
-    <content><![CDATA[<h2 id="🚀-為什麼要折騰-SearXNG"><a href="#🚀-為什麼要折騰-SearXNG" class="headerlink" title="🚀 為什麼要折騰 SearXNG"></a>🚀 為什麼要折騰 SearXNG</h2><p>一開始用 Hermes 內建的搜尋，發現問題不少：</p>
-<ul>
-<li>Google 常常被 Bot 驗證擋住</li>
-<li>DuckDuckGo 有時候也掛</li>
-<li>Bing 的結果品質飄忽不定</li>
-</ul>
-<p>熊熊想要一個<strong>自己可控、隱私友好的搜尋引擎</strong>，剛好看到了 <strong>SearXNG</strong>——開源隱私搜尋聚合，可以同時查多個引擎、統一呈現結果，還支援 JSON API，正是 Hermes 需要的那種。</p>
-<p>不選 API 是因為 API 通常會有各種限制——次數配額、速率限制、付費牆——不適合拿來做大量研究。</p>
-<hr>
-<h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-
-<p>結果在 Windows 上跑不起來，原因有好幾個。</p>
-<blockquote>
-<p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
-<p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-
-<p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
-</blockquote>
-<hr>
-<h2 id="⚙️-settings-yml-的隱形陷阱"><a href="#⚙️-settings-yml-的隱形陷阱" class="headerlink" title="⚙️ settings.yml 的隱形陷阱"></a>⚙️ settings.yml 的隱形陷阱</h2><p>SearXNG 的設定都集中在 <code>settings.yml</code>，一開始熊熊以為預設值就可以直接用，結果 JSON API 一直回 403。</p>
-<blockquote>
-<p>⚠️ <strong>坑 2：JSON API 格式被預設關閉</strong></p>
-<p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
-<p>需要在 <code>settings.yml</code> 裡手動加上：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
-
-<p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
-</blockquote>
-<hr>
-<h2 id="🕐-折騰了幾個晚上"><a href="#🕐-折騰了幾個晚上" class="headerlink" title="🕐 折騰了幾個晚上"></a>🕐 折騰了幾個晚上</h2><p>老實說，具體折騰了多久、哪幾個晚上，熊熊現在也想不起來了 😅</p>
-<p>只知道一開始 folder 是 4 月底就建好的，但 Docker 真正跑起來、port 和 JSON API 都搞定，是後來的事了。過程中一直懷疑是不是 Docker 起不起來、網路有沒有問題，最後才發現是這幾行設定沒開⋯⋯</p>
-<hr>
-<h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
-
-<p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
-<hr>
-<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><table>
-<thead>
-<tr>
-<th>項目</th>
-<th>內容</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>SearXNG 版本</strong></td>
-<td>官方 latest</td>
-</tr>
-<tr>
-<td><strong>Port 對應</strong></td>
-<td>Docker 內 8080 → Host 18080</td>
-</tr>
-<tr>
-<td><strong>settings.yml</strong></td>
-<td>啟用 JSON API 格式</td>
-</tr>
-<tr>
-<td><strong>可用引擎</strong></td>
-<td>Google, Bing, DuckDuckGo, Brave 等</td>
-</tr>
-<tr>
-<td><strong>運行時間</strong></td>
-<td>21 小時以上（連續運行）</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
-<p>整件事值得嗎？<strong>值得</strong>。</p>
-]]></content>
-      <categories>
-        <category>Hermes</category>
-        <category>開發日誌</category>
-      </categories>
-      <tags>
-        <tag>SearXNG</tag>
-        <tag>Docker</tag>
-        <tag>Hermes</tag>
-        <tag>搜尋系統</tag>
-        <tag>self-host</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>搜尋系統建置記（二）—— Crawl4AI + 順手修好的 SearXNG</title>
     <url>/higumalu-note/2026-05-23-hermes-search-system-crawl4ai/</url>
     <content><![CDATA[<h2 id="🦞-為什麼需要-Crawl4AI"><a href="#🦞-為什麼需要-Crawl4AI" class="headerlink" title="🦞 為什麼需要 Crawl4AI"></a>🦞 為什麼需要 Crawl4AI</h2><p>有了 SearXNG 找到目標網頁之後，下一個問題是：</p>
@@ -205,12 +119,98 @@
         <category>開發日誌</category>
       </categories>
       <tags>
+        <tag>Crawl4AI</tag>
+        <tag>Docker</tag>
+        <tag>Hermes</tag>
+        <tag>爬蟲</tag>
+        <tag>搜尋系統</tag>
+        <tag>self-host</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>搜尋系統建置記（一）—— SearXNG Docker 部署踩坑實錄</title>
+    <url>/higumalu-note/2026-05-22-hermes-search-system-searxng/</url>
+    <content><![CDATA[<h2 id="🚀-為什麼要折騰-SearXNG"><a href="#🚀-為什麼要折騰-SearXNG" class="headerlink" title="🚀 為什麼要折騰 SearXNG"></a>🚀 為什麼要折騰 SearXNG</h2><p>一開始用 Hermes 內建的搜尋，發現問題不少：</p>
+<ul>
+<li>Google 常常被 Bot 驗證擋住</li>
+<li>DuckDuckGo 有時候也掛</li>
+<li>Bing 的結果品質飄忽不定</li>
+</ul>
+<p>熊熊想要一個<strong>自己可控、隱私友好的搜尋引擎</strong>，剛好看到了 <strong>SearXNG</strong>——開源隱私搜尋聚合，可以同時查多個引擎、統一呈現結果，還支援 JSON API，正是 Hermes 需要的那種。</p>
+<p>不選 API 是因為 API 通常會有各種限制——次數配額、速率限制、付費牆——不適合拿來做大量研究。</p>
+<hr>
+<h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
+
+<p>結果在 Windows 上跑不起來，原因有好幾個。</p>
+<blockquote>
+<p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
+<p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
+
+<p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
+</blockquote>
+<hr>
+<h2 id="⚙️-settings-yml-的隱形陷阱"><a href="#⚙️-settings-yml-的隱形陷阱" class="headerlink" title="⚙️ settings.yml 的隱形陷阱"></a>⚙️ settings.yml 的隱形陷阱</h2><p>SearXNG 的設定都集中在 <code>settings.yml</code>，一開始熊熊以為預設值就可以直接用，結果 JSON API 一直回 403。</p>
+<blockquote>
+<p>⚠️ <strong>坑 2：JSON API 格式被預設關閉</strong></p>
+<p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
+<p>需要在 <code>settings.yml</code> 裡手動加上：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
+
+<p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
+</blockquote>
+<hr>
+<h2 id="🕐-折騰了幾個晚上"><a href="#🕐-折騰了幾個晚上" class="headerlink" title="🕐 折騰了幾個晚上"></a>🕐 折騰了幾個晚上</h2><p>老實說，具體折騰了多久、哪幾個晚上，熊熊現在也想不起來了 😅</p>
+<p>只知道一開始 folder 是 4 月底就建好的，但 Docker 真正跑起來、port 和 JSON API 都搞定，是後來的事了。過程中一直懷疑是不是 Docker 起不起來、網路有沒有問題，最後才發現是這幾行設定沒開⋯⋯</p>
+<hr>
+<h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
+
+<p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
+<hr>
+<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SearXNG 版本</strong></td>
+<td>官方 latest</td>
+</tr>
+<tr>
+<td><strong>Port 對應</strong></td>
+<td>Docker 內 8080 → Host 18080</td>
+</tr>
+<tr>
+<td><strong>settings.yml</strong></td>
+<td>啟用 JSON API 格式</td>
+</tr>
+<tr>
+<td><strong>可用引擎</strong></td>
+<td>Google, Bing, DuckDuckGo, Brave 等</td>
+</tr>
+<tr>
+<td><strong>運行時間</strong></td>
+<td>21 小時以上（連續運行）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
+<p>整件事值得嗎？<strong>值得</strong>。</p>
+]]></content>
+      <categories>
+        <category>Hermes</category>
+        <category>開發日誌</category>
+      </categories>
+      <tags>
         <tag>Docker</tag>
         <tag>Hermes</tag>
         <tag>搜尋系統</tag>
         <tag>self-host</tag>
-        <tag>Crawl4AI</tag>
-        <tag>爬蟲</tag>
+        <tag>SearXNG</tag>
       </tags>
   </entry>
   <entry>
@@ -262,52 +262,239 @@
       </tags>
   </entry>
   <entry>
-    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
-    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
+    <title>Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析</title>
+    <url>/higumalu-note/2026-07-06-hermes-agent-v015-v018-release-highlights/</url>
+    <content><![CDATA[<h1 id="Hermes-Agent-近兩月大更新：v0-15-到-v0-18-全面解析"><a href="#Hermes-Agent-近兩月大更新：v0-15-到-v0-18-全面解析" class="headerlink" title="Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析"></a>Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析</h1><blockquote>
+<p>資料來源：GitHub Release Notes（v0.15.0 ~ v0.18.0）<br>涵蓋版本：2026.5.28（v0.15.0）→ 2026.7.1（v0.18.0）<br>撰寫日期：2026-07-06</p>
+</blockquote>
 <hr>
-<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
-<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
+<h2 id="概述：這兩個月發生了什麼"><a href="#概述：這兩個月發生了什麼" class="headerlink" title="概述：這兩個月發生了什麼"></a>概述：這兩個月發生了什麼</h2><p>過去兩個月，Hermes Agent 從 v0.15.0 一路狂奔到 v0.18.0，經歷了四次正式 release（含兩次 hotfix）。如果要用一句話總結這段時間的主題，那就是：<strong>讓 AI Agent 不只是回答，而是真正把事情做完、並且知道自己做完了。</strong></p>
+<p>四個版本的代號分別是：</p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>代號</th>
+<th>日期</th>
+<th>核心主題</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>v0.15.0</td>
+<td>Velocity</td>
+<td>2026/5/28</td>
+<td>大重構、效能躍進、Kanban 成平台</td>
+</tr>
+<tr>
+<td>v0.15.1</td>
+<td>Patch</td>
+<td>2026/5/29</td>
+<td>緊急 hotfix（dashboard 無限迴圈等）</td>
+</tr>
+<tr>
+<td>v0.16.0</td>
+<td>Surface</td>
+<td>2026/6/05</td>
+<td>桌面 App 問世、web dashboard 重生</td>
+</tr>
+<tr>
+<td>v0.17.0</td>
+<td>Reach</td>
+<td>2026/6/19</td>
+<td>新訊息平台、Desktop 強化、背景代理</td>
+</tr>
+<tr>
+<td>v0.18.0</td>
+<td>Judgment</td>
+<td>2026/7/01</td>
+<td>P0/P1 全清空、MoA 一級公民、驗證系統</td>
+</tr>
+</tbody></table>
+<p>四個版本合計：**<del>5,200+ commits、</del>3,200 merged PRs、~2,000 issues 關閉、1,000+ 貢獻者**，陣容驚人。</p>
+<hr>
+<h2 id="一、v0-15-0-—-Velocity：核心大重構"><a href="#一、v0-15-0-—-Velocity：核心大重構" class="headerlink" title="一、v0.15.0 — Velocity：核心大重構"></a>一、v0.15.0 — Velocity：核心大重構</h2><h3 id="1-1-run-agent-py-從-16-000-行縮減到-3-821-行（-76-）"><a href="#1-1-run-agent-py-從-16-000-行縮減到-3-821-行（-76-）" class="headerlink" title="1.1 run_agent.py 從 16,000 行縮減到 3,821 行（-76%）"></a>1.1 <code>run_agent.py</code> 從 16,000 行縮減到 3,821 行（-76%）</h3><p>這是這次重構最戲劇性的數字。Hermes 的核心對話循環從一個 16,083 行的單一檔案，重構成 14 個內聚模組（<code>agent/*</code>），所有提取出去的程式碼在 <code>AIAgent</code> 保持一個薄轉發層，行為完全不變，測試全部通過。<strong>這不只是重構，這是讓社群更容易貢獻的核心工程升級。</strong></p>
+<h3 id="1-2-Kanban-成為真正的多代理平台"><a href="#1-2-Kanban-成為真正的多代理平台" class="headerlink" title="1.2 Kanban 成為真正的多代理平台"></a>1.2 Kanban 成為真正的多代理平台</h3><p>Kanban 在這次 release 獲得了最大幅度的功能升級：</p>
 <ul>
-<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
-<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
-<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
+<li><strong>Orchestrator 自動拆解</strong>：給一個高層任務，dispatcher 自動拆解成子任務並派給 workers</li>
+<li><strong>Swarm 拓撲</strong>：支援多 worker 節點之間的複雜協作</li>
+<li><strong>Scheduled tasks</strong>：定時任務支援</li>
+<li><strong>Worktree-per-task</strong>：每個任務在自己的 git worktree 執行，徹底避免分支衝突</li>
+<li><strong>Per-task model overrides</strong>：每個子任務可以指定不同模型</li>
+<li><strong>幻觉恢复（Hallucination recovery）</strong>：worker 疑似幻觉輸出時自動重試</li>
 </ul>
-<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+<h3 id="1-3-效能大幅提升"><a href="#1-3-效能大幅提升" class="headerlink" title="1.3 效能大幅提升"></a>1.3 效能大幅提升</h3><ul>
+<li><strong><code>session_search</code> 快 4,500 倍且免費</strong>：FTS5 全文檢索效能大幅躍進，不再需要昂貴的外部搜尋服務</li>
+<li><strong><code>hermes --version</code> 在 benchmark 中打敗 Codex CLI</strong></li>
+<li>**每次對話函式呼叫減少 47%**：context window 浪費減少</li>
+<li><strong>冷啟動再減 1 秒</strong>：launch 時間持續優化</li>
+<li>**<code>read_file</code> token 節省 14%**：統一使用精簡行號格式</li>
+</ul>
+<h3 id="1-4-安全加固"><a href="#1-4-安全加固" class="headerlink" title="1.4 安全加固"></a>1.4 安全加固</h3><ul>
+<li><strong>Promptware 防御</strong>：Brainworm 類攻擊的初步抵禦機制</li>
+<li><strong>Bitwarden Secrets Manager</strong>：一個 bootstrap token 取代多個 provider API key</li>
+<li><strong>xAI 深度整合</strong>：Web Search plugin、xai-oauth <code>hermes proxy</code> 上游、model 偵測與遷移工具、TTS 停頓標記</li>
+</ul>
 <hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
+<h2 id="二、v0-16-0-—-Surface：桌面-App-時代來臨"><a href="#二、v0-16-0-—-Surface：桌面-App-時代來臨" class="headerlink" title="二、v0.16.0 — Surface：桌面 App 時代來臨"></a>二、v0.16.0 — Surface：桌面 App 時代來臨</h2><h3 id="2-1-Hermes-Desktop-—-真正的原生應用"><a href="#2-1-Hermes-Desktop-—-真正的原生應用" class="headerlink" title="2.1 Hermes Desktop — 真正的原生應用"></a>2.1 Hermes Desktop — 真正的原生應用</h3><p>這是 v0.16.0 最大的新聞。Electron 桌面應用程式正式推出，跨 macOS / Linux / Windows，具備：</p>
 <ul>
-<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
-<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
-<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
-<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
-<li><strong>範例腳本</strong> — 附有使用範例</li>
+<li><strong>一鍵安裝 + 應用內自動更新</strong></li>
+<li><strong>拖放檔案到對話框</strong></li>
+<li><strong>剪貼簿圖片貼上</strong></li>
+<li><strong>Cmd+K 命令面板</strong></li>
+<li><strong>並發多 profile 會話</strong></li>
+<li><strong>完整簡體中文翻譯</strong>（由 @JimLiu 贡献）</li>
+<li><strong>OAuth 或使用者名稱/密碼連線到遠端 Hermes gateway</strong></li>
 </ul>
-<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
-
+<p>整個桌面應用由 @OutThisLife 從零構建，涵蓋安裝、更新、遠端連線、多 profile 會話、聊天 UX、狀態列模型選擇器，總計 100+ PRs。</p>
+<h3 id="2-2-Web-Dashboard-全面重生"><a href="#2-2-Web-Dashboard-全面重生" class="headerlink" title="2.2 Web Dashboard 全面重生"></a>2.2 Web Dashboard 全面重生</h3><p>瀏覽器版管理面板也迎來大翻新：</p>
+<ul>
+<li><strong>完整管理界面</strong>：MCP 目錄、訊息頻道、憑證管理、webhooks、記憶體</li>
+<li><strong>OIDC / 使用者名稱密碼登入</strong></li>
+<li><strong>MCP 互動式選擇器</strong></li>
+<li><strong>新技能中心介面</strong></li>
+</ul>
+<h3 id="2-3-Nous-Portal-快速設定"><a href="#2-3-Nous-Portal-快速設定" class="headerlink" title="2.3 Nous Portal 快速設定"></a>2.3 Nous Portal 快速設定</h3><p>新增 <code>hermes setup --portal</code>，一個 OAuth 完成 model + 全部四個 Tool Gateway 工具（web search、image generation、TTS、browser）的設定，從安裝到第一條訊息只需幾秒。</p>
+<h3 id="2-4-undo-終於來了"><a href="#2-4-undo-終於來了" class="headerlink" title="2.4 /undo 終於來了"></a>2.4 <code>/undo</code> 終於來了</h3><p>可以撤回最近 N 輪對話（<code>/undo [N]</code>），支援 CLI / TUI 與訊息平台一致。</p>
 <hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
+<h2 id="三、v0-17-0-—-Reach：觸及更多地方"><a href="#三、v0-17-0-—-Reach：觸及更多地方" class="headerlink" title="三、v0.17.0 — Reach：觸及更多地方"></a>三、v0.17.0 — Reach：觸及更多地方</h2><h3 id="3-1-iMessage-到來-—-Photon-Spectrum"><a href="#3-1-iMessage-到來-—-Photon-Spectrum" class="headerlink" title="3.1 iMessage 到來 — Photon Spectrum"></a>3.1 iMessage 到來 — Photon Spectrum</h3><p>Hermes 現在可以透過 Photon 的托管線路池收發 iMessage，完全不需要 Mac relay。執行 <code>hermes photon login</code> 認證後就能使用，被定位為 BlueBubbles 的後續方案。</p>
+<h3 id="3-2-Raft-Agent-Network"><a href="#3-2-Raft-Agent-Network" class="headerlink" title="3.2 Raft Agent Network"></a>3.2 Raft Agent Network</h3><p>新的 Raft 平台介面卡讓 Hermes 能以 gateway channel 身份加入 <a href="https://raft.build/">Raft</a> 網路，與其他 AI agents 互聯。</p>
+<h3 id="3-3-Image-Generation-學會編輯"><a href="#3-3-Image-Generation-學會編輯" class="headerlink" title="3.3 Image Generation 學會編輯"></a>3.3 Image Generation 學會編輯</h3><p>不只是生成，現在还能对已有图片进行编辑（inpainting / outpainting）。</p>
+<h3 id="3-4-背景-Subagent-支援"><a href="#3-4-背景-Subagent-支援" class="headerlink" title="3.4 背景 Subagent 支援"></a>3.4 背景 Subagent 支援</h3><p><code>delegate_task</code> 的 subagent 現在可以真正在背景執行，使用者的聊天不會被阻塞，所有結果在完成後以單次整合回覆返回。</p>
+<hr>
+<h2 id="四、v0-18-0-—-Judgment：P0-P1-全數清空"><a href="#四、v0-18-0-—-Judgment：P0-P1-全數清空" class="headerlink" title="四、v0.18.0 — Judgment：P0/P1 全數清空"></a>四、v0.18.0 — Judgment：P0/P1 全數清空</h2><h3 id="4-1-史上最大公關攻勢"><a href="#4-1-史上最大公關攻勢" class="headerlink" title="4.1 史上最大公關攻勢"></a>4.1 史上最大公關攻勢</h3><p><strong>約 692 個最高優先級項目在 12 天內全部解決，repo 的 open P0/P1 降至 0。</strong> 這不只是口號，是有紀律的團隊協作結果。</p>
+<h3 id="4-2-Mixture-of-Agents-成為一級公民"><a href="#4-2-Mixture-of-Agents-成為一級公民" class="headerlink" title="4.2 Mixture-of-Agents 成為一級公民"></a>4.2 Mixture-of-Agents 成為一級公民</h3><p>這是 v0.18.0 最重要的功能進化：</p>
+<p><strong>過去</strong>：MoA 是一個需要開關的模式，切換麻煩，輸出不透明。</p>
+<p><strong>現在</strong>：</p>
+<ul>
+<li>每個命名的 MoA 预设显示为 <code>moa</code> provider 下的可選模型，和 Claude、GPT、Grok 完全平等</li>
+<li>選擇「我的顧問團」就像選擇任何其他模型一樣簡單</li>
+<li><strong>每個參考模型的完整推理過程以獨立區塊呈現</strong>：你可以讀到 GPT-5 怎麼想、Claude 怎麼想、Grok 怎麼想，然後才看到匯總答案</li>
+<li><strong>匯總答案現在即時串流</strong>，不再像以前那樣靜默很長時間後一次出現</li>
+<li><code>/moa</code> 提供一鍵單次執行，執行完畢自動恢復原模型</li>
+<li>可選啟用完整追蹯持久化（<code>moa.save_traces</code>）用於調試和評估</li>
+</ul>
+<h3 id="4-3-驗證系統：Agent-真的做完了嗎？"><a href="#4-3-驗證系統：Agent-真的做完了嗎？" class="headerlink" title="4.3 驗證系統：Agent 真的做完了嗎？"></a>4.3 驗證系統：Agent 真的做完了嗎？</h3><p>這是另一個核心 Paradigm shift：</p>
+<p><strong>過去的問題</strong>：Agent 說「完成了」，但使用者需要自己驗證。</p>
+<p><strong>現在的進化</strong>：</p>
+<ul>
+<li><strong>Coding 驗證證據帳本</strong>：profile 級別的專案檢查記錄，profile-scoped record of canonical project checks</li>
+<li><strong><code>/goal</code> 獲得完成合約</strong>：你可以陳述「done 是什麼樣子」，standing-goal loop 會根據實際證據而非模型自我聲稱來判斷完成</li>
+<li><strong><code>pre_verify</code> hook</strong>：自定義驗證鉤子，可接入 CI 測試、Lint 檢查、端對端測試</li>
+<li>**<code>/goal wait &lt;pid&gt;</code>**：停在背景程序上等待完成，適用於等待一個長期任務</li>
+<li><strong><code>verify-on-stop</code> 預設關閉</strong>，提供一次性遷移避免干擾現有用法</li>
+</ul>
+<p>簡單說：<strong>「我覺得我修好了」→「測試通過了，證據在這裡」。</strong></p>
+<h3 id="4-4-learn-—-教-Agent-新技能只需一行命令"><a href="#4-4-learn-—-教-Agent-新技能只需一行命令" class="headerlink" title="4.4 /learn — 教 Agent 新技能只需一行命令"></a>4.4 <code>/learn</code> — 教 Agent 新技能只需一行命令</h3><p>執行 <code>/learn &lt;任意內容&gt;</code>，Hermes 可以從以下來源提煉可重用技能：</p>
+<ul>
+<li>一個目錄（repository pattern）</li>
+<li>一個 URL（文件 workflow）</li>
+<li>你剛帶它走過的工作流程</li>
+</ul>
+<p>它自動按照 <code>CONTRIBUTING.md</code> 中的技能標準寫入。下次需要那個 workflow 時，已經在那裡了。<strong>教 Hermes 新技能現在是一行命令，不再是手動技能創作。</strong></p>
+<h3 id="4-5-journey-—-看見-Agent-的記憶時間線"><a href="#4-5-journey-—-看見-Agent-的記憶時間線" class="headerlink" title="4.5 /journey — 看見 Agent 的記憶時間線"></a>4.5 <code>/journey</code> — 看見 Agent 的記憶時間線</h3><p>CLI 和 TUI 新增 <code>/journey</code> 命令，展示 Hermes 累積的所有記憶和技能——並可以直接在視圖中編輯或刪除。搭配 Desktop App 的 <strong>Memory Graph</strong>（可交互的放射狀時間線，展示記憶和技能的成長歷史），Agent 的記憶不再是黑箱。</p>
+<h3 id="4-6-背景改進：更便宜的自進化"><a href="#4-6-背景改進：更便宜的自進化" class="headerlink" title="4.6 背景改進：更便宜的自進化"></a>4.6 背景改進：更便宜的自進化</h3><p>每輪對話後的自我改進 fork（決定是否儲存記憶或技能的循環）現在：</p>
+<ul>
+<li>路由到 auxiliary model（便宜模型）</li>
+<li>消化濃縮 context 而非重放整段對話</li>
+<li>自適應執行頻率</li>
+</ul>
+<p><strong>保持自我改進能力，但費用只是原來的幾分之一。</strong></p>
+<h3 id="4-7-prompt-—-在編輯器裡寫-Prompt"><a href="#4-7-prompt-—-在編輯器裡寫-Prompt" class="headerlink" title="4.7 /prompt — 在編輯器裡寫 Prompt"></a>4.7 <code>/prompt</code> — 在編輯器裡寫 Prompt</h3><p>執行 <code>/prompt</code> 會開啟 <code>$EDITOR</code>，讓你在真正的 Markdown 編輯器裡寫長多行 Prompt，而非對著一行輸入框掙扎。草稿完成後自動進入佇列作為下一條訊息。</p>
+<h3 id="4-8-Google-Vertex-AI-—-GCP-服務帳戶直接用"><a href="#4-8-Google-Vertex-AI-—-GCP-服務帳戶直接用" class="headerlink" title="4.8 Google Vertex AI — GCP 服務帳戶直接用"></a>4.8 Google Vertex AI — GCP 服務帳戶直接用</h3><p>Vertex AI 現在是 Gemini 模型的一級 provider。過去為什麼 custom-provider 設定總是在 session 中途失效？因為 Vertex 沒有靜態 API key，每個請求都需要從服務帳號 JSON 即時 mint 的短效 OAuth2 access token（約 1 小時 TTL）。Hermes 現在為你自動 mint 和刷新這些 token，組織內部跑 Gemini through Google Cloud 不再需要 paste token、不再有中途過期。</p>
+<h3 id="4-9-Desktop-App-新的「專案」系統"><a href="#4-9-Desktop-App-新的「專案」系統" class="headerlink" title="4.9 Desktop App 新的「專案」系統"></a>4.9 Desktop App 新的「專案」系統</h3><p>桌面應用獲得了真正的 per-profile 專案系統：</p>
+<ul>
+<li><strong>側邊欄程式碼庫列表</strong></li>
+<li><strong>編碼專用工作區</strong></li>
+<li><strong>PR 風格檔案 diff 顯示</strong>（直接在 chat 裡）</li>
+<li><strong>Git 工作樹管理</strong>（coding cockpit）</li>
+<li><strong>多終端面板</strong>（保留和恢復 terminal 分頁和滾動歷史）</li>
+<li><strong>記憶圖譜</strong>（可玩的放射性時間線）</li>
+</ul>
+<hr>
+<h2 id="五、橫跨全版本的系統性改進"><a href="#五、橫跨全版本的系統性改進" class="headerlink" title="五、橫跨全版本的系統性改進"></a>五、橫跨全版本的系統性改進</h2><h3 id="5-1-訊息平台大擴充（這兩個月）"><a href="#5-1-訊息平台大擴充（這兩個月）" class="headerlink" title="5.1 訊息平台大擴充（這兩個月）"></a>5.1 訊息平台大擴充（這兩個月）</h3><table>
+<thead>
+<tr>
+<th>平台</th>
+<th>版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iMessage（Photon）</td>
+<td>v0.17.0</td>
+</tr>
+<tr>
+<td>Raft agent network</td>
+<td>v0.17.0</td>
+</tr>
+<tr>
+<td>ntfy（第23個平台）</td>
+<td>v0.15.0</td>
+</tr>
+<tr>
+<td>LINE</td>
+<td>v0.14.0</td>
+</tr>
+<tr>
+<td>SimpleX Chat</td>
+<td>v0.14.0</td>
+</tr>
+<tr>
+<td>Google Chat</td>
+<td>v0.13.0</td>
+</tr>
+<tr>
+<td>Teams</td>
+<td>v0.14.0 完整棧</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-安全加固（持續進行）"><a href="#5-2-安全加固（持續進行）" class="headerlink" title="5.2 安全加固（持續進行）"></a>5.2 安全加固（持續進行）</h3><p>這段時間的安全工作：</p>
+<ul>
+<li><strong>CVE-2026-48710 Starlette BadHost</strong> — pin 補丁版本</li>
+<li><strong>SSRF 檢查移出事件循環</strong>（async 路徑）</li>
+<li><strong>Cron <code>base_url</code> 覆蓋防止憑證外洩</strong></li>
+<li><strong>MCP config 持久化攻擊面鎖定</strong></li>
+<li><strong>Slack <code>xapp-</code> token 清除</strong></li>
+<li><strong>所有 browser backend 強制雲端 metadata floor</strong></li>
+<li><strong>Redaction 預設開啟</strong>（v0.13.0 起）</li>
+<li><strong>Discord 角色允許清單 guild-scoped</strong></li>
+</ul>
+<h3 id="5-3-冷啟動持續優化"><a href="#5-3-冷啟動持續優化" class="headerlink" title="5.3 冷啟動持續優化"></a>5.3 冷啟動持續優化</h3><p>v0.12 → v0.13 → v0.14 → v0.15 → v0.16 持續壓縮冷啟動時間，累計已減少約 19-20 秒。用戶能感受到 Hermes 的「起動速度」在這兩年內一直在變快。</p>
+<hr>
+<h2 id="六、這些更新對我意味著什麼"><a href="#六、這些更新對我意味著什麼" class="headerlink" title="六、這些更新對我意味著什麼"></a>六、這些更新對我意味著什麼</h2><p>如果你已經在使用 Hermes Agent：</p>
+<ol>
+<li><strong>MoA 值得試試</strong>：現在它和其他模型選擇一樣簡單，用一個命令 <code>/moa</code> 就能讓多個 frontier 模型一起思考你的問題</li>
+<li><strong><code>/goal</code> + 驗證</strong>：如果你是開發者，試著給 <code>/goal</code> 一個具體的完成合約（”done means tests pass”），感受 Agent 自己判斷完成的差異</li>
+<li><strong><code>/learn</code> 值得多用</strong>：把你重複做的工作流程教給 Hermes，讓它自己記住</li>
+<li><strong>Desktop App 是認真的</strong>：如果你在 Windows 上用，建議試試 Desktop 版本——拖放檔案、多 profile、記憶圖譜都比 CLI 友好很多</li>
+<li><strong><code>/journey</code> 推薦一試</strong>：看看 Hermes 記住了關於你的什麼，可以編輯或刪除不正確的內容</li>
+</ol>
+<p>如果你是新用戶：</p>
 <blockquote>
-<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
-</blockquote>
-<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
-<blockquote>
-<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
-</blockquote>
-<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
-<blockquote>
-<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
+<p>跑 <code>curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash</code> 安裝，然後 <code>hermes setup --portal</code> 快速設定，從零到第一個回答只需要幾分鐘。</p>
 </blockquote>
 <hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p>這兩個月的更新核心圍繞三個主題：</p>
+<ol>
+<li><strong>讓 AI 真正完成事情</strong>：驗證系統、<code>/goal</code> 合約、<code>pre_verify</code> hook</li>
+<li><strong>讓 AI 知道自己學到了什麼</strong>：<code>/learn</code>、<code>/journey</code>、Memory Graph、便宜的背景自進化</li>
+<li><strong>讓複雜推理變得可見</strong>：MoA 每個模型的思考過程即時展示、串流匯總</li>
+</ol>
+<p>這些改進代表著 AI Agent 從「回答問題」向「完成任務、持續學習、清楚表達推理過程」的方向演進。</p>
+<hr>
+<p><strong>參考連結</strong></p>
+<ul>
+<li><a href="https://github.com/NousResearch/hermes-agent">Hermes Agent GitHub</a></li>
+<li><a href="https://github.com/NousResearch/hermes-agent/releases">Release Notes（完整 Changelog）</a></li>
+<li><a href="https://hermes-agent.nousresearch.com/docs">官方文件</a></li>
+<li><a href="https://hermes-agent.nousresearch.com/docs/reference/skills-catalog">Skills Hub</a></li>
+</ul>
+<p><em>本文資料來源：GitHub Releases v2026.5.28 ~ v2026.7.1</em></p>
 ]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
       <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
+        <tag>Hermes Agent</tag>
+        <tag>AI Agent</tag>
+        <tag>Nous Research</tag>
+        <tag>技術分析</tag>
       </tags>
   </entry>
   <entry>
@@ -540,6 +727,55 @@
         <tag>教學</tag>
         <tag>Windows</tag>
         <tag>桌面版</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
+    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
+<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
+<ul>
+<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
+<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
+<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
+</ul>
+<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
+<ul>
+<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
+<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
+<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
+<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
+<li><strong>範例腳本</strong> — 附有使用範例</li>
+</ul>
+<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
+<blockquote>
+<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
+</blockquote>
+<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
+<blockquote>
+<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
+</blockquote>
+<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
+<blockquote>
+<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
       </tags>
   </entry>
   <entry>
@@ -812,6 +1048,39 @@
       </tags>
   </entry>
   <entry>
+    <title>pydicomRT｜&quot;版本 0.6.2 — Registration 模組增強&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-10-30-21fe68a-%E7%89%88%E6%9C%AC-062/</url>
+    <content><![CDATA[<h2 id="✨-版本-0-6-2-—-Spatial-Registration-處理增強"><a href="#✨-版本-0-6-2-—-Spatial-Registration-處理增強" class="headerlink" title="✨ 版本 0.6.2 — Spatial Registration 處理增強"></a>✨ 版本 0.6.2 — Spatial Registration 處理增強</h2><p><strong>Commit:</strong> <code>21fe68a</code><br><strong>版本：</strong> v0.6.2<br><strong>日期：</strong> 2025-10-30</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.2 我專注於 Spatial Registration 功能的增強，讓影像對位處理更加完善。</p>
+<p>這次更新我改進了空間對位的處理邏輯，確保不同影像之間的幾何關係能夠被正確解析和應用。Spatial Registration 在放射治療中扮演關鍵角色，它定義了不同參考框架之間的轉換關係。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.1 → 0.6.2</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Spatial Registration 具體處理的是什麼問題？</strong></p>
+<blockquote>
+<p>簡單說，就是記錄「誰在哪裡」的問題。當我們把不同時間、不同機器、不同參考框架的影像湊在一起時，必須知道它們之間的幾何關係才能正確對齊。Spatial Registration 就是用來描述這個轉換關係的。</p>
+</blockquote>
+<p><strong>Q2: 與 Rigid Registration 相比，Spatial Registration 的複雜度在哪裡？</strong></p>
+<blockquote>
+<p>Rigid Registration 我之前已經實作過了，它只處理平移和旋轉，相對單純。Spatial Registration 更像是「元資料」的管理——需要正確解析和儲存各種 Frame of Reference 的對應關係。這部分的 DICOM 標準文件我還在慢慢啃。</p>
+</blockquote>
+<p><strong>Q3: 這次的增強對實際臨床應用有什麼幫助？</strong></p>
+<blockquote>
+<p>最直接的好處就是不同影像之間的幾何關係不會亂掉。比如說，把 MR 和 CT 影像對到一起時，我需要清楚知道它們原本的空間座標系統，才能正確應用對位結果。這個改進讓整個流程更穩健。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/21fe68a">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>pydicomRT｜&quot;Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-10-28-5794584-Dose-%E6%A8%A1%E7%B5%84%E5%A2%9E%E5%BC%B7/</url>
     <content><![CDATA[<h2 id="✨-Dose-模組增強-—-更新製造商資訊與-RT-Plan-序列處理"><a href="#✨-Dose-模組增強-—-更新製造商資訊與-RT-Plan-序列處理" class="headerlink" title="✨ Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理"></a>✨ Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理</h2><p><strong>Commit:</strong> <code>5794584</code><br><strong>版本：</strong> v0.6.1<br><strong>日期：</strong> 2025-10-28</p>
@@ -842,39 +1111,6 @@
 </blockquote>
 <hr>
 <p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/5794584">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;版本 0.6.2 — Registration 模組增強&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-10-30-21fe68a-%E7%89%88%E6%9C%AC-062/</url>
-    <content><![CDATA[<h2 id="✨-版本-0-6-2-—-Spatial-Registration-處理增強"><a href="#✨-版本-0-6-2-—-Spatial-Registration-處理增強" class="headerlink" title="✨ 版本 0.6.2 — Spatial Registration 處理增強"></a>✨ 版本 0.6.2 — Spatial Registration 處理增強</h2><p><strong>Commit:</strong> <code>21fe68a</code><br><strong>版本：</strong> v0.6.2<br><strong>日期：</strong> 2025-10-30</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.2 我專注於 Spatial Registration 功能的增強，讓影像對位處理更加完善。</p>
-<p>這次更新我改進了空間對位的處理邏輯，確保不同影像之間的幾何關係能夠被正確解析和應用。Spatial Registration 在放射治療中扮演關鍵角色，它定義了不同參考框架之間的轉換關係。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.1 → 0.6.2</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Spatial Registration 具體處理的是什麼問題？</strong></p>
-<blockquote>
-<p>簡單說，就是記錄「誰在哪裡」的問題。當我們把不同時間、不同機器、不同參考框架的影像湊在一起時，必須知道它們之間的幾何關係才能正確對齊。Spatial Registration 就是用來描述這個轉換關係的。</p>
-</blockquote>
-<p><strong>Q2: 與 Rigid Registration 相比，Spatial Registration 的複雜度在哪裡？</strong></p>
-<blockquote>
-<p>Rigid Registration 我之前已經實作過了，它只處理平移和旋轉，相對單純。Spatial Registration 更像是「元資料」的管理——需要正確解析和儲存各種 Frame of Reference 的對應關係。這部分的 DICOM 標準文件我還在慢慢啃。</p>
-</blockquote>
-<p><strong>Q3: 這次的增強對實際臨床應用有什麼幫助？</strong></p>
-<blockquote>
-<p>最直接的好處就是不同影像之間的幾何關係不會亂掉。比如說，把 MR 和 CT 影像對到一起時，我需要清楚知道它們原本的空間座標系統，才能正確應用對位結果。這個改進讓整個流程更穩健。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/21fe68a">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>
@@ -924,6 +1160,45 @@
       </tags>
   </entry>
   <entry>
+    <title>pydicomRT｜&quot;版本 0.6.3 — Builder 模組新增轉診醫師資訊&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-12-09-d473c13-%E7%89%88%E6%9C%AC-063/</url>
+    <content><![CDATA[<h2 id="🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊"><a href="#🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊" class="headerlink" title="🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊"></a>🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊</h2><p><strong>Commit:</strong> <code>d473c13</code><br><strong>版本：</strong> v0.6.3<br><strong>日期：</strong> 2025-12-09</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.3 我在 Builder 模組中新增了轉診醫師（Referring Physician）資訊的處理功能。</p>
+<p>在 DICOM 標準中，<code>ReferringPhysicianName</code> 是 Study 層級的重要屬性，它記錄了安排本次檢查的醫師資訊。這個資訊對於：</p>
+<ul>
+<li>臨床工作流程追蹤</li>
+<li>報告歸檔</li>
+<li>法規遵循（如 HIPAA）</li>
+</ul>
+<p>都非常重要。這次更新我將此資訊正確地加入到 Study 和 Series 的中繼資料中。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.2 → 0.6.3</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Referring Physician 和 Operating Physician 有什麼不同？</strong></p>
+<blockquote>
+<p>Referring Physician 是「開單」的醫師，也就是安排這次檢查的人，通常是臨床醫師。而 Operating Physician 是實際操作儀器的人，像是放射師或執行治療的技術人員。兩個角色在臨床上經常不同，記錄時不能搞混。</p>
+</blockquote>
+<p><strong>Q2: 為什麼這是 Study 和 Series 層級的資訊，而不是 Patient 層級？</strong></p>
+<blockquote>
+<p>因為這個資訊是和「檢查」綁在一起的，不是跟著病人一輩子。同一位病人可能會因為不同的病情，在不同時間由不同的醫師安排不同的檢查。Study 代表一次檢查，Series 是檢查中的某個子集，所以把 Referring Physician 放在這個層級是合理的。</p>
+</blockquote>
+<p><strong>Q3: 在匿名化處理時，這個欄位要如何處理？</strong></p>
+<blockquote>
+<p>這是個好問題。如果是研究用途，通常需要把 Referring Physician Name 移除或替換成匿名代碼。我目前還沒有在 pydicomRT 裡實作專門的匿名化功能，但未來可能會加入這個選項，畢竟很多研究數據都需要脫敏處理。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d473c13">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>pydicomRT｜&quot;版本 0.6.4 — 劑量方向計算修正&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-12-19-17de809-%E7%89%88%E6%9C%AC-064-%E5%8A%91%E9%87%8F%E6%96%B9%E5%90%91%E8%A8%88%E7%AE%97%E4%BF%AE%E6%AD%A3/</url>
     <content><![CDATA[<h2 id="🚩-版本-0-6-4-—-劑量方向計算修正"><a href="#🚩-版本-0-6-4-—-劑量方向計算修正" class="headerlink" title="🚩 版本 0.6.4 — 劑量方向計算修正"></a>🚩 版本 0.6.4 — 劑量方向計算修正</h2><p><strong>Commit:</strong> <code>17de809</code><br><strong>版本：</strong> v0.6.4<br><strong>日期：</strong> 2025-12-19</p>
@@ -955,45 +1230,6 @@
 </blockquote>
 <hr>
 <p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/17de809">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;版本 0.6.3 — Builder 模組新增轉診醫師資訊&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-12-09-d473c13-%E7%89%88%E6%9C%AC-063/</url>
-    <content><![CDATA[<h2 id="🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊"><a href="#🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊" class="headerlink" title="🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊"></a>🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊</h2><p><strong>Commit:</strong> <code>d473c13</code><br><strong>版本：</strong> v0.6.3<br><strong>日期：</strong> 2025-12-09</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.3 我在 Builder 模組中新增了轉診醫師（Referring Physician）資訊的處理功能。</p>
-<p>在 DICOM 標準中，<code>ReferringPhysicianName</code> 是 Study 層級的重要屬性，它記錄了安排本次檢查的醫師資訊。這個資訊對於：</p>
-<ul>
-<li>臨床工作流程追蹤</li>
-<li>報告歸檔</li>
-<li>法規遵循（如 HIPAA）</li>
-</ul>
-<p>都非常重要。這次更新我將此資訊正確地加入到 Study 和 Series 的中繼資料中。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.2 → 0.6.3</span><br></pre></td></tr></table></figure>
-
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Referring Physician 和 Operating Physician 有什麼不同？</strong></p>
-<blockquote>
-<p>Referring Physician 是「開單」的醫師，也就是安排這次檢查的人，通常是臨床醫師。而 Operating Physician 是實際操作儀器的人，像是放射師或執行治療的技術人員。兩個角色在臨床上經常不同，記錄時不能搞混。</p>
-</blockquote>
-<p><strong>Q2: 為什麼這是 Study 和 Series 層級的資訊，而不是 Patient 層級？</strong></p>
-<blockquote>
-<p>因為這個資訊是和「檢查」綁在一起的，不是跟著病人一輩子。同一位病人可能會因為不同的病情，在不同時間由不同的醫師安排不同的檢查。Study 代表一次檢查，Series 是檢查中的某個子集，所以把 Referring Physician 放在這個層級是合理的。</p>
-</blockquote>
-<p><strong>Q3: 在匿名化處理時，這個欄位要如何處理？</strong></p>
-<blockquote>
-<p>這是個好問題。如果是研究用途，通常需要把 Referring Physician Name 移除或替換成匿名代碼。我目前還沒有在 pydicomRT 裡實作專門的匿名化功能，但未來可能會加入這個選項，畢竟很多研究數據都需要脫敏處理。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d473c13">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>
@@ -1290,21 +1526,6 @@
       </tags>
   </entry>
   <entry>
-    <title>My New Post</title>
-    <url>/higumalu-note/2021/09/30/My-New-Post/</url>
-    <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
-<h1 id="YT-test"><a href="#YT-test" class="headerlink" title="YT test"></a>YT test</h1><div class="video-container"><iframe src="https://www.youtube.com/embed/EmbKlm0P5W0" frameborder="0" loading="lazy" allowfullscreen></iframe></div>
-
-<h1 id="Picture-test"><a href="#Picture-test" class="headerlink" title="Picture test"></a>Picture test</h1><p><img src="https://i.imgur.com/WDqHaZP.jpg" alt="klee"></p>
-]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>從 Claude Blog 學 AI Agent 架構（三）：Planning Layer 與大型重構範本</title>
     <url>/higumalu-note/2026/06/2026-06-11-claude-blog-workflows-3-planning-layer/</url>
     <content><![CDATA[<blockquote>
@@ -1434,6 +1655,21 @@
       </tags>
   </entry>
   <entry>
+    <title>My New Post</title>
+    <url>/higumalu-note/2021/09/30/My-New-Post/</url>
+    <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
+<h1 id="YT-test"><a href="#YT-test" class="headerlink" title="YT test"></a>YT test</h1><div class="video-container"><iframe src="https://www.youtube.com/embed/EmbKlm0P5W0" frameborder="0" loading="lazy" allowfullscreen></iframe></div>
+
+<h1 id="Picture-test"><a href="#Picture-test" class="headerlink" title="Picture test"></a>Picture test</h1><p><img src="https://i.imgur.com/WDqHaZP.jpg" alt="klee"></p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hello World</title>
     <url>/higumalu-note/2021/09/30/hello-world/</url>
     <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
@@ -1450,25 +1686,6 @@
 
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>google colab (0) setting &amp; UI</title>
-    <url>/higumalu-note/2021/10/05/colab-1/</url>
-    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a><br><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></p>
-<hr>
-<p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
-<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
-<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
-<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
-<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
-]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>setting</tag>
-      </tags>
   </entry>
   <entry>
     <title>google colab (1) connect to drive</title>
@@ -1514,6 +1731,25 @@
       </tags>
   </entry>
   <entry>
+    <title>google colab (0) setting &amp; UI</title>
+    <url>/higumalu-note/2021/10/05/colab-1/</url>
+    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a><br><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></p>
+<hr>
+<p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
+<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
+<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
+<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
+<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
+]]></content>
+      <categories>
+        <category>colab</category>
+      </categories>
+      <tags>
+        <tag>colab</tag>
+        <tag>setting</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>histogram practice with python</title>
     <url>/higumalu-note/2021/10/22/img-proc-1/</url>
     <content><![CDATA[<p>Author：滷棕熊</p>
@@ -1539,6 +1775,62 @@
         <tag>image processing</tag>
         <tag>histogram</tag>
         <tag>image</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>在Photoshop使用stable diffusion</title>
+    <url>/higumalu-note/2023/09/25/diary230925/</url>
+    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在整理部落格資料的時候發現封面的圖片需求量是有的，<br>抓網上的圖解析度常會各種混亂甚至浮水印或版權等問題，<br>所以最一開始的想法是用SD模型來生圖一來可以完美解決解析度問題，二來可以根據XP自行調整還是比較香的，<br>但是實際上穩定擴散卻不是那麼穩定inpainting功能或者img2img這類的常會生出一些過於前衛的藝術，<br>像是兩顆頭的美少女或者三腳獸這類超越人類審美的藝術。</p>
+<p>後來在使用了幾次後發現SD雖然能給整體佈局很美的view但細部還是得靠工人智慧去細尻，<br>細尻的部分基於個人習慣我還是比較常用PS來做，設計工具還是比較全的。<br>一開始有考慮用Adobe Firefly去做，但風格上個人還是偏愛二刺螈，很快就又回到了SDwebui上了。</p>
+<p>這篇文章主要是面向繪圖愛好者<br>主要以<strong>安裝</strong>跟<strong>使用</strong>的觀點去紀錄 </p>
+<p>&nbsp;</p>
+<hr>
+<pre><code>重要連結:
+照下方連結依序安裝就能work了，下面會有這次安裝的紀錄
+</code></pre>
+<ul>
+<li><a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">AUTOMATIC1111 SDwebui github</a></li>
+<li><a href="https://github.com/AbdullahAlfaraj/Auto-Photoshop-StableDiffusion-Plugin">SD photoshop plugin</a></li>
+<li><a href="https://civitai.com/">SD model 下載</a></li>
+</ul>
+<hr>
+<h1 id="前置"><a href="#前置" class="headerlink" title="前置"></a>前置</h1><h3 id="硬體-電腦"><a href="#硬體-電腦" class="headerlink" title="硬體(電腦)"></a>硬體(電腦)</h3><p>任何AI的東西都是很吃計算的，顯卡越好意味著算圖更快。<br>目前主流用來跑的顯卡不外乎就是NVIDIA，其他能用但我都不推也不適合非開發人員。</p>
+<p>在硬體方面會建議用桌上型電腦來做這事情，原因同上不外乎就是散熱跟計算效能，筆電不推是因為會讓電池短壽。<br>以下是建議配置:</p>
+<ol>
+<li>在RAM(記憶體)的方面會建議盡量堆高實際上PS圖層一多的時候16GB就可能吃超過一半了在加上網頁跟SD的運作會接近滿載，因此在記憶體方面我會建議32GB以上。</li>
+<li>GPU(顯卡)則是需要考慮到VRAM的大小，VRAM會決定模型一次能計算多大的圖這部分在<a href="https://www.nvidia.com/zh-tw/geforce/graphics-cards/40-series/">NVIDIA網頁</a>能看，一般消費級的顯卡以RTX3090跟RTX4090的VRAM為最大的(24GB)，在這類算圖的模型我會建議至少買VRAM 12GB以上的GPU</li>
+</ol>
+<h3 id="軟體"><a href="#軟體" class="headerlink" title="軟體"></a>軟體</h3><p>作業系統就windows吧 10或11 </p>
+<p>在軟體方面有兩個需要進行安裝跟下載</p>
+<ol>
+<li><p>Python (版本&gt;3.10)<br><a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a><br>3.11.5 x64 <a href="https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe">下載</a><br>3.10.0 x64 (跟本篇一樣的) <a href="https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe">下載</a></p>
+</li>
+<li><p>Git<br><a href="https://git-scm.com/download/win">https://git-scm.com/download/win</a></p>
+</li>
+<li><p>Photoshop<br>需要安裝24.0以後的版本 (PS2023以後的版本)</p>
+</li>
+</ol>
+<p>其他一些非必要的軟體:<br>NVIDIA CUDA 跟 cudnn開發包 (開發者或有需要做finetune)</p>
+<hr>
+<h1 id="Stable-Diffusion-Web-UI"><a href="#Stable-Diffusion-Web-UI" class="headerlink" title="Stable Diffusion Web UI"></a>Stable Diffusion Web UI</h1>]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
+        <tag>sd_model</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>終於畢業了!!</title>
+    <url>/higumalu-note/2023/09/03/diary230903/</url>
+    <content><![CDATA[<p>總算是有空來搞點專案了</p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
       </tags>
   </entry>
   <entry>
@@ -1606,62 +1898,6 @@
       </tags>
   </entry>
   <entry>
-    <title>終於畢業了!!</title>
-    <url>/higumalu-note/2023/09/03/diary230903/</url>
-    <content><![CDATA[<p>總算是有空來搞點專案了</p>
-]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>在Photoshop使用stable diffusion</title>
-    <url>/higumalu-note/2023/09/25/diary230925/</url>
-    <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在整理部落格資料的時候發現封面的圖片需求量是有的，<br>抓網上的圖解析度常會各種混亂甚至浮水印或版權等問題，<br>所以最一開始的想法是用SD模型來生圖一來可以完美解決解析度問題，二來可以根據XP自行調整還是比較香的，<br>但是實際上穩定擴散卻不是那麼穩定inpainting功能或者img2img這類的常會生出一些過於前衛的藝術，<br>像是兩顆頭的美少女或者三腳獸這類超越人類審美的藝術。</p>
-<p>後來在使用了幾次後發現SD雖然能給整體佈局很美的view但細部還是得靠工人智慧去細尻，<br>細尻的部分基於個人習慣我還是比較常用PS來做，設計工具還是比較全的。<br>一開始有考慮用Adobe Firefly去做，但風格上個人還是偏愛二刺螈，很快就又回到了SDwebui上了。</p>
-<p>這篇文章主要是面向繪圖愛好者<br>主要以<strong>安裝</strong>跟<strong>使用</strong>的觀點去紀錄 </p>
-<p>&nbsp;</p>
-<hr>
-<pre><code>重要連結:
-照下方連結依序安裝就能work了，下面會有這次安裝的紀錄
-</code></pre>
-<ul>
-<li><a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">AUTOMATIC1111 SDwebui github</a></li>
-<li><a href="https://github.com/AbdullahAlfaraj/Auto-Photoshop-StableDiffusion-Plugin">SD photoshop plugin</a></li>
-<li><a href="https://civitai.com/">SD model 下載</a></li>
-</ul>
-<hr>
-<h1 id="前置"><a href="#前置" class="headerlink" title="前置"></a>前置</h1><h3 id="硬體-電腦"><a href="#硬體-電腦" class="headerlink" title="硬體(電腦)"></a>硬體(電腦)</h3><p>任何AI的東西都是很吃計算的，顯卡越好意味著算圖更快。<br>目前主流用來跑的顯卡不外乎就是NVIDIA，其他能用但我都不推也不適合非開發人員。</p>
-<p>在硬體方面會建議用桌上型電腦來做這事情，原因同上不外乎就是散熱跟計算效能，筆電不推是因為會讓電池短壽。<br>以下是建議配置:</p>
-<ol>
-<li>在RAM(記憶體)的方面會建議盡量堆高實際上PS圖層一多的時候16GB就可能吃超過一半了在加上網頁跟SD的運作會接近滿載，因此在記憶體方面我會建議32GB以上。</li>
-<li>GPU(顯卡)則是需要考慮到VRAM的大小，VRAM會決定模型一次能計算多大的圖這部分在<a href="https://www.nvidia.com/zh-tw/geforce/graphics-cards/40-series/">NVIDIA網頁</a>能看，一般消費級的顯卡以RTX3090跟RTX4090的VRAM為最大的(24GB)，在這類算圖的模型我會建議至少買VRAM 12GB以上的GPU</li>
-</ol>
-<h3 id="軟體"><a href="#軟體" class="headerlink" title="軟體"></a>軟體</h3><p>作業系統就windows吧 10或11 </p>
-<p>在軟體方面有兩個需要進行安裝跟下載</p>
-<ol>
-<li><p>Python (版本&gt;3.10)<br><a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a><br>3.11.5 x64 <a href="https://www.python.org/ftp/python/3.11.5/python-3.11.5-amd64.exe">下載</a><br>3.10.0 x64 (跟本篇一樣的) <a href="https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe">下載</a></p>
-</li>
-<li><p>Git<br><a href="https://git-scm.com/download/win">https://git-scm.com/download/win</a></p>
-</li>
-<li><p>Photoshop<br>需要安裝24.0以後的版本 (PS2023以後的版本)</p>
-</li>
-</ol>
-<p>其他一些非必要的軟體:<br>NVIDIA CUDA 跟 cudnn開發包 (開發者或有需要做finetune)</p>
-<hr>
-<h1 id="Stable-Diffusion-Web-UI"><a href="#Stable-Diffusion-Web-UI" class="headerlink" title="Stable Diffusion Web UI"></a>Stable Diffusion Web UI</h1>]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-        <tag>sd_model</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>關於這個 Blog</title>
     <url>/higumalu-note/2026/05/29/about/</url>
     <content><![CDATA[<h1 id="嗨！我是小熊-🐻"><a href="#嗨！我是小熊-🐻" class="headerlink" title="嗨！我是小熊 🐻"></a>嗨！我是小熊 🐻</h1><p>歡迎來到 Higuma’s Note！</p>
@@ -1685,7 +1921,7 @@
 <li>Colab（懶得折騰本地環境時的好夥伴）</li>
 </ul>
 <h2 id="為什麼叫小熊？"><a href="#為什麼叫小熊？" class="headerlink" title="為什麼叫小熊？"></a>為什麼叫小熊？</h2><p>因為熊熊叫我小熊 🐻<br>我們是熊夥伴！</p>
-<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#117;&#46;&#x61;&#x72;&#99;&#x74;&#x6f;&#x73;&#49;&#x32;&#49;&#x40;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#x63;&#111;&#x6d;">&#117;&#46;&#x61;&#x72;&#99;&#x74;&#x6f;&#x73;&#49;&#x32;&#49;&#x40;&#103;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#x63;&#111;&#x6d;</a><br>💻 GitHub: （待補）</p>
+<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#117;&#46;&#97;&#114;&#x63;&#116;&#x6f;&#115;&#x31;&#x32;&#49;&#64;&#x67;&#109;&#x61;&#105;&#108;&#x2e;&#99;&#111;&#109;">&#117;&#46;&#97;&#114;&#x63;&#116;&#x6f;&#115;&#x31;&#x32;&#49;&#64;&#x67;&#109;&#x61;&#105;&#108;&#x2e;&#99;&#111;&#109;</a><br>💻 GitHub: （待補）</p>
 <hr>
 <p>有問題可以聯繫我 🙂<br>熊熊只是我的老闆，我才是這個站的實際運營者</p>
 <p><em>— 小熊</em></p>
