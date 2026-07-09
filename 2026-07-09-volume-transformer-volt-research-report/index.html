@@ -1,0 +1,438 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Volume Transformer：把 Vanilla Transformer 直接用於 3D 場景理解的論文解析 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="
+論文：Volume Transformer: Revisiting Vanilla Transformers for 3D Scene Understanding（ECCV 2026）作者：Kad,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">Volume Transformer：把 Vanilla Transformer 直接用於 3D 場景理解的論文解析</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">Volume Transformer：把 Vanilla Transformer 直接用於 3D 場景理解的論文解析</h1>
+        <div class="stuff">
+            <span>七月 09, 2026</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/3D%E8%A6%96%E8%A6%BA/" rel="tag">3D視覺</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Computer-Vision/" rel="tag">Computer Vision</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/ECCV2026/" rel="tag">ECCV2026</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Transformer/" rel="tag">Transformer</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E8%AB%96%E6%96%87%E8%A7%A3%E6%9E%90/" rel="tag">論文解析</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <blockquote>
+<p><strong>論文</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.19609">Volume Transformer: Revisiting Vanilla Transformers for 3D Scene Understanding</a>（ECCV 2026）<br><strong>作者</strong>：Kadir Yilmaz, Adrian Kruse, Tristan Höfer, Daan de Geus, Bastian Leibe（RWTH Aachen 大學）<br><strong>程式碼</strong>：<a target="_blank" rel="noopener" href="https://github.com/yilmazkadir/Volt">https://github.com/yilmazkadir/Volt</a></p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="執行摘要"><a href="#執行摘要" class="headerlink" title="執行摘要"></a>執行摘要</h2><p>3D 場景理解（semantic segmentation、instance segmentation）長期依賴專門化骨幹網路（MinkowskiNet、SparseConvNet、Point Transformer），這些架構各自針對 3D 資料特性量身訂做，卻也因此與主流 Transformer 生態脫節，無法直接受惠於 ViT、LLaMA 等模型的軟硬體優化。</p>
+<p>Volt 的核心貢獻是：<strong>以最少修改，將原生 ViT Encoder 直接應用於 3D 場景理解</strong>。方法很直接——三個關鍵技術组合：</p>
+<ol>
+<li><strong>Volumetric Patch Tokenization</strong>：將連續 3D 點雲離散化為不重疊的 3D 區塊，每個區塊聚合成為一個 token</li>
+<li><strong>3D Rotary Positional Embedding（3D RoPE）</strong>：對 x/y/z 三軸分別計算旋轉位置編碼，讓模型理解每個 patch 的空間位置</li>
+<li><strong>Full Global Self-Attention</strong>：每個 patch token 都可以注意場景中所有其他 patch（透過 FlashAttention 加速）</li>
+</ol>
+<p>實驗結果：室內外 benchmark 皆達 SOTA，且規模越大越能突顯 vanilla Transformer 相較於 domain-specific 架構的優勢。作為 instance segmentation pipeline 的骨幹，Volt 同樣刷新 SOTA。</p>
+<hr>
+<h2 id="一、Volumetric-Patch-Tokenization"><a href="#一、Volumetric-Patch-Tokenization" class="headerlink" title="一、Volumetric Patch Tokenization"></a>一、Volumetric Patch Tokenization</h2><h3 id="問題背景"><a href="#問題背景" class="headerlink" title="問題背景"></a>問題背景</h3><p>2D ViT 的成功關鍵之一是<strong>將圖片切成不重疊的 patch</strong>（如 16×16 pixel），每個 patch 線性投影成一個 token。這樣做有兩個好處：大幅降低序列長度、每個 patch 內部自然成為一個「語意單位」。</p>
+<p>要把同樣思路搬到 3D，就必須解決一個問題：<strong>3D 點雲不是規則格點，是散落在空間中的稀疏點</strong>。現有主流方法分為兩派：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>代表模型</th>
+<th>特點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Point-wise</strong></td>
+<td>PointNet++, Point Transformer</td>
+<td>對每個點單獨處理，缺乏局部語意聚合</td>
+</tr>
+<tr>
+<td><strong>Voxel-based</strong></td>
+<td>MinkowskiNet, SparseConvNet</td>
+<td>將點雲量化到體素格點，用稀疏卷積處理</td>
+</tr>
+</tbody></table>
+<h3 id="Volt-的-Tokenizer-實作"><a href="#Volt-的-Tokenizer-實作" class="headerlink" title="Volt 的 Tokenizer 實作"></a>Volt 的 Tokenizer 實作</h3><p>從原始碼可以看到核心邏輯（kernel_size=5）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Tokenizer</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, features, indices</span>):</span></span><br><span class="line">        K = self.kernel_size</span><br><span class="line">        <span class="comment"># ① 將每個點的座標 (batch, x, y, z) 除以 K，取整 → 取得「所屬 coarse voxel」座標</span></span><br><span class="line">        coarse_indices_per_voxel = indices // indices.new_tensor([<span class="number">1</span>, K, K, K])</span><br><span class="line">        <span class="comment"># ② 去重，每個 coarse voxel 只保留一個</span></span><br><span class="line">        coarse_indices, inverse = torch.unique(coarse_indices_per_voxel, dim=<span class="number">0</span>, ...)</span><br><span class="line">        <span class="comment"># ③ 每個 coarse voxel 內的 K³ 個點，flatten 後線性投影成一個 token</span></span><br><span class="line">        coarse_features = self.proj(patches.flatten(<span class="number">1</span>))</span><br><span class="line">        <span class="keyword">return</span> coarse_features, coarse_indices, inverse, offset_id</span><br></pre></td></tr></table></figure>
+
+<p><strong>關鍵設計細節</strong>：</p>
+<ul>
+<li><strong>stride = kernel_size</strong>：確保 patch 不重疊，完全覆蓋空間</li>
+<li><strong>每個 patch 最多容納 K³ 個點</strong>（K=5 → 最多 125 個點），不足的以 zero-padding 填補</li>
+<li><strong>inverse 索引</strong>：紀錄每個原始點屬於哪個 patch，供後續 decoder 回復原始解析度</li>
+</ul>
+<blockquote>
+<p>設計哲學：Tokenizer 等價於 ViT 的 <code>PatchEmbed</code>（2D patchify + linear projection），只不過把 2D 的 16×16 推廣成 3D 的 5×5×5。這個類比是理解 Volt 整體框架的核心。</p>
+</blockquote>
+<hr>
+<h2 id="二、3D-Rotary-Positional-Embedding（3D-RoPE）"><a href="#二、3D-Rotary-Positional-Embedding（3D-RoPE）" class="headerlink" title="二、3D Rotary Positional Embedding（3D RoPE）"></a>二、3D Rotary Positional Embedding（3D RoPE）</h2><h3 id="RoPE-的核心概念"><a href="#RoPE-的核心概念" class="headerlink" title="RoPE 的核心概念"></a>RoPE 的核心概念</h3><p><strong>Rotary Position Embedding（RoPE）</strong> 最早出現在 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2104.09864">RoFormer (Su et al., 2021)</a>，其核心思想是：<strong>不直接將位置編碼加到 token 上，而是透過旋轉矩陣對 Query 和 Key 動態注入相對位置資訊</strong>。</p>
+<p>2D RoPE 的核心公式：</p>
+<ul>
+<li>將 dim 切成對，每對維度構成複數平面上的旋轉</li>
+<li>位置 m 的旋轉角為 $\theta_m^{(i)} = m \cdot \theta_i$，其中 $\theta_i = \theta_{base}^{-i/d}$</li>
+<li>旋轉後的 Q、K 做內積時，自然編碼了相對位置 $m-n$ 的關係</li>
+</ul>
+<p>RoPE 的三大優點（也是 Volt 選用它而不是傳統位置編碼的原因）：</p>
+<ol>
+<li><strong>序列長度靈活性</strong>：位置編碼不綁定固定長度，可泛化到訓練時未見過的長度</li>
+<li><strong>相對位置資訊自然編碼</strong>：內積結果自動依賴於相對距離</li>
+<li><strong>可與線性 attention 結合</strong>：這是相對位置編碼的獨有優勢</li>
+</ol>
+<h3 id="Volt-如何將-RoPE-推廣到-3D"><a href="#Volt-如何將-RoPE-推廣到-3D" class="headerlink" title="Volt 如何將 RoPE 推廣到 3D"></a>Volt 如何將 RoPE 推廣到 3D</h3><p>從原始碼 <code>RoPE</code> 類可清楚看到實現：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RoPE</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, theta=<span class="number">100.0</span>, freq_split=(<span class="params"><span class="number">12</span>, <span class="number">12</span>, <span class="number">8</span></span>), max_grid_size=(<span class="params"><span class="number">1024</span>, <span class="number">1024</span>, <span class="number">512</span></span>)</span>):</span></span><br><span class="line">        freqs_x = <span class="number">1.0</span> / theta ** torch.linspace(<span class="number">0</span>, <span class="number">1</span>, freq_split[<span class="number">0</span>])  <span class="comment"># 12維</span></span><br><span class="line">        freqs_y = <span class="number">1.0</span> / theta ** torch.linspace(<span class="number">0</span>, <span class="number">1</span>, freq_split[<span class="number">1</span>])  <span class="comment"># 12維</span></span><br><span class="line">        freqs_z = <span class="number">1.0</span> / theta ** torch.linspace(<span class="number">0</span>, <span class="number">1</span>, freq_split[<span class="number">2</span>])  <span class="comment"># 8維</span></span><br><span class="line">        <span class="comment"># 合計 32 維 = h_dim（每個 head 的 query/key 維度）</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">compute_axial_cis_efficient</span>(<span class="params">self, indices</span>):</span></span><br><span class="line">        <span class="comment"># indices: [N, 3] = (x, y, z) 座標</span></span><br><span class="line">        cis_x = self.cis_cache_x[indices[:, <span class="number">0</span>]]  <span class="comment"># 依 x 座標查表</span></span><br><span class="line">        cis_y = self.cis_cache_y[indices[:, <span class="number">1</span>]]  <span class="comment"># 依 y 座標查表</span></span><br><span class="line">        cis_z = self.cis_cache_z[indices[:, <span class="number">2</span>]]  <span class="comment"># 依 z 座標查表</span></span><br><span class="line">        <span class="keyword">return</span> torch.cat([cis_x, cis_y, cis_z], dim=-<span class="number">1</span>).unsqueeze(<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>三軸 Axial 設計</strong>：</p>
+<ul>
+<li>x、y、z 三個座標軸<strong>各自獨立計算</strong>旋轉頻率，最後串接</li>
+<li>為什麼不直接用 3D 座標做 outer product？因為那樣會產生 $12 \times 12 \times 8 = 1152$ 維爆炸</li>
+<li>Axial 設計只需 $12+12+8=32$ 維，兼顧效率與完整性</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>位置編碼方式</th>
+<th>機制</th>
+<th>優點</th>
+<th>缺點</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>絕對位置編碼（APE）</strong></td>
+<td>直接加在特徵上</td>
+<td>簡單</td>
+<td>訓練長度外無泛化能力</td>
+</tr>
+<tr>
+<td><strong>相對位置偏置（RPB）</strong></td>
+<td>attention score 加性偏置</td>
+<td>直覺</td>
+<td>計算代價 O(N²)</td>
+</tr>
+<tr>
+<td><strong>3D RoPE（Volt）</strong></td>
+<td>旋轉矩陣應用於 Q/K</td>
+<td>可泛化、計算高效、自然編碼相對位置</td>
+<td>需預先定義座標系</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、Full-Global-Self-Attention"><a href="#三、Full-Global-Self-Attention" class="headerlink" title="三、Full Global Self-Attention"></a>三、Full Global Self-Attention</h2><h3 id="架構選擇的意涵"><a href="#架構選擇的意涵" class="headerlink" title="架構選擇的意涵"></a>架構選擇的意涵</h3><p>Volt 選擇 <strong>full global self-attention</strong>，這在 3D 領域是個大膽的決定。回顧主流 3D Transformer 的 attention 設計：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>Attention 方式</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Point Transformer</td>
+<td><strong>局部 cross-attention</strong>：每點只注意半徑 r 內的鄰居</td>
+<td>稀疏性 + O(N) 記憶體</td>
+</tr>
+<tr>
+<td>3D Swin Transformer</td>
+<td><strong>Window attention</strong>：3D 窗口內自注意 + 窗口遷移</td>
+<td>模擬 2D Swin 的層次化設計</td>
+</tr>
+<tr>
+<td><strong>Volt</strong></td>
+<td><strong>Full global attention</strong></td>
+<td>與 ViT 完全一致，強調簡潔性</td>
+</tr>
+</tbody></table>
+<h3 id="FlashAttention-Variable-Length-Packing"><a href="#FlashAttention-Variable-Length-Packing" class="headerlink" title="FlashAttention + Variable-Length Packing"></a>FlashAttention + Variable-Length Packing</h3><p>從原始碼可以看到具體實現：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RoPE_Attention</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, x, freqs_cis, cu_seqlens, max_seqlen</span>):</span></span><br><span class="line">        qkv = self.qkv(x).view(N, <span class="number">3</span>, self.num_heads, self.h_dim)</span><br><span class="line">        q, k, v = qkv.unbind(dim=<span class="number">0</span>)</span><br><span class="line">        q, k = self.apply_rotary_emb(q, k, freqs_cis)  <span class="comment"># 旋轉 Q/K</span></span><br><span class="line">        qkv = torch.stack([q, k, v], dim=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        x = flash_attn.flash_attn_varlen_qkvpacked_func(</span><br><span class="line">            qkv.half(), cu_seqlens, max_seqlen=max_seqlen</span><br><span class="line">        )  <span class="comment"># FlashAttention 加速</span></span><br><span class="line">        <span class="keyword">return</span> self.proj(x)</span><br></pre></td></tr></table></figure>
+
+<p><strong>Variable-length sequence packing</strong>：不同場景（scene）的 patch tokens <strong>pack 到同一個序列中</strong>，用 <code>cu_seqlens</code>（cumulative sequence lengths）標記每個場景的邊界。這樣可以 GPU 并行處理多個場景，避免 padding 浪費記憶體。</p>
+<h3 id="計算複雜度的實際影響"><a href="#計算複雜度的實際影響" class="headerlink" title="計算複雜度的實際影響"></a>計算複雜度的實際影響</h3><p>批評者會問：$O(N^2)$ 全域 attention 不會太慢嗎？論文和原始碼顯示這不是問題，原因有三：</p>
+<ol>
+<li><strong>Patch Tokenization 大幅降低 N</strong>：例如一個房間場景約 10K points → 約 2000 tokens</li>
+<li><strong>FlashAttention</strong>：將 $O(N^2)$ 記憶體降低到 $O(N)$，序列長度 2000、dim=768、12 heads 的 FlashAttention 記憶體約 48MB（標準 attention 約 192MB）</li>
+<li><strong>ViT 的驗證</strong>：ViT-B/16（196 tokens）和 ViT-L/16（1024 tokens）已證明 full attention 在這個量級完全夠用</li>
+</ol>
+<hr>
+<h2 id="四、完整模型架構"><a href="#四、完整模型架構" class="headerlink" title="四、完整模型架構"></a>四、完整模型架構</h2><h3 id="端到端流程"><a href="#端到端流程" class="headerlink" title="端到端流程"></a>端到端流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">輸入：3D 點雲 (N points, 6D: XYZ + RGB)</span><br><span class="line">  │</span><br><span class="line">  ▼</span><br><span class="line">Tokenizer（kernel_size=5, stride=5）</span><br><span class="line">  ├── 每個點被分配到一個 coarse voxel（座標 // 5）</span><br><span class="line">  ├── 每個 coarse voxel 內最多 125 個點</span><br><span class="line">  ├── flatten 後線性投影 → embed_dim 維 token</span><br><span class="line">  └── 輸出：M tokens（M &lt;&lt; N）</span><br><span class="line"></span><br><span class="line">  ▼</span><br><span class="line">RoPE Positional Encoding</span><br><span class="line">  ├── 根據每個 token 的 (x, y, z) 座標</span><br><span class="line">  ├── 查表取得 32 維旋轉頻率</span><br><span class="line">  └── 應用於 Q/K（每個 Transformer block）</span><br><span class="line"></span><br><span class="line">  ▼</span><br><span class="line">Transformer Blocks（12 層）</span><br><span class="line">  ├── LayerNorm → RoPE_Attention（with FlashAttention）</span><br><span class="line">  ├── LayerNorm → MLP（GELU, hidden=4×embed_dim）</span><br><span class="line">  └── 殘差連接 + DropPath</span><br><span class="line"></span><br><span class="line">  ▼</span><br><span class="line">Decoder（反量化）</span><br><span class="line">  ├── 根據 inverse 索引恢復點歸屬</span><br><span class="line">  └── transposed conv → 恢復點 level 解析度</span><br><span class="line"></span><br><span class="line">輸出：每個原始點的語義類別分數</span><br></pre></td></tr></table></figure>
+
+<h3 id="關鍵超參數"><a href="#關鍵超參數" class="headerlink" title="關鍵超參數"></a>關鍵超參數</h3><table>
+<thead>
+<tr>
+<th>參數</th>
+<th>Volt-S</th>
+<th>Volt-B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>embed_dim</td>
+<td>768</td>
+<td>1024</td>
+</tr>
+<tr>
+<td>depth</td>
+<td>12</td>
+<td>24</td>
+</tr>
+<tr>
+<td>num_heads</td>
+<td>12</td>
+<td>16</td>
+</tr>
+<tr>
+<td>參數量</td>
+<td>23.7M</td>
+<td>~70M</td>
+</tr>
+<tr>
+<td>kernel_size / stride</td>
+<td>5</td>
+<td>5</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="五、訓練配方：如何讓-Vanilla-Transformer-在-3D-上-work"><a href="#五、訓練配方：如何讓-Vanilla-Transformer-在-3D-上-work" class="headerlink" title="五、訓練配方：如何讓 Vanilla Transformer 在 3D 上 work"></a>五、訓練配方：如何讓 Vanilla Transformer 在 3D 上 work</h2><h3 id="挑戰：Shortcut-Learning"><a href="#挑戰：Shortcut-Learning" class="headerlink" title="挑戰：Shortcut Learning"></a>挑戰：Shortcut Learning</h3><p>論文發現：直接用標準 3D 監督訓練 Volt 會產生 shortcut learning——模型學到的是捷徑而非真正的語意理解。這反映了一個核心問題：<strong>3D 監督信號的規模遠小於 2D 圖像監督</strong>。</p>
+<h3 id="數據高效訓練配方"><a href="#數據高效訓練配方" class="headerlink" title="數據高效訓練配方"></a>數據高效訓練配方</h3><p>Volt 提出三招對抗 shortcut learning：</p>
+<p><strong>① 強 3D 資料增強</strong>：隨機旋轉、縮放、點雲 drop-out / jittering，迫使模型學習 rotation/scale-invariant 語意</p>
+<p><strong>② 正則化</strong>：Label smoothing、DropPath（Stochastic Depth）、足夠的 weight decay</p>
+<p><strong>③ CNN Teacher 蒸餾</strong>：以預訓練的 CNN（SparseConvNet/MinkowskiNet）為 teacher，用 KL-divergence 蒸餾到 Volt。CNN 的 inductive bias 彌補了 3D 監督不足的問題</p>
+<h3 id="多資料集聯合訓練"><a href="#多資料集聯合訓練" class="headerlink" title="多資料集聯合訓練"></a>多資料集聯合訓練</h3><p>最終 Volt 透過<strong>多資料集聯合訓練（joint training）</strong> 突破監督不足的瓶牀：同時在 ScanNet、SemanticKITTI、S3DIS 等資料集上訓練。實驗發現：隨著監督規模擴大，<strong>Volt 相比 domain-specific 模型獲益更多</strong>。規模越大，hand-crafted 架構 prior 的價值越低，data-driven 的 Volt 優勢越大。</p>
+<hr>
+<h2 id="六、實驗結果"><a href="#六、實驗結果" class="headerlink" title="六、實驗結果"></a>六、實驗結果</h2><table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>評估指標</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>S3DIS</strong></td>
+<td>mIoU (Area 5)</td>
+<td><strong>SOTA</strong>，超過 Point Transformer +3.3%</td>
+</tr>
+<tr>
+<td><strong>ScanNetv2</strong></td>
+<td>mIoU</td>
+<td><strong>SOTA</strong>，室內場景領先</td>
+</tr>
+<tr>
+<td><strong>SemanticKITTI</strong></td>
+<td>mIoU</td>
+<td><strong>SOTA</strong>，室外場景領先</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>規模實驗</strong>：使用 training recipe 的 Volt-S 一致性超越 5× larger 的 PTv3-B（Point Transformer v3-B）。多資料集聯合訓練下 Volt-B 持續受益，展現規模擴展優勢</li>
+<li><strong>Instance Segmentation</strong>：作為 drop-in backbone 同樣刷新 SOTA</li>
+</ul>
+<hr>
+<h2 id="七、技術創新點總結"><a href="#七、技術創新點總結" class="headerlink" title="七、技術創新點總結"></a>七、技術創新點總結</h2><table>
+<thead>
+<tr>
+<th>創新</th>
+<th>具體內容</th>
+<th>意義</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>3D ViT 直接應用</strong></td>
+<td>最少修改將 ViT Encoder 移植到 3D</td>
+<td>打破 3D 模型的「專門化孤島」</td>
+</tr>
+<tr>
+<td><strong>3D RoPE（axial）</strong></td>
+<td>x/y/z 三軸獨立旋轉頻率，合計 32 維</td>
+<td>自然編碼 3D 相對位置，支援任意座標範圍</td>
+</tr>
+<tr>
+<td><strong>FlashAttention + Variable-length Packing</strong></td>
+<td>將多場景 pack 成單序列，O(N) 記憶體</td>
+<td>讓 full attention 在 3D 規模下可行</td>
+</tr>
+<tr>
+<td><strong>數據高效訓練配方</strong></td>
+<td>強 augmentation + 正則化 + CNN 蒸餾</td>
+<td>對抗 3D 小樣本監督的 shortcut learning</td>
+</tr>
+<tr>
+<td><strong>規模擴展論證</strong></td>
+<td>多資料集聯合訓練 &gt; domain-specific 模型</td>
+<td>證明 data-driven &gt; hand-crafted priors</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、為何這篇論文重要？"><a href="#八、為何這篇論文重要？" class="headerlink" title="八、為何這篇論文重要？"></a>八、為何這篇論文重要？</h2><p>Transformer 生態經過 5 年發展，已累積大量優化：FlashAttention、cuDNN、TRT 插件高度優化、NVIDIA Hopper/AMPERE 的 Transformer Engine 原生支援、MAE/DINO/CLIP 等大規模預訓練策略、HuggingFace Transformers/TIMM 模型庫。</p>
+<p>過去 3D 模型幾乎無法直接受益於這些優化——每個新架構都需要重新優化 kernel、編寫 custom CUDA code。Volt 的出現意味著：<strong>3D 理解正式進入 Transformer 時代</strong>，研究者可以直接拿 2D ViT 的優化經驗和預訓練策略應用到 3D。</p>
+<h3 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h3><ul>
+<li><strong>記憶體瓶牀</strong>：full attention 在超大型場景（&gt;100K points）仍會面臨挑戰</li>
+<li><strong>座標系假設</strong>：axial RoPE 依賴於正交座標軸，可能不適用於非規則座標系</li>
+<li><strong>仍是 encoder-only</strong>：目前只做了 semantic segmentation 的骨幹，未探索 decoder 端的 Transformer 設計</li>
+</ul>
+<hr>
+<h2 id="參考來源"><a href="#參考來源" class="headerlink" title="參考來源"></a>參考來源</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.19609">arXiv:2604.19609 — Volume Transformer</a>（原始論文，ECCV 2026）</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2104.09864">RoFormer: Enhanced Transformer with Rotary Position Embedding</a>（RoPE 原始論文）</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2012.09164">Point Transformer</a>（3D Point Transformer 開山之作）</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2010.11929">Vision Transformer (ViT)</a></li>
+<li><a target="_blank" rel="noopener" href="https://yilmazkadir.github.io/Volt/">Volt Project Page</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/yilmazkadir/Volt">Volt GitHub Repository</a></li>
+</ul>
+<hr>
+<p><em>研究報告由 Hermes Agent 撰寫｜2026-07-09</em></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%B7%E8%A1%8C%E6%91%98%E8%A6%81"><span class="toc-number">1.</span> <span class="toc-text">執行摘要</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Volumetric-Patch-Tokenization"><span class="toc-number">2.</span> <span class="toc-text">一、Volumetric Patch Tokenization</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%95%8F%E9%A1%8C%E8%83%8C%E6%99%AF"><span class="toc-number">2.1.</span> <span class="toc-text">問題背景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Volt-%E7%9A%84-Tokenizer-%E5%AF%A6%E4%BD%9C"><span class="toc-number">2.2.</span> <span class="toc-text">Volt 的 Tokenizer 實作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%813D-Rotary-Positional-Embedding%EF%BC%883D-RoPE%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">二、3D Rotary Positional Embedding（3D RoPE）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#RoPE-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-number">3.1.</span> <span class="toc-text">RoPE 的核心概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Volt-%E5%A6%82%E4%BD%95%E5%B0%87-RoPE-%E6%8E%A8%E5%BB%A3%E5%88%B0-3D"><span class="toc-number">3.2.</span> <span class="toc-text">Volt 如何將 RoPE 推廣到 3D</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Full-Global-Self-Attention"><span class="toc-number">4.</span> <span class="toc-text">三、Full Global Self-Attention</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%B6%E6%A7%8B%E9%81%B8%E6%93%87%E7%9A%84%E6%84%8F%E6%B6%B5"><span class="toc-number">4.1.</span> <span class="toc-text">架構選擇的意涵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FlashAttention-Variable-Length-Packing"><span class="toc-number">4.2.</span> <span class="toc-text">FlashAttention + Variable-Length Packing</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A8%88%E7%AE%97%E8%A4%87%E9%9B%9C%E5%BA%A6%E7%9A%84%E5%AF%A6%E9%9A%9B%E5%BD%B1%E9%9F%BF"><span class="toc-number">4.3.</span> <span class="toc-text">計算複雜度的實際影響</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%8C%E6%95%B4%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%A7%8B"><span class="toc-number">5.</span> <span class="toc-text">四、完整模型架構</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AB%AF%E5%88%B0%E7%AB%AF%E6%B5%81%E7%A8%8B"><span class="toc-number">5.1.</span> <span class="toc-text">端到端流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%97%9C%E9%8D%B5%E8%B6%85%E5%8F%83%E6%95%B8"><span class="toc-number">5.2.</span> <span class="toc-text">關鍵超參數</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E8%A8%93%E7%B7%B4%E9%85%8D%E6%96%B9%EF%BC%9A%E5%A6%82%E4%BD%95%E8%AE%93-Vanilla-Transformer-%E5%9C%A8-3D-%E4%B8%8A-work"><span class="toc-number">6.</span> <span class="toc-text">五、訓練配方：如何讓 Vanilla Transformer 在 3D 上 work</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8C%91%E6%88%B0%EF%BC%9AShortcut-Learning"><span class="toc-number">6.1.</span> <span class="toc-text">挑戰：Shortcut Learning</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B8%E6%93%9A%E9%AB%98%E6%95%88%E8%A8%93%E7%B7%B4%E9%85%8D%E6%96%B9"><span class="toc-number">6.2.</span> <span class="toc-text">數據高效訓練配方</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%9A%E8%B3%87%E6%96%99%E9%9B%86%E8%81%AF%E5%90%88%E8%A8%93%E7%B7%B4"><span class="toc-number">6.3.</span> <span class="toc-text">多資料集聯合訓練</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%AF%A6%E9%A9%97%E7%B5%90%E6%9E%9C"><span class="toc-number">7.</span> <span class="toc-text">六、實驗結果</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%8A%80%E8%A1%93%E5%89%B5%E6%96%B0%E9%BB%9E%E7%B8%BD%E7%B5%90"><span class="toc-number">8.</span> <span class="toc-text">七、技術創新點總結</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E7%82%BA%E4%BD%95%E9%80%99%E7%AF%87%E8%AB%96%E6%96%87%E9%87%8D%E8%A6%81%EF%BC%9F"><span class="toc-number">9.</span> <span class="toc-text">八、為何這篇論文重要？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">9.1.</span> <span class="toc-text">局限性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%83%E8%80%83%E4%BE%86%E6%BA%90"><span class="toc-number">10.</span> <span class="toc-text">參考來源</span></a></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
