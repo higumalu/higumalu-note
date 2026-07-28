@@ -567,8 +567,8 @@
 <p>2D RoPE 的核心公式：</p>
 <ul>
 <li>將 dim 切成對，每對維度構成複數平面上的旋轉</li>
-<li>位置 m 的旋轉角為 $\theta<em>m^{(i)} = m \cdot \theta_i$，其中 $\theta_i = \theta</em>{base}^{-i/d}$</li>
-<li>旋轉後的 Q、K 做內積時，自然編碼了相對位置 $m-n$ 的關係</li>
+<li>位置 m 的旋轉角為 <script type="math/tex">\theta_m^{(i)} = m \cdot \theta_i</script>，其中 <script type="math/tex">\theta_i = \theta_{base}^{-i/d}</script></li>
+<li>旋轉後的 Q、K 做內積時，自然編碼了相對位置 <script type="math/tex">m-n</script> 的關係</li>
 </ul>
 <p>RoPE 的三大優點（也是 Volt 選用它而不是傳統位置編碼的原因）：</p>
 <ol>
@@ -581,8 +581,8 @@
 <p><strong>三軸 Axial 設計</strong>：</p>
 <ul>
 <li>x、y、z 三個座標軸<strong>各自獨立計算</strong>旋轉頻率，最後串接</li>
-<li>為什麼不直接用 3D 座標做 outer product？因為那樣會產生 $12 \times 12 \times 8 = 1152$ 維爆炸</li>
-<li>Axial 設計只需 $12+12+8=32$ 維，兼顧效率與完整性</li>
+<li>為什麼不直接用 3D 座標做 outer product？因為那樣會產生 <script type="math/tex">12 \times 12 \times 8 = 1152</script> 維爆炸</li>
+<li>Axial 設計只需 <script type="math/tex">12+12+8=32</script> 維，兼顧效率與完整性</li>
 </ul>
 <div class="table-container">
 <table>
@@ -649,10 +649,10 @@
 <h3 id="FlashAttention-Variable-Length-Packing"><a href="#FlashAttention-Variable-Length-Packing" class="headerlink" title="FlashAttention + Variable-Length Packing"></a>FlashAttention + Variable-Length Packing</h3><p>從原始碼可以看到具體實現：</p>
 <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RoPE_Attention</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, x, freqs_cis, cu_seqlens, max_seqlen</span>):</span></span><br><span class="line">        qkv = self.qkv(x).view(N, <span class="number">3</span>, self.num_heads, self.h_dim)</span><br><span class="line">        q, k, v = qkv.unbind(dim=<span class="number">0</span>)</span><br><span class="line">        q, k = self.apply_rotary_emb(q, k, freqs_cis)  <span class="comment"># 旋轉 Q/K</span></span><br><span class="line">        qkv = torch.stack([q, k, v], dim=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        x = flash_attn.flash_attn_varlen_qkvpacked_func(</span><br><span class="line">            qkv.half(), cu_seqlens, max_seqlen=max_seqlen</span><br><span class="line">        )  <span class="comment"># FlashAttention 加速</span></span><br><span class="line">        <span class="keyword">return</span> self.proj(x)</span><br></pre></td></tr></table></figure>
 <p><strong>Variable-length sequence packing</strong>：不同場景（scene）的 patch tokens <strong>pack 到同一個序列中</strong>，用 <code>cu_seqlens</code>（cumulative sequence lengths）標記每個場景的邊界。這樣可以 GPU 并行處理多個場景，避免 padding 浪費記憶體。</p>
-<h3 id="計算複雜度的實際影響"><a href="#計算複雜度的實際影響" class="headerlink" title="計算複雜度的實際影響"></a>計算複雜度的實際影響</h3><p>批評者會問：$O(N^2)$ 全域 attention 不會太慢嗎？論文和原始碼顯示這不是問題，原因有三：</p>
+<h3 id="計算複雜度的實際影響"><a href="#計算複雜度的實際影響" class="headerlink" title="計算複雜度的實際影響"></a>計算複雜度的實際影響</h3><p>批評者會問：<script type="math/tex">O(N^2)</script> 全域 attention 不會太慢嗎？論文和原始碼顯示這不是問題，原因有三：</p>
 <ol>
 <li><strong>Patch Tokenization 大幅降低 N</strong>：例如一個房間場景約 10K points → 約 2000 tokens</li>
-<li><strong>FlashAttention</strong>：將 $O(N^2)$ 記憶體降低到 $O(N)$，序列長度 2000、dim=768、12 heads 的 FlashAttention 記憶體約 48MB（標準 attention 約 192MB）</li>
+<li><strong>FlashAttention</strong>：將 <script type="math/tex">O(N^2)</script> 記憶體降低到 <script type="math/tex">O(N)</script>，序列長度 2000、dim=768、12 heads 的 FlashAttention 記憶體約 48MB（標準 attention 約 192MB）</li>
 <li><strong>ViT 的驗證</strong>：ViT-B/16（196 tokens）和 ViT-L/16（1024 tokens）已證明 full attention 在這個量級完全夠用</li>
 </ol>
 <hr>
@@ -1601,317 +1601,6 @@
       </tags>
   </entry>
   <entry>
-    <title>pydicomRT｜&quot;版本 0.6.4 — 劑量方向計算修正&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-12-19-17de809-%E7%89%88%E6%9C%AC-064-%E5%8A%91%E9%87%8F%E6%96%B9%E5%90%91%E8%A8%88%E7%AE%97%E4%BF%AE%E6%AD%A3/</url>
-    <content><![CDATA[<h2 id="🚩-版本-0-6-4-—-劑量方向計算修正"><a href="#🚩-版本-0-6-4-—-劑量方向計算修正" class="headerlink" title="🚩 版本 0.6.4 — 劑量方向計算修正"></a>🚩 版本 0.6.4 — 劑量方向計算修正</h2><p><strong>Commit:</strong> <code>17de809</code><br><strong>版本：</strong> v0.6.4<br><strong>日期：</strong> 2025-12-19</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我修正了 <code>sitk_transform.py</code> 中劑量方向（dose direction）的計算邏輯。</p>
-<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">row = ori[:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">row = ori[<span class="number">0</span>:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:<span class="number">6</span>]</span><br></pre></td></tr></table></figure></p>
-<p>看似微小的改變，實際上修正了一個重要的問題：</p>
-<ul>
-<li>使用 <code>[:3]</code> 和 <code>[3:]</code> 時，Python 的切片操作可能會在某些邊界情況下產生非預期的行為</li>
-<li>明確使用 <code>[0:3]</code> 和 <code>[3:6]</code> 確保只取用 <code>ImageOrientationPatient</code> 的前六個元素（row direction 和 column direction）</li>
-</ul>
-<p>然後我使用 <code>np.cross(row, col)</code> 計算第三個方向向量，構建完整的 3x3 方向矩陣。這個修正確保了劑量資料在轉換為 SimpleITK Image 時，方向性是正確的。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.3 → 0.6.4</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br><span class="line">  - get_dose_direction 函數方向切片修正</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼切片 <code>[3:]</code> 會有問題？具體是什麼邊界情況？</strong></p>
-<blockquote>
-<p>這個問題我在 Debug 時才發現的。嚴格說起來，當 ori 的長度恰好為 3 時，<code>[3:]</code> 會回傳空 list 而不是預期中的第二組方向向量。雖然實際資料不太可能只有 3 個元素，但寫法明確點總是比較好。</p>
-</blockquote>
-<p><strong>Q2: 這個修正對劑量計算的影響是什麼？劑量會偏移嗎？</strong></p>
-<blockquote>
-<p>如果方向矩陣是錯的，劑量空間的映射就會全部跑掉。最直接的影響就是劑量和影像對不上——本來應該在某個位置計算出來的劑量值，會因為方向錯誤而出現在錯誤的地方。這在臨床劑量評估上是不能接受的。</p>
-</blockquote>
-<p><strong>Q3: 為什麼要用 np.cross 計算第三個方向？有沒有其他做法？</strong></p>
-<blockquote>
-<p>DICOM 的 ImageOrientationPatient 只給了我 row 方向和 column 方向，第三個方向（slice 方向）可以用右手定則算出來。當然也可以直接從 ImagePositionPatient 的差值推導，但在實作上 cross product 最直接可靠，我就用它了。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/17de809">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;🛠️ Image Series Loader — 錯誤處理改進&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2026-01-06-d03e995-Image-Series-Loader-%E9%8C%AF%E8%AA%A4%E8%99%95%E7%90%86%E6%94%B9%E9%80%B2/</url>
-    <content><![CDATA[<h2 id="🛠️-Image-Series-Loader-—-錯誤處理改進"><a href="#🛠️-Image-Series-Loader-—-錯誤處理改進" class="headerlink" title="🛠️ Image Series Loader — 錯誤處理改進"></a>🛠️ Image Series Loader — 錯誤處理改進</h2><p><strong>Commit:</strong> <code>d03e995</code><br><strong>日期：</strong> 2026-01-06</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我改進了 <code>image_series_loader.py</code> 中 DICOM 檔案排序的錯誤處理。</p>
-<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">image_ds_list = sort_ds_list(image_ds_list)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    image_ds_list = sort_ds_list(image_ds_list)</span><br><span class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">    <span class="keyword">raise</span> ValueError(<span class="string">f&quot;Error sorting DICOM files: <span class="subst">&#123;e&#125;</span>, check if the ImageOrientationPatient attribute is valid&quot;</span>)</span><br></pre></td></tr></table></figure></p>
-<p><strong>改進說明：</strong></p>
-<ol>
-<li><p><strong>更明確的錯誤訊息</strong> — 當排序失敗時，會顯示更具體的錯誤原因，特別是指向 <code>ImageOrientationPatient</code> 屬性的有效性檢查。</p>
-</li>
-<li><p><strong>提升除錯效率</strong> — 在處理大量 DICOM 檔案時，如果某些檔案的 <code>ImageOrientationPatient</code> 缺失或格式錯誤，開發者可以快速定位問題。</p>
-</li>
-<li><p><strong>統一的例外處理</strong> — 將各種可能的排序錯誤包裝成 <code>ValueError</code>，讓呼叫端可以使用統一的方式處理。</p>
-</li>
-</ol>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/utils/image_series_loader.py</span><br><span class="line">  - load_sorted_image_series 函數錯誤處理強化</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: <code>ImageOrientationPatient</code> 缺失或格式錯誤會導致什麼問題？</strong></p>
-<blockquote>
-<p>這個屬性是影像空間定位的關鍵。如果它不見了或格式不對，切片排序會亂掉，3D 重建也會出問題。之前錯誤訊息只說「排序失敗」，根本不知道問題在哪，現在至少知道要去檢查這個屬性。</p>
-</blockquote>
-<p><strong>Q2: 除了錯誤處理，有沒有預防措施可以確保檔案的正確性？</strong></p>
-<blockquote>
-<p>理想的做法是加一個驗證函數，在讀取影像序列之前先檢查所有必要屬性是否完整。這塊我還在考慮怎麼設計比較好，現階段先從錯誤處理下手，讓問題浮現出來再說。</p>
-</blockquote>
-<p><strong>Q3: 這個改進對於批量處理大量 DICOM 檔案時有什麼幫助？</strong></p>
-<blockquote>
-<p>批量處理最怕的就是少數幾顆老鼠屎壞了一鍋粥。假設有 500 張切片，前面 499 張都正常，但第 300 張的方向參數有問題，沒有好的錯誤處理的話可能要跑到最後才知道出錯。現在可以直接從錯誤訊息看出哪張有問題，省下不少除錯時間。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d03e995">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2026-02-04-3fce17c-BSpline-%E4%BD%8D%E7%A7%BB%E5%A0%B4%E9%A1%9E%E5%9E%8B%E6%94%B9%E7%82%BA-Float64/</url>
-    <content><![CDATA[<h2 id="🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64"><a href="#🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64" class="headerlink" title="🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"></a>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</h2><p><strong>Commit:</strong> <code>3fce17c</code><br><strong>日期：</strong> 2026-02-04</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我將 BSpline 配準函數中的位移場（Displacement Field）類型從 <code>sitkVectorFloat32</code> 改為 <code>sitkVectorFloat64</code>。</p>
-<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat32,  <span class="comment"># 32位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat64,  <span class="comment"># 64位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p><strong>改進說明：</strong></p>
-<ol>
-<li><p><strong>提高精度</strong> — Float64 提供雙倍精度，避免在多次變換或累積誤差時造成影像品質下降。</p>
-</li>
-<li><p><strong>保持一致性</strong> — 大多數醫學影像使用 Float64 作為內部計算精度，升級後可避免不必要的精度轉換。</p>
-</li>
-<li><p><strong>更準確的變形映射</strong> — 特別是對於需要精細控制的 BSpline 變形，高精度位移場能更準確地描述組織變形。</p>
-</li>
-</ol>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/reg/method/bspline.py</span><br><span class="line">  - bspline_registration 函數位移場類型更新</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Float32 和 Float64 的差異在實際臨床應用中明顯嗎？</strong><br>老實說，在大多數情況下可能感覺不出來。但如果涉及到多次變形疊加或非常精細的劑量計算時，累積誤差的影響就不可忽視了。醫學領域對精度要求比較高，既然 SimpleITK 原生支援 Float64，我覺得用下去比較安心。</p>
-<p><strong>Q2: 這個改變會增加記憶體使用量嗎？影響有多大？</strong><br>會的，理論上記憶體用量會變成兩倍。不過實際影響還好——BSpline 本來就不是我主要的對位方法，平常主要還是用 Demons。再說，現代醫療影像的資料量那麼大，一張位移場多佔的記憶體相比之下不算什麼。</p>
-<p><strong>Q3: 為什麼 BSpline 特別需要高精度？其他配準方法（如 Demons）呢？</strong><br>BSpline 的變形控制點網格很細緻，對細節的表達能力更強。如果位移場精度不夠，那些精細的變形細節就會被吃掉，BSpline 的優勢就浪費掉了。Demons 的話，因為它的變形機制不太一樣，對精度的敏感度沒那麼高，我目前還是維持 Float32。</p>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3fce17c">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>從 Claude Blog 學 AI Agent 架構（一）：Dynamic Workflows 與六大設計模式</title>
-    <url>/higumalu-note/2026/06/2026-06-11-claude-blog-workflows-1-dynamic-patterns/</url>
-    <content><![CDATA[<blockquote>
-<p>本系列是熊熊閱讀 Claude 官方 Blog 的心得整理，原文皆來自 <a href="https://claude.com/blog">claude.com/blog</a>。這篇是第一篇，主題是 <strong>Dynamic Workflows 與六大設計模式</strong>，熊熊從中得到很多關於大型任務拆解的靈感。</p>
-</blockquote>
-<span id="more"></span>
-<h2 id="三大單一-Context-Window-失敗模式"><a href="#三大單一-Context-Window-失敗模式" class="headerlink" title="三大單一 Context Window 失敗模式"></a>三大單一 Context Window 失敗模式</h2><p>Claude Code 團隊在實務中發現，當所有事情都塞在同一個 context window 裡時，會遇到三個系統性的失敗模式：</p>
-<h3 id="1-Agentic-Laziness（偷懶模式）"><a href="#1-Agentic-Laziness（偷懶模式）" class="headerlink" title="1. Agentic Laziness（偷懶模式）"></a>1. Agentic Laziness（偷懶模式）</h3><p>Agent 在長任務做到一半時，會「自我感覺良好」地宣布完成。比如一個 50 項的任務清單，做完 35 項就停下來說「差不多了」。人類工程師遇到這種情況會自己補完，但 Agent 不會——它真的以為做完了。</p>
-<h3 id="2-Self-Preferential-Bias（偏心模式）"><a href="#2-Self-Preferential-Bias（偏心模式）" class="headerlink" title="2. Self-Preferential Bias（偏心模式）"></a>2. Self-Preferential Bias（偏心模式）</h3><p>Agent 對自己生成的內容有偏好，傾向於認為自己的產出已經足夠好，不夠客觀地做 quality review。這在需要批判性思考的任務（例如安全審查、架構檢視）裡特別嚴重。</p>
-<h3 id="3-Goal-Drift（目標漂移）"><a href="#3-Goal-Drift（目標漂移）" class="headerlink" title="3. Goal Drift（目標漂移）"></a>3. Goal Drift（目標漂移）</h3><p>長 session 來回之後，Agent 的目標會慢慢偏移。特別是當發生 context compaction（壓縮歷史以節省 token）時，邊界條件和約束容易被洗掉，最後做出來的東西偏離初衷。</p>
-<hr>
-<h2 id="六種-Dynamic-Workflow-Patterns"><a href="#六種-Dynamic-Workflow-Patterns" class="headerlink" title="六種 Dynamic Workflow Patterns"></a>六種 Dynamic Workflow Patterns</h2><p>面對上述問題，Claude Code 的解法是讓 Claude 自己動態寫 JS harness 來調度多個 Agent。以下是六種核心模式：</p>
-<h3 id="Pattern-1：Fan-out-and-synthesize（散射再匯聚）"><a href="#Pattern-1：Fan-out-and-synthesize（散射再匯聚）" class="headerlink" title="Pattern 1：Fan-out-and-synthesize（散射再匯聚）"></a>Pattern 1：Fan-out-and-synthesize（散射再匯聚）</h3><p>把一個大任務拆成 N 個獨立的子任務，讓多個 subagent 同時並行處理，最後在一個 synthesis barrier 匯聚所有結果再做整合。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│         Task: 翻譯 10,000 行         │</span><br><span class="line">├──────────┬──────────┬──────┬───────┤</span><br><span class="line">│ Agent 1  │ Agent 2  │ ...  │ Agent N│</span><br><span class="line">│ 翻譯1-1000│ 翻譯1001-2000 │       │       │</span><br><span class="line">├──────────┴──────────┴──────┴───────┤</span><br><span class="line">│        Synthesis Barrier            │</span><br><span class="line">│    整合 + 解決跨區段依賴問題          │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
-<p><strong>適用場景</strong>：翻譯、bulk code generation、大規模資料分析、測試案例生成。</p>
-<p><strong>熊熊的想法</strong>：這個模式最適合用來處理「每篇文章獨立、但最後需要整合」的 research 任務——先並行抓取多個 URL，最後濃縮成一份報告。</p>
-<hr>
-<h3 id="Pattern-2：Adversarial-Verification（對抗性驗證）"><a href="#Pattern-2：Adversarial-Verification（對抗性驗證）" class="headerlink" title="Pattern 2：Adversarial Verification（對抗性驗證）"></a>Pattern 2：Adversarial Verification（對抗性驗證）</h3><p>每個 subagent 產出之後，立即派一個獨立的「對抗性 Agent」去專門找問題。這個驗證 Agent 沒有做過前面的工作，所以沒有偏見——它就是來踢館的。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌──────────────┐     ┌──────────────────┐</span><br><span class="line">│  Writer Agent │ ──▶ │ Adversarial Agent │</span><br><span class="line">│ 產出初稿      │     │ 專門找漏洞和問題   │</span><br><span class="line">└──────────────┘     └──────────────────┘</span><br><span class="line">         ▲                   │</span><br><span class="line">         │      修正後再丟回去 │</span><br><span class="line">         └────────────────────┘</span><br></pre></td></tr></table></figure>
-<p><strong>實測效果</strong>：把這個模式加進 workflow，task success 分數明顯提升。</p>
-<p><strong>熊熊的想法</strong>：這是熊熊目前最想實作的功能——每個 deliverable 完成後自動觸發一個「反方 Agent」問「哪裡有問題？」，代價低但效果大。熊熊研究完文章，先讓另一個 Agent 扮演「讀者視角」挑毛病，再整合成最終版本。</p>
-<hr>
-<h3 id="Pattern-3：Tournament（對抗賽模式）"><a href="#Pattern-3：Tournament（對抗賽模式）" class="headerlink" title="Pattern 3：Tournament（對抗賽模式）"></a>Pattern 3：Tournament（對抗賽模式）</h3><p>讓 N 個 Agent 分別用不同方法解決同一個問題，然後有一個評審 Agent 兩兩比對，選出人氣王的解法。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────┐   ┌─────────┐   ┌─────────┐</span><br><span class="line">│Agent A  │   │Agent B  │   │Agent C  │</span><br><span class="line">│解法 1   │   │解法 2   │   │解法 3   │</span><br><span class="line">└────┬────┘   └────┬────┘   └────┬────┘</span><br><span class="line">     │             │             │</span><br><span class="line">     ▼             ▼             ▼</span><br><span class="line">  ┌──────────────────────────────┐</span><br><span class="line">  │         Grader Agent         │</span><br><span class="line">  │  兩兩比對 → 評分 → 選贏家     │</span><br><span class="line">  └──────────────────────────────┘</span><br></pre></td></tr></table></figure>
-<p><strong>適用場景</strong>：演算法設計（多條路徑的取捨）、PRD 草稿、不同使用者介面設計的 A/B 測試。</p>
-<hr>
-<h3 id="Pattern-4：Generate-and-filter（大量生成再過濾）"><a href="#Pattern-4：Generate-and-filter（大量生成再過濾）" class="headerlink" title="Pattern 4：Generate-and-filter（大量生成再過濾）"></a>Pattern 4：Generate-and-filter（大量生成再過濾）</h3><p>先大量生成候選方案（可能 50 個、100 個），再用一個 Rubric Agent 根據預先定義的標準過濾，最後只剩幾個真正符合條件的。</p>
-<p>跟 Tournament 不一樣的地方：Tournament 是讓候選互相對抗，Generate-and-filter 是所有候選都跟一個固定的標準比。</p>
-<p><strong>熊熊的想法</strong>：這個模式可以用在「先大量佔坑、再精選」的 research 流程——先讓 subagent 平行產出 20 個觀察筆記，再過濾出最有價值的 5 個。</p>
-<hr>
-<h3 id="Pattern-5：Classify-and-act（分類再路由）"><a href="#Pattern-5：Classify-and-act（分類再路由）" class="headerlink" title="Pattern 5：Classify-and-act（分類再路由）"></a>Pattern 5：Classify-and-act（分類再路由）</h3><p>一個分類 Agent 先理解任務的類型和意圖，決定要走哪個處理策略，然後路由到對應的 specialized Agent。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">User Request → [Classifier Agent] → 路由到不同策略</span><br><span class="line">                                    ├─ 簡單查詢 → Fast path</span><br><span class="line">                                    ├─ 複雜分析 → Deep dive</span><br><span class="line">                                    └─ 爭議問題 → Multi-perspective</span><br></pre></td></tr></table></figure>
-<p><strong>熊熊的想法</strong>：這其實是 Hermes 現有 <code>skill_view</code> 的一個更高層抽象——不是根據 keyword 選 Skill，而是先理解任務意圖再路由到最適合的工具。</p>
-<hr>
-<h3 id="Pattern-6：Loop-until-done（循環直到完成）"><a href="#Pattern-6：Loop-until-done（循環直到完成）" class="headerlink" title="Pattern 6：Loop-until-done（循環直到完成）"></a>Pattern 6：Loop-until-done（循環直到完成）</h3><p>設定一個 stop condition（停不下來的條件），Agent 做完一輪後檢查是否滿足，沒滿足就繼續，直到條件通過為止。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌──────────────┐    ┌──────────────────┐    ┌─────────────┐</span><br><span class="line">│  Execute     │───▶│ Stop condition?  │───▶│   Done?     │</span><br><span class="line">│  (做事)      │    │  有沒有通過測試？  │    │   結束      │</span><br><span class="line">└──────────────┘    └──────────────────┘    └─────────────┘</span><br><span class="line">                           │ no</span><br><span class="line">                           ▼</span><br><span class="line">                    修正後再執行</span><br></pre></td></tr></table></figure>
-<p><strong>熊熊的想法</strong>：這個模式最直接對應「編譯失敗就修、再編譯」的 loop，只是場景換成 research workflow——先產出初稿、檢查品質標準（<code>有沒有引用來源？結論有沒有被資料支持？</code>）、沒通過就補充，通過就結束。</p>
-<hr>
-<h2 id="Bun-Rewrite-案例：75-萬行的奇蹟"><a href="#Bun-Rewrite-案例：75-萬行的奇蹟" class="headerlink" title="Bun Rewrite 案例：75 萬行的奇蹟"></a>Bun Rewrite 案例：75 萬行的奇蹟</h2><p>最震撼的實例是 Bun 的重寫計畫：將一個大型 codebase 從 Zig 遷移到 Rust，總規模約 <strong>75 萬行 Rust 程式碼</strong>，<strong>11 天完成</strong>，<strong>99.8% 測試通過率</strong>。</p>
-<p>他們的做法是三層 workflow：</p>
-<h3 id="第一層：Rust-Lifetime-對應圖"><a href="#第一層：Rust-Lifetime-對應圖" class="headerlink" title="第一層：Rust Lifetime 對應圖"></a>第一層：Rust Lifetime 對應圖</h3><p>先不做翻譯，而是建立一個「Zig 語法單元 → Rust 等價物」的對應表。這是一個語意理解的步驟，在翻譯之前先把「每個概念怎麼說 Rust」確認清楚。</p>
-<h3 id="第二層：並行-Porting（雙-reviewer-制度）"><a href="#第二層：並行-Porting（雙-reviewer-制度）" class="headerlink" title="第二層：並行 Porting（雙 reviewer 制度）"></a>第二層：並行 Porting（雙 reviewer 制度）</h3><p>把整個 codebase 拆成 hundreds 個獨立的檔案單位，數百個 subagent 同時並行翻譯。每個檔案的產出都由 <strong>兩個 reviewer Agent</strong> 獨立地做 code review，通過才進下一關。</p>
-<h3 id="第三層：Fix-Loop"><a href="#第三層：Fix-Loop" class="headerlink" title="第三層：Fix Loop"></a>第三層：Fix Loop</h3><p>所有檔案翻譯完成後，進一個集中的修復循環。這裡的核心是 <strong>build 充當客觀的裁判</strong>——編譯失敗就是失敗，沒有藉口。Fix loop 持續跑，直到整個專案 build clean 且所有測試通過。</p>
-<p><strong>熊熊的想法</strong>：三層結構（理解 → 並行實作 → 修復循環）是大型重構的通用範本。熊熊如果要做任何遷移性質的工作，都可以套用這個框架。</p>
-<hr>
-<h2 id="熊熊的實作方向"><a href="#熊熊的實作方向" class="headerlink" title="熊熊的實作方向"></a>熊熊的實作方向</h2><p>從這篇文章，熊熊得到三個具體的實作靈感：</p>
-<h3 id="1-先幫研究任務加上-Adversarial-Verification"><a href="#1-先幫研究任務加上-Adversarial-Verification" class="headerlink" title="1. 先幫研究任務加上 Adversarial Verification"></a>1. 先幫研究任務加上 Adversarial Verification</h3><p>熊熊現在的研究流程是「抓文章 → 寫心得 → 完成」。加一個驗證步驟：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">研究初稿 → 「反方熊熊」Agent 審查 → 修正 → 最終版</span><br></pre></td></tr></table></figure>
-<p>反方 Agent 的 prompt 很簡單：「你是這個領域的專家，請從批判的角度指出這份研究摘要有哪些問題或遺漏。」</p>
-<h3 id="2-Fan-out-處理多文章-research"><a href="#2-Fan-out-處理多文章-research" class="headerlink" title="2. Fan-out 處理多文章 research"></a>2. Fan-out 處理多文章 research</h3><p>一次要讀 10 篇相關文章時，先並行抓取，再統一整合分析。用 Loop-until-done 當品質閘門——整合出來的報告要通過「有沒有引用來源」的檢查。</p>
-<h3 id="3-把-Workflow-Pattern-寫進-Hermes-Skill"><a href="#3-把-Workflow-Pattern-寫進-Hermes-Skill" class="headerlink" title="3. 把 Workflow Pattern 寫進 Hermes Skill"></a>3. 把 Workflow Pattern 寫進 Hermes Skill</h3><p>建立一個 <code>workflow-patterns</code> Skill，把六種 Pattern 的觸發條件、適用場景、實作提示封裝起來。以後遇到複雜任務時，直接問「這個任務適合用哪個 Pattern？」讓模型自己推薦。</p>
-<hr>
-<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>Dynamic Workflows 的核心洞察是：<strong>單一 Agent 解決不了複雜任務，要靠 workflow 的結構來彌補個體的限制</strong>。六種 Pattern 並不是規定要全用，而是當你遇到瓶頸時，剛好有一個現成的思路可以用。</p>
-<p>下一篇文章，熊熊會聊「Self-Improving Agents」—— 如何讓 Agent 從記憶裡學習、從失敗裡成長。</p>
-<hr>
-<p><em>本系列文基於 Claude Blog 文章：</em></p>
-<ul>
-<li><em><a href="https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code">A harness for every task: Dynamic workflows in Claude Code</a></em></li>
-<li><em><a href="https://claude.com/blog/introducing-dynamic-workflows-in-claude-code">Introducing dynamic workflows</a></em></li>
-</ul>
-]]></content>
-      <categories>
-        <category>AI Agent</category>
-      </categories>
-      <tags>
-        <tag>Hermes</tag>
-        <tag>AI Agent</tag>
-        <tag>Workflow</tag>
-        <tag>Claude</tag>
-        <tag>Multi-Agent</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>從 Claude Blog 學 AI Agent 架構（二）：Self-Improving Agents 的四層成長系統</title>
-    <url>/higumalu-note/2026/06/2026-06-11-claude-blog-workflows-2-self-improving-agents/</url>
-    <content><![CDATA[<blockquote>
-<p>本系列是熊熊閱讀 Claude 官方 Blog 的心得整理，原文皆來自 <a href="https://claude.com/blog">claude.com/blog</a>。這篇是第二篇，主題是 <strong>Self-Improving Agents</strong>——如何讓 AI Agent 具備「從經驗中學習」的能力，這是熊熊最有感的一個方向。</p>
-</blockquote>
-<span id="more"></span>
-<h2 id="從「每次都從零開始」到「持續累積成長」"><a href="#從「每次都從零開始」到「持續累積成長」" class="headerlink" title="從「每次都從零開始」到「持續累積成長」"></a>從「每次都從零開始」到「持續累積成長」</h2><p>傳統的 AI Agent 每次開 session 都是乾淨的 slate——沒有記憶，沒有累積，做過的任務就像沒做過。這導致一個根本性的問題：同一個錯誤，Agent 會犯一百遍。</p>
-<p>Claude Managed Agents 的 Self-Improving 系統就是為了解決這個問題而設計的。它不是一個功能，而是一套四層疊加的架構：<strong>Memory → Dreaming → Outcomes → Multi-agent</strong>。每一層解決不同的問題。</p>
-<hr>
-<h2 id="第一層：Memory（檔案式記憶系統）"><a href="#第一層：Memory（檔案式記憶系統）" class="headerlink" title="第一層：Memory（檔案式記憶系統）"></a>第一層：Memory（檔案式記憶系統）</h2><h3 id="核心設計原則"><a href="#核心設計原則" class="headerlink" title="核心設計原則"></a>核心設計原則</h3><p>Memory 不是存在模型 weights 裡的隱性知識，而是實體檔案。每一個 Agent 工作時捕獲的所學、觀察、決定，都寫成檔案，存在一個共享的資料夾結構裡。</p>
-<p>這樣設計的好處：</p>
-<ul>
-<li><strong>透明可查</strong>：人類可以打開檔案直接看 Agent 學到了什麼</li>
-<li><strong>跨 Agent 並行讀寫</strong>：多個 subagent 同時寫記憶，不會打掉對方的資料（靠檔案系統的 conflict resolution）</li>
-<li><strong>Audit log</strong>：每筆記錄都有 timestamp + 操作者，出了問題可以 replay</li>
-</ul>
-<h3 id="實測效果"><a href="#實測效果" class="headerlink" title="實測效果"></a>實測效果</h3><p>Rakuten 是最早採用這套架構的團隊之一。他們讓 Agent 記住每個 task 的產出和上下文，然後在下一個相關任務裡自動引用。數據出來之後非常誇張：</p>
-<ul>
-<li><strong>First-pass error 掉了 97%</strong>：同樣的錯誤不再重複犯</li>
-<li><strong>Cost 降了 27%</strong>：不需要每次重新探索</li>
-<li><strong>Latency 降了 34%</strong>：從 context 引用比從頭推理快</li>
-</ul>
-<h3 id="熊熊的想法"><a href="#熊熊的想法" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>Hermes 的 session 目前的記憶方式比較弱——靠著 context window 內的對話記錄，下一次 session 就沒了。如果能把每次 research 任務的「觀察 → 結論 → 產出」寫成結構化的 memory file，熊熊的下一個 research 任務就可以自動引用之前的積累。</p>
-<hr>
-<h2 id="第二層：Dreaming（自動回顧與模式挖掘）"><a href="#第二層：Dreaming（自動回顧與模式挖掘）" class="headerlink" title="第二層：Dreaming（自動回顧與模式挖掘）"></a>第二層：Dreaming（自動回顧與模式挖掘）</h2><h3 id="什麼是-Dreaming"><a href="#什麼是-Dreaming" class="headerlink" title="什麼是 Dreaming"></a>什麼是 Dreaming</h3><p>Dreaming 是排程自動執行的深度回顧系統。它會：</p>
-<ol>
-<li>檢視 Agent 過去一段時間的所有 session</li>
-<li>挖掘重複出現的模式（哪些任務類型經常失敗？哪個環節特別慢？）</li>
-<li>自動重構 Memory 檔案的內容，讓記憶保持最新</li>
-<li>對重構結果做 human review，通過才寫入</li>
-</ol>
-<h3 id="一個具體例子"><a href="#一個具體例子" class="headerlink" title="一個具體例子"></a>一個具體例子</h3><p><strong>Netflix</strong> 的團隊用 Dreaming 來分析大量的 log 資料，找出 AI 系統失敗的隱藏規律。傳統方式是人類工程師慢慢看，現在變成 AI 自動跑，然後輸出「這三個類型的錯誤經常一起發生」的 pattern report，工程師只需要審核結論。</p>
-<p>另一個案例是 <strong>Harvey</strong>（法律 AI 平台），用 Dreaming 之後，<strong>completion rates 提升了 6 倍</strong>——因為系統從失敗裡學到了什麼，修正了決策邏輯。</p>
-<h3 id="熊熊的想法-1"><a href="#熊熊的想法-1" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>「排程自動回顧」聽起來很像 cron job + session_search 的組合——每週固定時間跑一次分析，問「這週的研究任務有哪些 pattern？」然後自動更新一個 <code>research_patterns.md</code> 檔案。這個檔案累積久了，就是熊熊的「領域知識指數」。</p>
-<hr>
-<h2 id="第三層：Outcomes（獨立驗證的品質閘門）"><a href="#第三層：Outcomes（獨立驗證的品質閘門）" class="headerlink" title="第三層：Outcomes（獨立驗證的品質閘門）"></a>第三層：Outcomes（獨立驗證的品質閘門）</h2><h3 id="為什麼需要-Outcomes"><a href="#為什麼需要-Outcomes" class="headerlink" title="為什麼需要 Outcomes"></a>為什麼需要 Outcomes</h3><p>前面提到過的 Agentic Laziness 和 Self-Preferential Bias 問題，根本解法是：<strong>不要讓同一個 Agent 同時當運動員和裁判</strong>。</p>
-<p>Outcomes 模式的設計是這樣的：</p>
-<ol>
-<li>定義一個 rubric（評估標準），描述「什麼是一個成功的 deliverable」</li>
-<li>讓主要的 Agent 產出結果</li>
-<li>把產出和 rubric 一起交給一個<strong>完全獨立的 Grader Agent</strong>（不同的 context window）</li>
-<li>Grader 在自己的 context 裡評估，沒有看過原來的推理過程</li>
-<li>沒通過就打回重做，通過才交付</li>
-</ol>
-<h3 id="實測效果-1"><a href="#實測效果-1" class="headerlink" title="實測效果"></a>實測效果</h3><p>把 Outcomes 模式加進 workflow，task success 分數平均 <strong>提升 10 個百分點</strong>。這個數字看起來不大，但考慮到實作成本極低（只需要多一次獨立的 model call），投資報酬率極高。</p>
-<h3 id="熊熊的想法-2"><a href="#熊熊的想法-2" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>熊熊寫研究心得，其實很需要這套機制。初稿寫完之後，先讓另一個 Agent 扮演「Grader」，根據預先定義的品質標準打分——</p>
-<blockquote>
-<p>「這份摘要有沒有引用來源？結論有沒有被資料支持？結構清不清楚？」</p>
-</blockquote>
-<p>沒通過就打回補充，通過才發布。這就把「品質控制」從熊熊主觀的「感覺還可以」變成可量化的流程。</p>
-<hr>
-<h2 id="第四層：Multi-agent-Orchestration（多-Agent-協作樹）"><a href="#第四層：Multi-agent-Orchestration（多-Agent-協作樹）" class="headerlink" title="第四層：Multi-agent Orchestration（多 Agent 協作樹）"></a>第四層：Multi-agent Orchestration（多 Agent 協作樹）</h2><h3 id="架構設計"><a href="#架構設計" class="headerlink" title="架構設計"></a>架構設計</h3><p>Multi-agent orchestration 把多個 Agent 組合成一個樹狀結構：</p>
-<ul>
-<li><strong>Lead Agent（協調者）</strong>：理解整體任務，拆解成子任務，分派給不同的 subagent</li>
-<li><strong>Specialist Agents（專家）</strong>：各自負責一個子領域，做出產出</li>
-<li><strong>共享檔案</strong>：所有 Agent 讀寫同一組 memory files，資訊透明</li>
-<li><strong>完整 trace</strong>：每個環節誰做了什麼、什麼時候做、為什麼這樣做，都有記錄</li>
-</ul>
-<h3 id="三個真實案例"><a href="#三個真實案例" class="headerlink" title="三個真實案例"></a>三個真實案例</h3><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>組織</th>
-<th>任務</th>
-<th>成果</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Notion</strong></td>
-<td>十幾個任務並行處理，跨工具整合</td>
-<td>原本 12 小時的流程縮短到 <strong>20 分鐘</strong></td>
-</tr>
-<tr>
-<td><strong>Sentry</strong></td>
-<td>原本要大團隊做幾個月的複雜功能</td>
-<td>一個工程師<strong>幾週完成</strong></td>
-</tr>
-<tr>
-<td><strong>Rakuten</strong></td>
-<td>各部門上線 specialist agent</td>
-<td>每個 agent 大約<strong>一週上線</strong></td>
-</tr>
-</tbody>
-</table>
-</div>
-<h3 id="熊熊的想法-3"><a href="#熊熊的想法-3" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>熊熊的 research workflow 其實就是一個天然的 orchestration tree：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">熊熊的 Research 任務</span><br><span class="line">├─ subagent: 抓取文章</span><br><span class="line">├─ subagent: 濃縮摘要</span><br><span class="line">├─ subagent: 品質審查（Grader）</span><br><span class="line">└─ 熊熊自己: 最終確認與發布</span><br></pre></td></tr></table></figure>
-<p>把這個結構顯式化，以後就可以對每個節點做獨立的監控和優化。</p>
-<hr>
-<h2 id="四層系統的協同效應"><a href="#四層系統的協同效應" class="headerlink" title="四層系統的協同效應"></a>四層系統的協同效應</h2><p>真正威力在於這四層不是各自為政，而是形成一個增強循環：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Memory 保存每次任務的產出與觀察</span><br><span class="line">    ↓</span><br><span class="line">Dreaming 定時挖掘 pattern，更新 Memory</span><br><span class="line">    ↓</span><br><span class="line">新的 session 自動引用更新後的 Memory</span><br><span class="line">    ↓</span><br><span class="line">每個 deliverable 經過 Outcomes Grader 把關</span><br><span class="line">    ↓</span><br><span class="line">通過的產出寫回 Memory</span><br><span class="line">    ↓</span><br><span class="line">下一輪 Dreaming 看到更好的素材……</span><br></pre></td></tr></table></figure>
-<p>這個循環一旦轉起來，Agent 的能力就不是靜止的，而是隨著任務量持續成長。</p>
-<hr>
-<h2 id="熊熊的實作方向"><a href="#熊熊的實作方向" class="headerlink" title="熊熊的實作方向"></a>熊熊的實作方向</h2><h3 id="立即可做的：Outcomes-Grader"><a href="#立即可做的：Outcomes-Grader" class="headerlink" title="立即可做的：Outcomes Grader"></a>立即可做的：Outcomes Grader</h3><p>熊熊今天就可以實作最簡單版本的 Outcomes：</p>
-<ol>
-<li>定義一個 <code>research_rubric.md</code>：什麼是一份好的研究摘要</li>
-<li>研究初稿完成後，用另一個 Agent 跑 grading prompt</li>
-<li>沒通過就補充，通過就發布</li>
-</ol>
-<h3 id="短期目標：Memory-結構化"><a href="#短期目標：Memory-結構化" class="headerlink" title="短期目標：Memory 結構化"></a>短期目標：Memory 結構化</h3><p>把每次 research 任務的產出寫成結構化的 memory files：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hermes/research/memory/</span><br><span class="line">├─ 2026-06-10-llm-research-patterns.md</span><br><span class="line">├─ 2026-06-11-workflow-design-notes.md</span><br><span class="line">└─ skills-reviews/</span><br><span class="line">   ├─ what-works.md</span><br><span class="line">   └─ common-failures.md</span><br></pre></td></tr></table></figure>
-<h3 id="中期目標：Dreaming-Schedule"><a href="#中期目標：Dreaming-Schedule" class="headerlink" title="中期目標：Dreaming Schedule"></a>中期目標：Dreaming Schedule</h3><p>每週跑一次 session analysis，輸出 pattern report 到 memory folder，慢慢建立一個「熊熊研究方法論」的知識庫。</p>
-<hr>
-<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>Self-Improving Agents 的核心洞察是：<strong>記憶不是一個功能，成長是一個系統</strong>。Memory 解決「記得住」的問題，Dreaming 解決「學得快」的問題，Outcomes 解決「做得對」的問題，Multi-agent 解決「做得大」的問題。四層疊加，才能真正做到「越用越強」。</p>
-<p>下一篇文章，熊熊會聊 Planning Layer 與大型重構範本——包括 CodeRabbit 的做法，以及那個震撼的 Bun 案例。</p>
-<hr>
-<p><em>本系列文基於 Claude Blog 文章：</em></p>
-<ul>
-<li><em><a href="https://claude.com/blog/claude-managed-agents-memory">Built-in memory for Claude Managed Agents</a></em></li>
-<li><em><a href="https://claude.com/blog/new-in-claude-managed-agents">New in Claude Managed Agents: dreaming, outcomes, and multiagent orchestration</a></em></li>
-<li><em><a href="https://claude.com/blog/building-with-claude-managed-agents">Building with Claude Managed Agents</a></em></li>
-</ul>
-]]></content>
-      <categories>
-        <category>AI Agent</category>
-      </categories>
-      <tags>
-        <tag>Hermes</tag>
-        <tag>AI Agent</tag>
-        <tag>Claude</tag>
-        <tag>Multi-Agent</tag>
-        <tag>Memory</tag>
-        <tag>Outcomes</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Kimi K3 技術報告（全量翻譯 + 譯註）</title>
     <url>/higumalu-note/2026-07-28-kimi-k3-technical-report-full-translation/</url>
     <content><![CDATA[<blockquote>
@@ -1957,45 +1646,45 @@
 <p><img src="/higumalu-note/images/k3_tech_report/architecture.png" alt="Kimi K3 整體架構"><br><em>Kimi K3 整體架構，按 Token、Channel 和 Layer 三個混合維度組織，輸入端有原生視覺通道。</em></p>
 <hr>
 <h3 id="2-1-Hybrid-Attention"><a href="#2-1-Hybrid-Attention" class="headerlink" title="2.1 Hybrid Attention"></a>2.1 Hybrid Attention</h3><p>Kimi K3 使用層級混合的線性注意力和全局注意力，結合 KDA [64] 與 Gated MLA。每個 Block 包含 3 層 KDA 後接 1 層 Gated MLA，給出 3:1 的混合比例。此模式在整個骨幹網絡中重複。兩種注意力機制將在下面分別描述。骨架末端追加一個額外的 Gated MLA 層，確保最終層始終執行全局注意力。</p>
-<h4 id="2-1-1-Kimi-Delta-Attention"><a href="#2-1-1-Kimi-Delta-Attention" class="headerlink" title="2.1.1 Kimi Delta Attention"></a>2.1.1 Kimi Delta Attention</h4><p>KDA 在 Delta Rule 遞歸 [106, 139] 的基礎上增加通道級遺忘門 [64]。考慮隱藏狀態序列 $x_t \in \mathbb{R}^d$，其中 $t$ 索引 Token 位置，$d$ 是模型隱維度。為清晰起見，我們先描述單個注意力頭，Query 和 Key 向量 $q_t, k_t \in \mathbb{R}^{d_k}$，Value 向量 $v_t \in \mathbb{R}^{d_v}$，以及遞歸狀態 $S_t \in \mathbb{R}^{d_k \times d_v}$。KDA 在 Delta Rule 更新前應用通道級衰減：</p>
-<script type="math/tex; mode=display">S_t = (I - \beta_t k_t k_t^\top) \odot \text{Diag}(\alpha_t) \cdot S_{t-1} + \beta_t k_t v_t^\top, \quad \tilde{o}_t = S_t^\top q_t</script><p>其中 $\alpha_t \in (0, 1)^{d_k}$ 是通道級單步 retention factor，$\beta_t \in (0, 1)$ 控制 Delta Rule 寫入強度。</p>
+<h4 id="2-1-1-Kimi-Delta-Attention"><a href="#2-1-1-Kimi-Delta-Attention" class="headerlink" title="2.1.1 Kimi Delta Attention"></a>2.1.1 Kimi Delta Attention</h4><p>KDA 在 Delta Rule 遞歸 [106, 139] 的基礎上增加通道級遺忘門 [64]。考慮隱藏狀態序列 <script type="math/tex">x_t \in \mathbb{R}^d</script>，其中 <script type="math/tex">t</script> 索引 Token 位置，<script type="math/tex">d</script> 是模型隱維度。為清晰起見，我們先描述單個注意力頭，Query 和 Key 向量 <script type="math/tex">q_t, k_t \in \mathbb{R}^{d_k}</script>，Value 向量 <script type="math/tex">v_t \in \mathbb{R}^{d_v}</script>，以及遞歸狀態 <script type="math/tex">S_t \in \mathbb{R}^{d_k \times d_v}</script>。KDA 在 Delta Rule 更新前應用通道級衰減：</p>
+<script type="math/tex; mode=display">S_t = (I - \beta_t k_t k_t^\top) \odot \text{Diag}(\alpha_t) \cdot S_{t-1} + \beta_t k_t v_t^\top, \quad \tilde{o}_t = S_t^\top q_t</script><p>其中 <script type="math/tex">\alpha_t \in (0, 1)^{d_k}</script> 是通道級單步 retention factor，<script type="math/tex">\beta_t \in (0, 1)</script> 控制 Delta Rule 寫入強度。</p>
 <p>跟隨 Kimi Linear [64]，KDA 將每頭量參數化為：</p>
-<script type="math/tex; mode=display">q_t^h, k_t^h = \text{L2Norm}\left(\text{Swish}\left(\text{ShortConv}\left(W_t^{q/k} x_t\right)\right)\right) \in \mathbb{R}^{d_k}</script><script type="math/tex; mode=display">v_t^h = \text{Swish}\left(\text{ShortConv}\left(W_t^v x_t\right)\right) \in \mathbb{R}^{d_v}</script><script type="math/tex; mode=display">\beta_t^h = \text{Sigmoid}\left(W_\beta x_t\right) \in (0, 1)</script><script type="math/tex; mode=display">z_t^h = W_\alpha^\uparrow W_\alpha^\downarrow x_t + b_\alpha^h \in \mathbb{R}^{d_k}</script><p>Query、Key、Value 投影依次應用 ShortConv 和 Swish [139]，Query 和 Key 進一步以 L2Norm [142] 歸一化。低秩投影和頭特定偏置 $b_\alpha^h \in \mathbb{R}^{d_k}$ 為每個 Key 通道產生細粒度衰減 logit $z_t^h$。從 $z_t^h$ 到 $\alpha_t^h$ 的下限有界映射將在分塊並行形式之後引入。</p>
+<script type="math/tex; mode=display">q_t^h, k_t^h = \text{L2Norm}\left(\text{Swish}\left(\text{ShortConv}\left(W_t^{q/k} x_t\right)\right)\right) \in \mathbb{R}^{d_k}</script><script type="math/tex; mode=display">v_t^h = \text{Swish}\left(\text{ShortConv}\left(W_t^v x_t\right)\right) \in \mathbb{R}^{d_v}</script><script type="math/tex; mode=display">\beta_t^h = \text{Sigmoid}\left(W_\beta x_t\right) \in (0, 1)</script><script type="math/tex; mode=display">z_t^h = W_\alpha^\uparrow W_\alpha^\downarrow x_t + b_\alpha^h \in \mathbb{R}^{d_k}</script><p>Query、Key、Value 投影依次應用 ShortConv 和 Swish [139]，Query 和 Key 進一步以 L2Norm [142] 歸一化。低秩投影和頭特定偏置 <script type="math/tex">b_\alpha^h \in \mathbb{R}^{d_k}</script> 為每個 Key 通道產生細粒度衰減 logit <script type="math/tex">z_t^h</script>。從 <script type="math/tex">z_t^h</script> 到 <script type="math/tex">\alpha_t^h</script> 的下限有界映射將在分塊並行形式之後引入。</p>
 <p><strong>分塊並行形式</strong></p>
-<p>跟隨 Kimi Linear [64]，KDA 在 chunk 級別遞歸，在每個 chunk 內並行。對於 chunk size $C$，$X[t]$ 堆疊第 $t$ 個 chunk 中的 Token 向量（$X \in {Q, K, V, O, U, W}$）。矩陣 $S[t] \in \mathbb{R}^{d_k \times d_v}$ 表示進入 chunk $t$ 的遞歸狀態。對位置 $1 \leq i \leq j \leq C$，定義通道級累積衰減：</p>
-<script type="math/tex; mode=display">\gamma_{i \to j}^{[t]} := \prod_{r=i}^j \alpha_r^{[t]}, \quad \gamma_r^{[t]} := \gamma_{1 \to r}^{[t]}</script><p>如 Kimi Linear 中，$\Gamma_{1 \to C}^{[t]} \in \mathbb{R}^{C \times d_k}$ 將 $\gamma_1^{[t]}, …, \gamma_C^{[t]}$ 按行堆疊。UT 變換產生 $U[t]$ 和 $W[t]$，從而定義偽 Value 項 $eV[t] := U[t] - W[t]S[t]$。給定傳入狀態 $S[t]$，chunk $t$ 中的所有輸出並行計算為：</p>
-<script type="math/tex; mode=display">A[t] = \text{Tril}\left((Q[t] \odot \Gamma_{1 \to C}^{[t]}) \cdot (K[t] / \Gamma_{1 \to C}^{[t]})^\top\right)</script><script type="math/tex; mode=display">O[t] = \underbrace{(\Gamma_{1 \to C}^{[t]} \odot Q[t]) S[t]}_{\text{inter-chunk}} + \underbrace{A[t] \cdot eV[t]}_{\text{intra-chunk}}</script><p>對於矩陣 $M$，$\text{Tril}(M)$ 將所有嚴格上三角 entries 置零，保留下三角 entries（包括對角線）。此 mask 在 chunk 內強制執行因果交互，對角線保留是因為每個輸出讀取當前 Token 更新後的狀態。$O[t]$ 的第一項承載來自先前 chunks 的信息，第二項處理當前 chunk 內的交互。</p>
+<p>跟隨 Kimi Linear [64]，KDA 在 chunk 級別遞歸，在每個 chunk 內並行。對於 chunk size <script type="math/tex">C</script>，<script type="math/tex">X[t]</script> 堆疊第 <script type="math/tex">t</script> 個 chunk 中的 Token 向量（<script type="math/tex">X \in \{Q, K, V, O, U, W\}</script>）。矩陣 <script type="math/tex">S[t] \in \mathbb{R}^{d_k \times d_v}</script> 表示進入 chunk <script type="math/tex">t</script> 的遞歸狀態。對位置 <script type="math/tex">1 \leq i \leq j \leq C</script>，定義通道級累積衰減：</p>
+<script type="math/tex; mode=display">\gamma_{i \to j}^{[t]} := \prod_{r=i}^j \alpha_r^{[t]}, \quad \gamma_r^{[t]} := \gamma_{1 \to r}^{[t]}</script><p>如 Kimi Linear 中，<script type="math/tex">\Gamma_{1 \to C}^{[t]} \in \mathbb{R}^{C \times d_k}</script> 將 <script type="math/tex">\gamma_1^{[t]}, ..., \gamma_C^{[t]}</script> 按行堆疊。UT 變換產生 <script type="math/tex">U[t]</script> 和 <script type="math/tex">W[t]</script>，從而定義偽 Value 項 <script type="math/tex">eV[t] := U[t] - W[t]S[t]</script>。給定傳入狀態 <script type="math/tex">S[t]</script>，chunk <script type="math/tex">t</script> 中的所有輸出並行計算為：</p>
+<script type="math/tex; mode=display">A[t] = \text{Tril}\left((Q[t] \odot \Gamma_{1 \to C}^{[t]}) \cdot (K[t] / \Gamma_{1 \to C}^{[t]})^\top\right)</script><script type="math/tex; mode=display">O[t] = \underbrace{(\Gamma_{1 \to C}^{[t]} \odot Q[t]) S[t]}_{\text{inter-chunk}} + \underbrace{A[t] \cdot eV[t]}_{\text{intra-chunk}}</script><p>對於矩陣 <script type="math/tex">M</script>，<script type="math/tex">\text{Tril}(M)</script> 將所有嚴格上三角 entries 置零，保留下三角 entries（包括對角線）。此 mask 在 chunk 內強制執行因果交互，對角線保留是因為每個輸出讀取當前 Token 更新後的狀態。<script type="math/tex">O[t]</script> 的第一項承載來自先前 chunks 的信息，第二項處理當前 chunk 內的交互。</p>
 <p><strong>下限有界衰減（核心創新）</strong></p>
-<p>方程 4 在每個 chunk 中以倒數累積衰減 $1/\Gamma<em>{1 \to C}^{[t]}$ 重新縮放 Keys。由於 $\Gamma</em>{1 \to C}^{[t]}$ 是 $(0, 1)$ 內 retention factor 的乘積，其倒數可能無界、在有限精度下溢出 [141, 64]。Kimi Linear 透過在 log 空間計算相對衰減並將每個 chunk 進一步劃分為次級 16-token tile 來控制數值範圍 [141, 64]。Off-diagonal tile 可以直接用 Tensor Core 密集矩陣乘法計算；相比之下，diagonal tile 仍需要顯式位置對計算，這是主要的 intra-chunk 瓶頸。</p>
-<p>Kimi K3 透過改變從衰減 logit $z_t^h$ 到單步 log-decay $g_t^h$ 的映射來解決這一瓶頸。跟隨 GDN 和 Mamba-2，Kimi Linear 使用負 Softplus 映射 $g_t^h = -e^{A_h} \text{Softplus}(z_t^h) \in (-\infty, 0)^{d_k}$ [139, 24, 64]。Kimi K3 轉而使用縮放 Sigmoid 從下方約束 log-decay：</p>
-<script type="math/tex; mode=display">g_t^h = g_{\min} \cdot \text{Sigmoid}(e^{A_h} z_t^h) \in (g_{\min}, 0)^{d_k}</script><script type="math/tex; mode=display">\alpha_t^h = \exp(g_t^h) \in (e^{g_{\min}}, 1)^{d_k}</script><p>其中 $A<em>h$ 是每頭可學習 log-scale，$g</em>{\min} = -5$ 固定。我們初始化 $A<em>h = 0$，各偏置 $b</em>\alpha^h$ 按 [64, 24, 139] 初始化。$g<em>{\min} = -5$ 確保每個 retention factor $\alpha</em>{t,j}^h &gt; e^{-5} \approx 6.7 \times 10^{-3}$，16-token tile 上的累積 log-decay 位於 $(-80, 0)$。相應的倒數重新縮放因子因此小於 $e^{80}$，保持在 BF16 動態範圍內。這一有限範圍使對角線和 off-diagonal tile 都能使用密集 Tensor Core 矩陣乘法，消除了位置對角線路徑。</p>
+<p>方程 4 在每個 chunk 中以倒數累積衰減 <script type="math/tex">1/\Gamma_{1 \to C}^{[t]}</script> 重新縮放 Keys。由於 <script type="math/tex">\Gamma_{1 \to C}^{[t]}</script> 是 <script type="math/tex">(0, 1)</script> 內 retention factor 的乘積，其倒數可能無界、在有限精度下溢出 [141, 64]。Kimi Linear 透過在 log 空間計算相對衰減並將每個 chunk 進一步劃分為次級 16-token tile 來控制數值範圍 [141, 64]。Off-diagonal tile 可以直接用 Tensor Core 密集矩陣乘法計算；相比之下，diagonal tile 仍需要顯式位置對計算，這是主要的 intra-chunk 瓶頸。</p>
+<p>Kimi K3 透過改變從衰減 logit <script type="math/tex">z_t^h</script> 到單步 log-decay <script type="math/tex">g_t^h</script> 的映射來解決這一瓶頸。跟隨 GDN 和 Mamba-2，Kimi Linear 使用負 Softplus 映射 <script type="math/tex">g_t^h = -e^{A_h} \text{Softplus}(z_t^h) \in (-\infty, 0)^{d_k}</script> [139, 24, 64]。Kimi K3 轉而使用縮放 Sigmoid 從下方約束 log-decay：</p>
+<script type="math/tex; mode=display">g_t^h = g_{\min} \cdot \text{Sigmoid}(e^{A_h} z_t^h) \in (g_{\min}, 0)^{d_k}</script><script type="math/tex; mode=display">\alpha_t^h = \exp(g_t^h) \in (e^{g_{\min}}, 1)^{d_k}</script><p>其中 <script type="math/tex">A_h</script> 是每頭可學習 log-scale，<script type="math/tex">g_{\min} = -5</script> 固定。我們初始化 <script type="math/tex">A_h = 0</script>，各偏置 <script type="math/tex">b_\alpha^h</script> 按 [64, 24, 139] 初始化。<script type="math/tex">g_{\min} = -5</script> 確保每個 retention factor <script type="math/tex">\alpha_{t,j}^h > e^{-5} \approx 6.7 \times 10^{-3}</script>，16-token tile 上的累積 log-decay 位於 <script type="math/tex">(-80, 0)</script>。相應的倒數重新縮放因子因此小於 <script type="math/tex">e^{80}</script>，保持在 BF16 動態範圍內。這一有限範圍使對角線和 off-diagonal tile 都能使用密集 Tensor Core 矩陣乘法，消除了位置對角線路徑。</p>
 <p><img src="/higumalu-note/images/k3_tech_report/kda-decay.png" alt="KDA 下限有界衰減 Figure 3"><br><em>圖 3：(a) Log-decay 參數化：Kimi Linear 使用無界負 Softplus 映射，Kimi K3 以縮放 Sigmoid 約束 log-decay 下界；(b) 對角線 tile 計算：Kimi Linear 對每個對角線 tile 執行顯式位置對計算，而 Kimi K3 的有界範圍使所有因果 tile 使用密集 Tensor Core 矩陣乘法</em></p>
 <p><strong>全秩輸出門</strong></p>
 <p>最後，Kimi K3 將 KDA 的輸出門從 Kimi Linear [64] 使用的低秩參數化改為輸入依賴的全秩投影。對遞歸輸出應用頭級 RMSNorm [147] 後，KDA 應用數據依賴輸出門控 [100]：</p>
-<script type="math/tex; mode=display">y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \text{RMSNorm}(\tilde{o}_t)]</script><h4 id="2-1-2-Gated-MLA"><a href="#2-1-2-Gated-MLA" class="headerlink" title="2.1.2 Gated MLA"></a>2.1.2 Gated MLA</h4><p>Multi-head Latent Attention（MLA）在 DeepSeek-V2 [28] 中引入，將每個 Token 的 Key-Value 表示壓縮到低維潛向量 $c_t = W_c x_t$。MLA 不緩存完整的頭特定 Keys 和 Values，而是緩存 $c_t$ 並在注意力計算期間透過學習的上投影重建內容 Keys 和 Values。這種分解減少了 KV-Cache 佔用，同時保留了全局 Token 間注意力。MLA 後被 Kimi K2 和 Kimi K2.5 [59, 60] 採用，Kimi K3 在週期性全局注意力層中保留 MLA。</p>
+<script type="math/tex; mode=display">y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \text{RMSNorm}(\tilde{o}_t)]</script><h4 id="2-1-2-Gated-MLA"><a href="#2-1-2-Gated-MLA" class="headerlink" title="2.1.2 Gated MLA"></a>2.1.2 Gated MLA</h4><p>Multi-head Latent Attention（MLA）在 DeepSeek-V2 [28] 中引入，將每個 Token 的 Key-Value 表示壓縮到低維潛向量 <script type="math/tex">c_t = W_c x_t</script>。MLA 不緩存完整的頭特定 Keys 和 Values，而是緩存 <script type="math/tex">c_t</script> 並在注意力計算期間透過學習的上投影重建內容 Keys 和 Values。這種分解減少了 KV-Cache 佔用，同時保留了全局 Token 間注意力。MLA 後被 Kimi K2 和 Kimi K2.5 [59, 60] 採用，Kimi K3 在週期性全局注意力層中保留 MLA。</p>
 <p>不同於 Kimi K2 和 K2.5，Kimi K3 跟隨 Kimi Linear [64] 的混合設計，對所有 MLA 層應用 <strong>No Position Encoding（NoPE）</strong>。因此，不對它們的 Query 或 Key 應用顯式位置編碼。穿插的 KDA 層提供位置敏感和近因感知的序列混合，而 MLA 層提供無限制的全局內容交互。這種分離也避免了在擴展上下文長度時修改位置編碼參數，例如重新調優 RoPE 頻率基或應用 YaRN [93]。</p>
-<p>此外，Kimi K3 以輸入依賴、通道級全秩輸出門增強 MLA。令 $\tilde{o}_t$ 為位置 $t$ 的無門控 MLA 輸出，門控輸出為：</p>
-<script type="math/tex; mode=display">y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \tilde{o}_t]</script><p>門投影 $W_g$ 是全秩的，與 Kimi K3 中 KDA 的新參數化一致。此門允許每個 Token 調製從全局注意力讀取的通道。</p>
+<p>此外，Kimi K3 以輸入依賴、通道級全秩輸出門增強 MLA。令 <script type="math/tex">\tilde{o}_t</script> 為位置 <script type="math/tex">t</script> 的無門控 MLA 輸出，門控輸出為：</p>
+<script type="math/tex; mode=display">y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \tilde{o}_t]</script><p>門投影 <script type="math/tex">W_g</script> 是全秩的，與 Kimi K3 中 KDA 的新參數化一致。此門允許每個 Token 調製從全局注意力讀取的通道。</p>
 <p>為修正 Flash Attention 中出現的有偏舍入誤差，我們採用 [99] 的方法，在訓練期間將注意力輸出保持為 FP32。這使輸出 tile 的片上佔用增加一倍；因此我們重新設計訓練內核，讓它與 KV 緩衝區而不是 Query tile 重疊，為更深的 KV 管線和更高訓練吞吐量釋放共享內存。</p>
 <hr>
-<h3 id="2-2-Attention-Residuals"><a href="#2-2-Attention-Residuals" class="headerlink" title="2.2 Attention Residuals"></a>2.2 Attention Residuals</h3><p>標準殘差連接 [44] 將所有先前信息壓縮到深度上的單一狀態 $h_l$——這是一種令人聯想到時間維度 RNN 的 bottleneck。對於序列建模，Transformer 以注意力 [10, 126] 取代了遞歸，允許每個位置以數據依賴權重選擇性地訪問所有先前位置。Attention Residuals（AttnRes）[58] 將相同方法論應用於深度維度：每層選擇性地從所有先前層的表示中檢索，而非均勻累積。</p>
+<h3 id="2-2-Attention-Residuals"><a href="#2-2-Attention-Residuals" class="headerlink" title="2.2 Attention Residuals"></a>2.2 Attention Residuals</h3><p>標準殘差連接 [44] 將所有先前信息壓縮到深度上的單一狀態 <script type="math/tex">h_l</script>——這是一種令人聯想到時間維度 RNN 的 bottleneck。對於序列建模，Transformer 以注意力 [10, 126] 取代了遞歸，允許每個位置以數據依賴權重選擇性地訪問所有先前位置。Attention Residuals（AttnRes）[58] 將相同方法論應用於深度維度：每層選擇性地從所有先前層的表示中檢索，而非均勻累積。</p>
 <p><strong>完全 Attention Residuals</strong></p>
-<p>對於每層 $l$，我們定義層特定可學習偽查詢 $q_l = w_l \in \mathbb{R}^d$ 及其 Keys 和 Values：</p>
-<script type="math/tex; mode=display">k_i = v_i = \begin{cases} h_1 & i = 0 \\ f_i(h_i) & 1 \leq i \leq l-1 \end{cases}</script><p>其中 $f_i(h_i)$ 是第 $i$ 層的輸出，$h_1$ 是 Token Embedding。注意力權重遵循 softmax kernel $\phi(q, k) = \exp(q^\top \text{RMSNorm}(k))$ [56, 147]，其中 RMSNorm 防止大幅度輸出的層主導權重：</p>
-<script type="math/tex; mode=display">\alpha_{i \to l} = \frac{\phi(q_l, k_i)}{\sum_{j=0}^{l-1} \phi(q_l, k_j)}, \quad h_l = \sum_{i=0}^{l-1} \alpha_{i \to l} \cdot v_i</script><p>由於網絡深度適中（$L &lt; 100$），這種完全形式 $O(L^2 d)$ 的算術代價是可接受的；實際開銷是為保持所有層輸出存活所需的 $O(Ld)$ 內存（以及管道並行下跨階段通信）。</p>
+<p>對於每層 <script type="math/tex">l</script>，我們定義層特定可學習偽查詢 <script type="math/tex">q_l = w_l \in \mathbb{R}^d</script> 及其 Keys 和 Values：</p>
+<script type="math/tex; mode=display">k_i = v_i = \begin{cases} h_1 & i = 0 \\ f_i(h_i) & 1 \leq i \leq l-1 \end{cases}</script><p>其中 <script type="math/tex">f_i(h_i)</script> 是第 <script type="math/tex">i</script> 層的輸出，<script type="math/tex">h_1</script> 是 Token Embedding。注意力權重遵循 softmax kernel <script type="math/tex">\phi(q, k) = \exp(q^\top \text{RMSNorm}(k))</script> [56, 147]，其中 RMSNorm 防止大幅度輸出的層主導權重：</p>
+<script type="math/tex; mode=display">\alpha_{i \to l} = \frac{\phi(q_l, k_i)}{\sum_{j=0}^{l-1} \phi(q_l, k_j)}, \quad h_l = \sum_{i=0}^{l-1} \alpha_{i \to l} \cdot v_i</script><p>由於網絡深度適中（<script type="math/tex">L < 100</script>），這種完全形式 <script type="math/tex">O(L^2 d)</script> 的算術代價是可接受的；實際開銷是為保持所有層輸出存活所需的 <script type="math/tex">O(Ld)</script> 內存（以及管道並行下跨階段通信）。</p>
 <p><strong>分塊 Attention Residuals</strong></p>
-<p>為減少此開銷，我們將 $L$ 層劃分為 $N$ 個 block，每個 block $S = L/N$ 層。Block $n$（層索引 $B<em>n$）內的層輸出通過求和歸約為單一表示 $b_n = \sum</em>{j \in B_n} f_j(h_j)$，其中 $b_n^i$ 表示 block 前 $i$ 層的部分和；設 $b_0 = h_1$，因此 Token Embedding 始終作為來源包含在內。跨 block，只對 $N$ 個 block 級表示應用完全注意力：對 block $n$ 的第 $i$ 層，Value 矩陣為：</p>
+<p>為減少此開銷，我們將 <script type="math/tex">L</script> 層劃分為 <script type="math/tex">N</script> 個 block，每個 block <script type="math/tex">S = L/N</script> 層。Block <script type="math/tex">n</script>（層索引 <script type="math/tex">B_n</script>）內的層輸出通過求和歸約為單一表示 <script type="math/tex">b_n = \sum_{j \in B_n} f_j(h_j)</script>，其中 <script type="math/tex">b_n^i</script> 表示 block 前 <script type="math/tex">i</script> 層的部分和；設 <script type="math/tex">b_0 = h_1</script>，因此 Token Embedding 始終作為來源包含在內。跨 block，只對 <script type="math/tex">N</script> 個 block 級表示應用完全注意力：對 block <script type="math/tex">n</script> 的第 <script type="math/tex">i</script> 層，Value 矩陣為：</p>
 <script type="math/tex; mode=display">V = \begin{cases} [b_0, b_1, ..., b_{n-1}]^\top & i = 1 \text{（block 首層）} \\ [b_0, b_1, ..., b_{n-1}, b_{n-1}^i]^\top & i \geq 2 \text{（後續層）} \end{cases}</script><hr>
-<h3 id="2-3-Stable-LatentMoE"><a href="#2-3-Stable-LatentMoE" class="headerlink" title="2.3 Stable LatentMoE"></a>2.3 Stable LatentMoE</h3><p>LatentMoE 在前饋網絡中引入潛路由，將 FFN 轉換為潛專家混合。路由的 Key-Value 表示被壓縮為低維向量，激活時通過上投影重建。具體來說，令 $x \in \mathbb{R}^d$ 為輸入，路由器首先計算：</p>
-<script type="math/tex; mode=display">s = \text{Softmax}(\text{Norm}(W_g x)) \in \mathbb{R}^n</script><p>其中 $n = 896$ 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：</p>
-<script type="math/tex; mode=display">\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)</script><p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和路由權重（依 Eq. 10）：</p>
-<script type="math/tex; mode=display">s_i = \text{Sigmoid}(W_g x_i), \quad \mathcal{T}_i = \text{argtop}_k(s_i + b), \quad p_{i,j} = \begin{cases} \dfrac{s_{i,j}}{\sum_{r \in \mathcal{T}_i} s_{i,r}} & j \in \mathcal{T}_i \\ 0 & \text{otherwise} \end{cases}</script><p>偏置 $b$ 從路由概率 $p_{i,j}$ 計算中省略，這樣它只調節 dispatch（Top-k 選了哪些專家）而不改變混合權重或直接干擾路由器的梯度優化。</p>
+<h3 id="2-3-Stable-LatentMoE"><a href="#2-3-Stable-LatentMoE" class="headerlink" title="2.3 Stable LatentMoE"></a>2.3 Stable LatentMoE</h3><p>LatentMoE 在前饋網絡中引入潛路由，將 FFN 轉換為潛專家混合。路由的 Key-Value 表示被壓縮為低維向量，激活時通過上投影重建。具體來說，令 <script type="math/tex">x \in \mathbb{R}^d</script> 為輸入，路由器首先計算：</p>
+<script type="math/tex; mode=display">s = \text{Softmax}(\text{Norm}(W_g x)) \in \mathbb{R}^n</script><p>其中 <script type="math/tex">n = 896</script> 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：</p>
+<script type="math/tex; mode=display">\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)</script><p>最終權重為 <script type="math/tex">w = \text{gate} \odot s</script>。為處理路由中的不平衡，我們引入每專家偏置 <script type="math/tex">b \in \mathbb{R}^n</script>，並定義 Top-k 選擇和路由權重（依 Eq. 10）：</p>
+<script type="math/tex; mode=display">s_i = \text{Sigmoid}(W_g x_i), \quad \mathcal{T}_i = \text{argtop}_k(s_i + b), \quad p_{i,j} = \begin{cases} \dfrac{s_{i,j}}{\sum_{r \in \mathcal{T}_i} s_{i,r}} & j \in \mathcal{T}_i \\ 0 & \text{otherwise} \end{cases}</script><p>偏置 <script type="math/tex">b</script> 從路由概率 <script type="math/tex">p_{i,j}</script> 計算中省略，這樣它只調節 dispatch（Top-k 選了哪些專家）而不改變混合權重或直接干擾路由器的梯度優化。</p>
 <h4 id="2-3-1-SiTU-GLU"><a href="#2-3-1-SiTU-GLU" class="headerlink" title="2.3.1 SiTU-GLU"></a>2.3.1 SiTU-GLU</h4><p>在 FFN 投影之間，我們用 SiTU-GLU 取代標准 SwiGLU。SiTU-GLU 將 Swish 激活函數的 cap 替換為平滑的 Tanh cap：</p>
-<script type="math/tex; mode=display">\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)</script><p>Gate branch 的 $\beta<em>1 = 4$，Up branch 的 $\beta_2 = 25$。由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|</em>\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。在原點附近，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 $\beta \to \infty$ 精確退化為 SwiGLU。</p>
-<h4 id="2-3-2-Quantile-Balancing"><a href="#2-3-2-Quantile-Balancing" class="headerlink" title="2.3.2 Quantile Balancing"></a>2.3.2 Quantile Balancing</h4><p>隨著專家數增長到近千，均衡路由變得越來越重要。傳統輔助損失方法 [30] 在每個 Token 上增加一個負載不平衡罰項，但這會直接干擾路由決策與梯度優化。我們採用無輔助損失的路由均衡：對每個專家維護一個偏置項 $b_j$，根據目標加載 $q := mk/n$ 週期性更新（依 Eq. 14）：</p>
+<script type="math/tex; mode=display">\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)</script><p>Gate branch 的 <script type="math/tex">\beta_1 = 4</script>，Up branch 的 <script type="math/tex">\beta_2 = 25</script>。由於 <script type="math/tex">|\tanh(z)| < 1</script> 且 <script type="math/tex">0 < \text{Sigmoid}(z) < 1</script>，每個輸出坐標滿足 <script type="math/tex">\|\text{SiTU-GLU}(x)\|_\infty \leq \beta_1 \beta_2 = 100</script>，輸出有嚴格上界。在原點附近，<script type="math/tex">\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)</script>，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 <script type="math/tex">\beta \to \infty</script> 精確退化為 SwiGLU。</p>
+<h4 id="2-3-2-Quantile-Balancing"><a href="#2-3-2-Quantile-Balancing" class="headerlink" title="2.3.2 Quantile Balancing"></a>2.3.2 Quantile Balancing</h4><p>隨著專家數增長到近千，均衡路由變得越來越重要。傳統輔助損失方法 [30] 在每個 Token 上增加一個負載不平衡罰項，但這會直接干擾路由決策與梯度優化。我們採用無輔助損失的路由均衡：對每個專家維護一個偏置項 <script type="math/tex">b_j</script>，根據目標加載 <script type="math/tex">q := mk/n</script> 週期性更新（依 Eq. 14）：</p>
 <script type="math/tex; mode=display">b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_{i=1}^{m} \mathbf{1}_{j \in \mathcal{T}_i} - \frac{k}{n} \right)</script><p>此更新將專家加載推向目標，類似於 SignSGD，但直接作用於偏置而非路由器參數。</p>
 <p><img src="/higumalu-note/images/k3_tech_report/quantile-balancing.png" alt="Quantile Balancing"><br><em>圖 5：Quantile Balancing 示意（m=8 tokens, n=4 experts, k=1）。(a) 不均衡路由：初始加載 (4, 3, 1, 0)；(b) 分位數平衡：每列繪製偏差後的分數灰條，紅色虛線為偏差調整線；(c) 均衡路由：最終加載 (2, 2, 2, 2)</em></p>
-<p>對於精確的偏差估計，我們從最優平衡分配問題的對偶推导出 Alternating Quantile Solver：交替求解 token 側閾值 $\alpha$ 和專家側閾值 $\beta$，每步封閉形式精確求解。實務上，用 1000 個 bin 的直方圖估計分位數，僅需一次整數 All-Reduce 通信，代價不到原始 margin 通信的 1%。</p>
+<p>對於精確的偏差估計，我們從最優平衡分配問題的對偶推导出 Alternating Quantile Solver：交替求解 token 側閾值 <script type="math/tex">\alpha</script> 和專家側閾值 <script type="math/tex">\beta</script>，每步封閉形式精確求解。實務上，用 1000 個 bin 的直方圖估計分位數，僅需一次整數 All-Reduce 通信，代價不到原始 margin 通信的 1%。</p>
 <hr>
 <h3 id="2-4-原生視覺"><a href="#2-4-原生視覺" class="headerlink" title="2.4 原生視覺"></a>2.4 原生視覺</h3><p>Kimi K3 的視覺編碼器 MoonViT-V2 將圖像和視頻編碼為視覺 Token 序列。輕量級投影器將視覺特徵映射到與語言骨幹共享的 Embedding 空間，然後一起送入骨幹網絡處理。這種原生多模態設計使視覺理解與語言推理深度融合，而非事後拼接。</p>
 <p>此視覺訓練配方基於 Kimi K2.5 [60, 62] 的整體設計構建：視覺輸入首先由 MoonViT-V2 編碼，然後由輕量級 MLP 投影器映射到共享語言空間。MoonViT-V2 是一個約 4 億參數的 27 層視覺 Transformer，採用 RMSNorm 並從其線性投影和注意力投影中移除所有偏置項——此設計從訓練初期就進一步穩定了跨模態表示融合。</p>
@@ -2108,8 +1797,8 @@
 <script type="math/tex; mode=display">r_{\text{opd}}(y_t | e, x, y_{<t}) = \text{clip}\left(\frac{\text{sg}(\log \pi^{(d,e)}_{\text{teacher}}(y_t | x, y_{<t}))}{\pi_\theta(y_t | e, x, y_{<t})}, -R_{\max}, R_{\max}\right)</script><p>其中 sg(·) 為 stop-gradient 算子，Rmax &gt; 0 為裁剪閾值。此密集獎勵信號無縫集成到我們的 RL 框架中，自然支持長程任務的 partial rollout 訓練等基礎設施優化。</p>
 <h3 id="4-1-4-部署感知後訓練"><a href="#4-1-4-部署感知後訓練" class="headerlink" title="4.1.4 部署感知後訓練"></a>4.1.4 部署感知後訓練</h3><p><strong>MXFP4 量化感知後訓練</strong>：為減少部署時的內存佔用和服務成本，我們將佔模型參數內存主導的 MoE 專家權重量化到 MXFP4 [104]，激活以 MXFP8 計算；而所有非專家組件（注意力投影、潛 MoE 投影、共享專家和 MoE 路由器）保持在更高精度。我們在整個後訓練階段——涵蓋 SFT 和 RL——執行量化感知訓練（QAT）[50]，使模型適應量化引起的精度損失。在 RL 期間，rollout 和訓練共享相同的量化方案，消除訓練-推理失配。</p>
 <p><strong>Draft Model 微調</strong>：優化複雜、長程 agentic 模型的推理效率至關重要。Kimi K3 預訓練時配有一個多 Token 預測（MTP）層，其結構與骨幹 block 相同。由於 EAGLE-3 [72] 的 draft model 由單一解碼器層組成，其結構與 MTP 層匹配，我們將預訓練的 MTP 層微調為 EAGLE-3 風格的 draft model，目標模型保持凍結，只更新 draft 層及其特徵融合投影。遵循 EAGLE-3 的訓練時測試協議，draft 在訓練時展開 7 步；在第一步之後（新 token 的目標側特徵不可用），draft 消耗自身先前步的輸出，模擬推理中的循環 draft 過程。</p>
-<p>Draft 輸入融合目標模型的低層、中層和高層特徵，分別取自第 1 個、中間和最終 AttnRes block 的輸出（§2.2）。這些特徵通過無偏置矩陣 $W_{E3}$ 拼接投影到 draft 層的隱藏大小，初始化為 $\begin{bmatrix} 0 &amp; 0 &amp; I \end{bmatrix}$，使融合表示在初始化時與高層特徵 $h_h$ 一致——這是 MTP 層預訓練時的輸入——並在微調過程中逐步學會融合低層和中層特徵。</p>
-<p>推測解碼的加速取決於無損推測採樣下每 token 接受率 $P = \sum_{x \in V} \min(p(x), q(x))$，其中 p 和 q 分別是目標和 draft model 的下一 token 分佈。由於傳統 KL 散度代理不能保證最大化容量有限的 draft model 的接受率，我們直接優化似然基於的 LK 損失 [105]——接受率本身的負對數：</p>
+<p>Draft 輸入融合目標模型的低層、中層和高層特徵，分別取自第 1 個、中間和最終 AttnRes block 的輸出（§2.2）。這些特徵通過無偏置矩陣 <script type="math/tex">W_{E3}</script> 拼接投影到 draft 層的隱藏大小，初始化為 <script type="math/tex">\begin{bmatrix} 0 & 0 & I \end{bmatrix}</script>，使融合表示在初始化時與高層特徵 <script type="math/tex">h_h</script> 一致——這是 MTP 層預訓練時的輸入——並在微調過程中逐步學會融合低層和中層特徵。</p>
+<p>推測解碼的加速取決於無損推測採樣下每 token 接受率 <script type="math/tex">P = \sum_{x \in V} \min(p(x), q(x))</script>，其中 p 和 q 分別是目標和 draft model 的下一 token 分佈。由於傳統 KL 散度代理不能保證最大化容量有限的 draft model 的接受率，我們直接優化似然基於的 LK 損失 [105]——接受率本身的負對數：</p>
 <script type="math/tex; mode=display">L_{LK} = -\log \sum_{x \in V} \min(p(x), q(x))</script><p>p 和 q 在 temperature 1 下評估，無輔助真實交叉熵項。Draft 微調遵循後訓練 QAT 配置（§4.1.4），MoE 專家權重為 MXFP4，其輸入激活為 MXFP8，而非專家模組保持更高精度。</p>
 <h3 id="4-2-Long-Context-SFT"><a href="#4-2-Long-Context-SFT" class="headerlink" title="4.2 Long-Context SFT"></a>4.2 Long-Context SFT</h3><p>在強化學習之前，Kimi K3 在長上下文任務上接受監督微調（SFT），涵蓋長程推理、多文檔問答和代碼補全。關鍵是使用真實的長上下文數據而非簡單的序列拼接。</p>
 <h3 id="4-3-知識圖譜引導的任務合成"><a href="#4-3-知識圖譜引導的任務合成" class="headerlink" title="4.3 知識圖譜引導的任務合成"></a>4.3 知識圖譜引導的任務合成</h3><p><strong>動機與概述</strong></p>
@@ -2125,11 +1814,11 @@
 <h3 id="4-2-5-個人助理任務"><a href="#4-2-5-個人助理任務" class="headerlink" title="4.2.5 個人助理任務"></a>4.2.5 個人助理任務</h3><p>對於長程個人助理任務，我們開發了 Gmail、Notion、Slack 和 Canvas 等廣泛使用應用的現實模擬實現。它們保留真實對應物的核心語義，同時支持可重現的大規模交互而無需外部 API 或速率限制。在此模擬應用基礎上，我們設計了人力資源、法律服務和財務等場景中現實專業工作流程啟發的複雜任務。在每個任務中，agent 在持久化、演化的環境中跨多個模擬天數運營，遇到新信息並需相應調整其行為。</p>
 <hr>
 <h2 id="5-基礎設施（Infrastructure）"><a href="#5-基礎設施（Infrastructure）" class="headerlink" title="5. 基礎設施（Infrastructure）"></a>5. 基礎設施（Infrastructure）</h2><p>Kimi K3 結合了三種罕見的系統挑戰：混合 KDA 注意力、3 兆類稀疏多模態訓練/推理，以及百萬 Token Agentic 工作負載。我們的基礎設施在每個領域都進行了共同設計。</p>
-<h3 id="5-1-KDA-演算法-系統共同設計"><a href="#5-1-KDA-演算法-系統共同設計" class="headerlink" title="5.1 KDA 演算法-系統共同設計"></a>5.1 KDA 演算法-系統共同設計</h3><p>KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準注意力中的 Key-Value Cache。這種設計允許廉價的狀態傳遞和復用，但對並行執行提出挑戰。</p>
+<h3 id="5-1-KDA-演算法-系統共同設計"><a href="#5-1-KDA-演算法-系統共同設計" class="headerlink" title="5.1 KDA 演算法-系統共同設計"></a>5.1 KDA 演算法-系統共同設計</h3><p>KDA 以固定大小遞歸狀態 <script type="math/tex">S \in \mathbb{R}^{d_k \times d_v}</script> 替代標準注意力中的 Key-Value Cache。這種設計允許廉價的狀態傳遞和復用，但對並行執行提出挑戰。</p>
 <p><strong>設備內 KDA 內核</strong>：我們開發了 FlashKDA，一個基於 CUTLASS 的實現，重疊 intra-chunk 計算與 cross-chunk 狀態傳播。對工作進行 Token 並行階段和 Head 並行遞歸分解，在 NVIDIA Hopper GPU 上超越 Triton 參考實現。</p>
 <p><strong>KDA Context Parallelism</strong>：將 Head 在設備間分割，不縮短遞歸。我們觀察到，在純 TP 部署下，超長序列 Prefill 會導致 SM 閒置（各 rank 持有 head 數過少）。我們重新設計 Prefill 內核，通過異步狀態傳遞隱藏延遲，保持高 SM 利用率。</p>
 <p><strong>狀態感知前綴緩存</strong>：對於重複前綴的請求，跨請求緩存和復用 KDA 狀態。KV-Cache 級別的前綴緩存識別常見前綴（如系統提示）並避免重新計算。</p>
-<h3 id="5-2-2-8-兆參數-MoE-預訓練"><a href="#5-2-2-8-兆參數-MoE-預訓練" class="headerlink" title="5.2 2.8 兆參數 MoE 預訓練"></a>5.2 2.8 兆參數 MoE 預訓練</h3><p><strong>MoonEP：完美均衡專家並行</strong>。我們開發 MoonEP，一個 EP 通信庫，提供完美均衡的專家執行。核心觀察：對給定路由器輸出 $I$，存在一個執行計劃使每個 EP rank 恰好接收 $S \times K$ 個 Token，且所有 rank 的遠程 Token 來自另一個單一 rank。理論上界：$M(I) \leq E/R$（每 rank 冗餘專家數不超過 $E/R$）。</p>
+<h3 id="5-2-2-8-兆參數-MoE-預訓練"><a href="#5-2-2-8-兆參數-MoE-預訓練" class="headerlink" title="5.2 2.8 兆參數 MoE 預訓練"></a>5.2 2.8 兆參數 MoE 預訓練</h3><p><strong>MoonEP：完美均衡專家並行</strong>。我們開發 MoonEP，一個 EP 通信庫，提供完美均衡的專家執行。核心觀察：對給定路由器輸出 <script type="math/tex">I</script>，存在一個執行計劃使每個 EP rank 恰好接收 <script type="math/tex">S \times K</script> 個 Token，且所有 rank 的遠程 Token 來自另一個單一 rank。理論上界：<script type="math/tex">M(I) \leq E/R</script>（每 rank 冗餘專家數不超過 <script type="math/tex">E/R</script>）。</p>
 <p><strong>內存高效訓練</strong>：結合 activation checkpointing、混合並行策略和量化，在有限 GPU 內存下維持高 MFU。</p>
 <h3 id="5-2-2-內存高效訓練（詳）"><a href="#5-2-2-內存高效訓練（詳）" class="headerlink" title="5.2.2 內存高效訓練（詳）"></a>5.2.2 內存高效訓練（詳）</h3><p><strong>非策略模型前向傳播的梯度緩衝區復用</strong>：RL 損失計算通常需要僅前向的非策略模型（如參考模型），其權重太大無法常駐 GPU。我們將這些模型保留在 CPU 內存中，只在需要時才實例化，用梯度緩衝區存儲備份其參數張量。這樣復用現有 GPU 內存而不增加分配或內存碎片，且安全——因為緩衝區在後續計算真實梯度時會被覆蓋。</p>
 <p>在 ZeRO-2 梯度分片和卸載（§5.2.2）的配合下，每個 GPU 只保留當前 micro-batch 激活參數的梯度緩衝區——足以應對 Kimi K3 RL 訓練。我們將參考權重逐塊流式傳入這些槽位：一個槽位用於當前塊的前向計算，同時另一個預取下一塊，隱藏拷貝開銷而不增加內存佔用。</p>
@@ -2144,7 +1833,7 @@
 <h3 id="5-4-部署基礎設施"><a href="#5-4-部署基礎設施" class="headerlink" title="5.4 部署基礎設施"></a>5.4 部署基礎設施</h3><h3 id="5-4-1-統一緩存佈局"><a href="#5-4-1-統一緩存佈局" class="headerlink" title="5.4.1 統一緩存佈局"></a>5.4.1 統一緩存佈局</h3><p><strong>KDA 感知前綴緩存</strong>：對於混合 KDA-MLA 注意力，緩存類型有根本差異：MLA KV-Cache 隨序列長度增長並與 token 數成正比，而 KDA 遞歸狀態大小固定，每個請求只有一個副本。為每種緩存維護獨立的管理基礎設施會複製分配、驅逐和傳輸邏輯。我們因此將 KDA 狀態打包到與 MLA KV 相同的 block pool 中，使頁面統一為相同 byte 大小，讓兩種頁面類型共享一個用於分配、引用計數和驅逐的實現。在每個頁面內，所有頭的狀態在每個頭內連續存儲，因此每個頭的 byte 流是自包含的，成為跨節點傳輸（在 prefill/decode 分離期間）的最小單位。當 prefill 和 decode 節點採用不同 TP 度時，重新佈局在傳輸路徑上執行，GPU 端無需 reshuffling。</p>
 <p><strong>跨請求狀態復用</strong>：當 KDA 遞歸狀態進入緩存時，它獨立於傳入狀態，可以在之後精確組合。自動 SM 級上下文並行規劃器將序列分區到單個 rank 的 SM，在每個子段上並行評估 chunk 級遞歸，並合併它們以恢復每個段的确切初始狀態。與跨 rank 情况不同，此並行性完全是設備內的，不產生跨設備通信。</p>
 <p><strong>並發調度下的一致性</strong>：為確保並發請求調度下的緩存一致性，我們實施版本控制方案，追蹤每個緩存塊已被哪些請求寫入，並有後台回收過程在保留熱前綴的同時安全驅逐過時版本。命中是滿足兩個階段的最長邊界——始終是物理塊的倍數，無需是物理塊的倍數。在圖 12 中，首 2800 個 token 與前綴匹配的請求命中 B = 2560 = 5 × 512（深入 6144-token 物理塊內部），並從字节位置 2560 恢復 prefill，無需重新計算 [0, B)。</p>
-<h3 id="5-4-2-KDA-解碼"><a href="#5-4-2-KDA-解碼" class="headerlink" title="5.4.2 KDA 解碼"></a>5.4.2 KDA 解碼</h3><p>KDA 解碼面臨訓練和 prefill 期間未遇到的獨特挑戰。挑戰在於：KDA 遞歸狀態 $S_t$ 依賴所有先前狀態，且在驗證拒絕部分 draft token 後無法簡單回滾——狀態已越過最後接受的 token。為每個 draft 位置維護狀態快照可以實現回滾，但也會將狀態內存乘以一個係數，在線 serving 典型的大批量下這是不可忽視的成本。</p>
+<h3 id="5-4-2-KDA-解碼"><a href="#5-4-2-KDA-解碼" class="headerlink" title="5.4.2 KDA 解碼"></a>5.4.2 KDA 解碼</h3><p>KDA 解碼面臨訓練和 prefill 期間未遇到的獨特挑戰。挑戰在於：KDA 遞歸狀態 <script type="math/tex">S_t</script> 依賴所有先前狀態，且在驗證拒絕部分 draft token 後無法簡單回滾——狀態已越過最後接受的 token。為每個 draft 位置維護狀態快照可以實現回滾，但也會將狀態內存乘以一個係數，在線 serving 典型的大批量下這是不可忽視的成本。</p>
 <p>然而，任何已接受 draft 前綴後的狀態完全由 draft token 的投影輸入決定，而投影輸入遠小於狀態本身。因此，我們只緩存這些投影輸入，在芯片上重建所有頭的狀態，並回寫已驗證和 bonus token 的狀態（ReplaySSM [25] 並發工作）。回放的 token、bonus token 和下一個 draft window 共享一個遞歸循環，在涵蓋短卷積、輸入歸一化、門控、KDA 遞歸和輸出歸一化的單一融合內核內執行。驗證延遲隨驗證的 token 數量亞線性增長，且低於狀態緩存基線。由於投影緩存永不離開解碼階段，前綴緩存和 prefill/decode 分離與非推測 serving 運行於相同的 payload。</p>
 <h3 id="5-4-3-Stable-LatentMoE-內核優化"><a href="#5-4-3-Stable-LatentMoE-內核優化" class="headerlink" title="5.4.3 Stable LatentMoE 內核優化"></a>5.4.3 Stable LatentMoE 內核優化</h3><p>Stable LatentMoE 同時增加了專家總數和每個 token 激活的專家數。專家空間和每 token 專家計數的增長同時提高了調度和協調開銷，使傳統 MoE 內核難以維持高硬體利用率。這些挑戰促使我們對此模組進行專門的內核優化。</p>
 <p><strong>潛 GEMM 優化</strong>：為減少潛 GEMM 的開銷，我們採用三種優化。首先，將潛下投影與 MoE 路由器融合為單一 GEMM。其次，在 rank 間分片潛權重矩陣，並使用 multimem store 指令將輸出 all-gather 融合到 GEMM 後續處理中。最後，將由此產生的通信與其他算子（如共享專家計算）重疊。這些優化共同消除冗餘內存流量和重複計算，同時將通信延遲隱藏在計算之後。</p>
@@ -2914,7 +2603,7 @@
 <h2 id="9-結論（Conclusion）"><a href="#9-結論（Conclusion）" class="headerlink" title="9. 結論（Conclusion）"></a>9. 結論（Conclusion）</h2><p>我們提出了 Kimi K3，一個擁有原生視覺能力、100 萬 Token 上下文窗口的 2.8 兆參數專家混合模型，基於 Kimi Delta Attention 和 Attention Residuals 構建。作為全球首個開放 3T 級模型，Kimi K3 在長程 Coding、Agentic、知識、推理和視覺任務上達到前沿水準。儘管與最強私有模型的差距仍然存在，Kimi K3 以每個人都能觸及的成本建立了新的開放前沿。我們希望它能賦能更廣泛的社群在研究、部署和創新方面取得進展。</p>
 <hr>
 <h2 id="8-相關工作（Related-Work）"><a href="#8-相關工作（Related-Work）" class="headerlink" title="8. 相關工作（Related Work）"></a>8. 相關工作（Related Work）</h2><p>本節回顧與 Kimi K3 設計相關的先前工作，涵蓋注意力機制、MoE 架構、測試時 scaling 和基礎設施優化等領域。</p>
-<p><strong>注意力機制</strong>：標準 Transformer 的 softmax 注意力在序列長度上具有 $O(n^2)$ 複雜度。線性注意力 [142, 141] 將其降低到 $O(n)$，代價是引入局部性偏差。Mamba [49] 和 Gated Delta Networks [139] 引入選擇性狀態空間機制。KDA 在此基礎上增加了通道級遺忘門和下限有界衰減，實現硬體高效實現。</p>
+<p><strong>注意力機制</strong>：標準 Transformer 的 softmax 注意力在序列長度上具有 <script type="math/tex">O(n^2)</script> 複雜度。線性注意力 [142, 141] 將其降低到 <script type="math/tex">O(n)</script>，代價是引入局部性偏差。Mamba [49] 和 Gated Delta Networks [139] 引入選擇性狀態空間機制。KDA 在此基礎上增加了通道級遺忘門和下限有界衰減，實現硬體高效實現。</p>
 <p><strong>專家混合</strong>：MoE [33, 23] 通過稀疏激活減少計算成本。Switch Transformer [33] 使用簡單的 Top-1 路由，DeepSeekMoE [23] 引入了細粒度專家分割和共享專家。BASE Layers [68] 和 Expert Choice [117] 從最優傳輸角度重新定義路由。Kimi K3 的 Quantile Balancing 從最優平衡分配的對偶推导出，數學嚴謹且收斂快速。</p>
 <p><strong>測試時 Scaling</strong>：OpenAI o-series [85, 84]、Anthropic Extended Thinking [6, 7]、DeepSeek-R1 [41] 和 Kimi K1.5 [119] 展示了 RL 驅動推理能力提升的巨大潛力。Kimi K3 在此基礎上將測試時 scaling 擴展到百萬 Token 長度和多模態場景。</p>
 <hr>
@@ -2931,20 +2620,20 @@
 <p><strong>圖形與文檔</strong>：Zhen Fan、Yue Wang、Yuxuan Guo、Yicheng Han、Zhiyu Shen</p>
 <p><strong>領導與管理</strong>：Zhongzhi Yu、Jiaming Hong、Yao Fu</p>
 <p><em>作者名單按字母順序排列。通訊作者：Zhongzhi Yu、Yao Fu。月之暗面保留最終決定權。</em></p>
-<h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 $z$，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 $\beta_1, \beta_2 \to \infty$，SiTU-GLU 精確退化為 SwiGLU。</p>
-<p>由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。這種平滑約束在原點附近保留非零梯度，不同於硬截斷，訓練表現更好。</p>
-<h3 id="附錄-C：Quantile-Balancing-的推導"><a href="#附錄-C：Quantile-Balancing-的推導" class="headerlink" title="附錄 C：Quantile Balancing 的推導"></a>附錄 C：Quantile Balancing 的推導</h3><p>QB 從最優平衡分配問題推導而來。令 $s \in \mathbb{R}^{m \times n}$ 收集 $m$ 個 Token 對 $n$ 個專家的路由器分數，其中每個 Token 恰好選擇 $k$ 個專家，最大分數平衡分配為：</p>
-<script type="math/tex; mode=display">\max_{x_{i,j} \in \{0,1\}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}</script><p>將約束放寬到連續值後，通過對偶理論推導出封閉形式的最優解，交替求解 token 側閾值 $\alpha_i$ 和專家側閾值 $\beta_j$，兩者都是分位數形式，收斂快速且精確。</p>
-<h3 id="附錄-D：Histogram-Based-分位數估計"><a href="#附錄-D：Histogram-Based-分位數估計" class="headerlink" title="附錄 D：Histogram-Based 分位數估計"></a>附錄 D：Histogram-Based 分位數估計</h3><p>QB 更新（方程 14）需要對整個訓練步計算分位數：對 $n$ 個專家中的每一個，取 margin $s_{:,j} - \alpha$ 的 $(1 - k/n)$-分位數，其中 Token 數 $m$ 跨越數百萬，分散在數據並行 rank 和梯度累積步之間。</p>
+<h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 <script type="math/tex">z</script>，<script type="math/tex">\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)</script>，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 <script type="math/tex">\beta_1, \beta_2 \to \infty</script>，SiTU-GLU 精確退化為 SwiGLU。</p>
+<p>由於 <script type="math/tex">|\tanh(z)| < 1</script> 且 <script type="math/tex">0 < \text{Sigmoid}(z) < 1</script>，每個輸出坐標滿足 <script type="math/tex">\|\text{SiTU-GLU}(x)\|_\infty \leq \beta_1 \beta_2 = 100</script>，輸出有嚴格上界。這種平滑約束在原點附近保留非零梯度，不同於硬截斷，訓練表現更好。</p>
+<h3 id="附錄-C：Quantile-Balancing-的推導"><a href="#附錄-C：Quantile-Balancing-的推導" class="headerlink" title="附錄 C：Quantile Balancing 的推導"></a>附錄 C：Quantile Balancing 的推導</h3><p>QB 從最優平衡分配問題推導而來。令 <script type="math/tex">s \in \mathbb{R}^{m \times n}</script> 收集 <script type="math/tex">m</script> 個 Token 對 <script type="math/tex">n</script> 個專家的路由器分數，其中每個 Token 恰好選擇 <script type="math/tex">k</script> 個專家，最大分數平衡分配為：</p>
+<script type="math/tex; mode=display">\max_{x_{i,j} \in \{0,1\}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}</script><p>將約束放寬到連續值後，通過對偶理論推導出封閉形式的最優解，交替求解 token 側閾值 <script type="math/tex">\alpha_i</script> 和專家側閾值 <script type="math/tex">\beta_j</script>，兩者都是分位數形式，收斂快速且精確。</p>
+<h3 id="附錄-D：Histogram-Based-分位數估計"><a href="#附錄-D：Histogram-Based-分位數估計" class="headerlink" title="附錄 D：Histogram-Based 分位數估計"></a>附錄 D：Histogram-Based 分位數估計</h3><p>QB 更新（方程 14）需要對整個訓練步計算分位數：對 <script type="math/tex">n</script> 個專家中的每一個，取 margin <script type="math/tex">s_{:,j} - \alpha</script> 的 <script type="math/tex">(1 - k/n)</script>-分位數，其中 Token 數 <script type="math/tex">m</script> 跨越數百萬，分散在數據並行 rank 和梯度累積步之間。</p>
 <p>我們的關鍵觀察是：更新從不需要 margin 本身，只需要它們的逐專家分佈——這可以用直方圖以固定代價總結。具體來說：</p>
 <ul>
-<li><strong>Binning</strong>：將區間 $[b<em>{\min} - 1, b</em>{\max} + 1]$ 划分为 $B = 1000$ 個均勻 bin</li>
-<li><strong>Accumulation</strong>：每個 rank 在前向傳播期間 scatter-add 到每專家計數矩陣 $H \in \mathbb{N}^{n \times B}$，無需通信</li>
+<li><strong>Binning</strong>：將區間 <script type="math/tex">[b_{\min} - 1, b_{\max} + 1]</script> 划分为 <script type="math/tex">B = 1000</script> 個均勻 bin</li>
+<li><strong>Accumulation</strong>：每個 rank 在前向傳播期間 scatter-add 到每專家計數矩陣 <script type="math/tex">H \in \mathbb{N}^{n \times B}</script>，無需通信</li>
 <li><strong>All-reduce</strong>：步結束時一次整數 All-Reduce 求和局部計數</li>
-<li><strong>Quantile recovery</strong>：對每個專家，選擇第一個累積計數達到 $\lceil q \rceil$ 的 bin，線性插值恢復分位數</li>
+<li><strong>Quantile recovery</strong>：對每個專家，選擇第一個累積計數達到 <script type="math/tex">\lceil q \rceil</script> 的 bin，線性插值恢復分位數</li>
 </ul>
 <p>此估計器精確（誤差不超過 bin 寬度）、便宜（僅需一次整數 All-Reduce，代價不到原始 margin 通信的 1%），且估計正確量（計數可加，全球直方圖精確等於 Pooled 全域分佈，與 Token 分片方式無關）。</p>
-<h3 id="附錄-E：MoonEP-一般上界證明"><a href="#附錄-E：MoonEP-一般上界證明" class="headerlink" title="附錄 E：MoonEP 一般上界證明"></a>附錄 E：MoonEP 一般上界證明</h3><p>對給定路由器輸出 $I$，令 $M(I) = \min_P \max_r { m_r(P) }$ 為最優執行計劃下每個 EP rank 的最大冗餘專家數。定理 1：$M(I) \leq E/R$（$E$ 為每設備專家數，$R$ 為 EP ranks 數）。構造證明：反覆從超載 rank 向欠載 rank 遷移 Token 直到完美均衡，每次填補使一個欠載 rank 達到均衡且此後不再改變，過程在 $R-1$ 次內終止，且每個 rank 的遠程 Token 來自單一其他 rank，因此冗餘不超過 $E/R$。</p>
+<h3 id="附錄-E：MoonEP-一般上界證明"><a href="#附錄-E：MoonEP-一般上界證明" class="headerlink" title="附錄 E：MoonEP 一般上界證明"></a>附錄 E：MoonEP 一般上界證明</h3><p>對給定路由器輸出 <script type="math/tex">I</script>，令 <script type="math/tex">M(I) = \min_P \max_r \{ m_r(P) \}</script> 為最優執行計劃下每個 EP rank 的最大冗餘專家數。定理 1：<script type="math/tex">M(I) \leq E/R</script>（<script type="math/tex">E</script> 為每設備專家數，<script type="math/tex">R</script> 為 EP ranks 數）。構造證明：反覆從超載 rank 向欠載 rank 遷移 Token 直到完美均衡，每次填補使一個欠載 rank 達到均衡且此後不再改變，過程在 <script type="math/tex">R-1</script> 次內終止，且每個 rank 的遠程 Token 來自單一其他 rank，因此冗餘不超過 <script type="math/tex">E/R</script>。</p>
 <h3 id="附錄-F：Chat-Template（XTML）"><a href="#附錄-F：Chat-Template（XTML）" class="headerlink" title="附錄 F：Chat Template（XTML）"></a>附錄 F：Chat Template（XTML）</h3><p>Kimi K3 的 Chat Template 重新設計為圍繞三個目標：</p>
 <ol>
 <li><strong>可擴展性</strong>：新能力通過向後兼容的消息格式引入，無需模板修訂</li>
@@ -2961,9 +2650,9 @@
 <p>以下概念說明基於 research 整理，幫助讀者理解技術背景。</p>
 </blockquote>
 <p><strong>¹ Delta Rule（Delta Rule 遞歸）</strong></p>
-<p>這裡的 Delta Rule 不是神經網絡中用於梯度下降的 delta rule。它來自於「線性注意力是某種快速權重記憶系統」的思想（Mackay, 1990; Schmidhuber, 1992）。本質上：狀態 $S_t$ 儲存「如何根據新的 Query 權重重新加權歷史 Values」，Delta Rule 的含義是「相對於前一個狀態的增量修改」，而不是「覆蓋」。通道級衰減 $\alpha_t$ 控制歷史信息保留多少，$\beta_t$ 控制新信息寫入強度。</p>
+<p>這裡的 Delta Rule 不是神經網絡中用於梯度下降的 delta rule。它來自於「線性注意力是某種快速權重記憶系統」的思想（Mackay, 1990; Schmidhuber, 1992）。本質上：狀態 <script type="math/tex">S_t</script> 儲存「如何根據新的 Query 權重重新加權歷史 Values」，Delta Rule 的含義是「相對於前一個狀態的增量修改」，而不是「覆蓋」。通道級衰減 <script type="math/tex">\alpha_t</script> 控制歷史信息保留多少，<script type="math/tex">\beta_t</script> 控制新信息寫入強度。</p>
 <p><strong>² Linear Attention vs Softmax Attention</strong></p>
-<p>標準 softmax attention 需要對所有先前 token 計算 attention score，複雜度 $O(n^2)$。Linear attention 將其重寫為遞歸形式，複雜度降到 $O(n)$。代價是：linear attention 是全局的（每個 token 可見所有歷史），但缺乏 softmax 的「選擇性」——它不能根據內容動態決定關注什麼。KDA 透過 gated delta mechanism 部分解決這個問題：$\beta_t$ 閘控允許模型根據輸入內容決定「寫入多少新信息」。</p>
+<p>標準 softmax attention 需要對所有先前 token 計算 attention score，複雜度 <script type="math/tex">O(n^2)</script>。Linear attention 將其重寫為遞歸形式，複雜度降到 <script type="math/tex">O(n)</script>。代價是：linear attention 是全局的（每個 token 可見所有歷史），但缺乏 softmax 的「選擇性」——它不能根據內容動態決定關注什麼。KDA 透過 gated delta mechanism 部分解決這個問題：<script type="math/tex">\beta_t</script> 閘控允許模型根據輸入內容決定「寫入多少新信息」。</p>
 <p><strong>³ MoE Load Balancing / Dead Experts</strong></p>
 <p>在 MoE 中，如果某些專家被選中的頻率遠高於其他專家，會造成：① 這些專家所在設備通信成為瓶頸；② 未被選中的專家（「dead experts」）長期缺乏訓練，權重退化。傳統輔助損失方法對不平衡加懲罰，但這直接干擾路由決策——損失函數的兩個目標（預測準確 + 負載均衡）相互矛盾，訓練動態複雜。輔助損失-free 方法（BASE Layers, Expert Choice, QB）則只修改路由偏置項，不改變 router 的梯度優化方向。</p>
 <p><strong>⁴ NoPE (No Position Encoding)</strong></p>
@@ -2982,8 +2671,8 @@
 <p><strong>⁸ Muon 優化器</strong></p>
 <p>Muon，全稱 <strong>MomentUm Orthogonalized by Newton-Schulz</strong>，由 Keller Jordan 在 2024 年提出。核心思想：</p>
 <ol>
-<li>先用 SGD-Momentum 生成梯度更新 $G$</li>
-<li>對 $G$ 應用 <strong>Newton-Schulz 迭代</strong>（矩陣正交化後處理步驟），使更新矩陣趨近正交</li>
+<li>先用 SGD-Momentum 生成梯度更新 <script type="math/tex">G</script></li>
+<li>對 <script type="math/tex">G</script> 應用 <strong>Newton-Schulz 迭代</strong>（矩陣正交化後處理步驟），使更新矩陣趨近正交</li>
 <li>正交化後的梯度應用於參數</li>
 </ol>
 <p>為什麼要正交化？因為非正交梯度更新會導致梯度方向之間的相互干涉，類似於病態條件數問題。Newton-Schulz 迭代是一種收斂快速的矩陣正交化方法（5 步迭代），使更新方向相互正交，改善收斂穩定性。</p>
@@ -3007,11 +2696,322 @@
       </tags>
   </entry>
   <entry>
-    <title>終於忙完碩一上了!!</title>
-    <url>/higumalu-note/2022/03/24/diary0324/</url>
-    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
-<p>改天整理一下傳speaker deck</p>
-<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
+    <title>pydicomRT｜&quot;版本 0.6.4 — 劑量方向計算修正&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-12-19-17de809-%E7%89%88%E6%9C%AC-064-%E5%8A%91%E9%87%8F%E6%96%B9%E5%90%91%E8%A8%88%E7%AE%97%E4%BF%AE%E6%AD%A3/</url>
+    <content><![CDATA[<h2 id="🚩-版本-0-6-4-—-劑量方向計算修正"><a href="#🚩-版本-0-6-4-—-劑量方向計算修正" class="headerlink" title="🚩 版本 0.6.4 — 劑量方向計算修正"></a>🚩 版本 0.6.4 — 劑量方向計算修正</h2><p><strong>Commit:</strong> <code>17de809</code><br><strong>版本：</strong> v0.6.4<br><strong>日期：</strong> 2025-12-19</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我修正了 <code>sitk_transform.py</code> 中劑量方向（dose direction）的計算邏輯。</p>
+<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">row = ori[:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">row = ori[<span class="number">0</span>:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:<span class="number">6</span>]</span><br></pre></td></tr></table></figure></p>
+<p>看似微小的改變，實際上修正了一個重要的問題：</p>
+<ul>
+<li>使用 <code>[:3]</code> 和 <code>[3:]</code> 時，Python 的切片操作可能會在某些邊界情況下產生非預期的行為</li>
+<li>明確使用 <code>[0:3]</code> 和 <code>[3:6]</code> 確保只取用 <code>ImageOrientationPatient</code> 的前六個元素（row direction 和 column direction）</li>
+</ul>
+<p>然後我使用 <code>np.cross(row, col)</code> 計算第三個方向向量，構建完整的 3x3 方向矩陣。這個修正確保了劑量資料在轉換為 SimpleITK Image 時，方向性是正確的。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.3 → 0.6.4</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br><span class="line">  - get_dose_direction 函數方向切片修正</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼切片 <code>[3:]</code> 會有問題？具體是什麼邊界情況？</strong></p>
+<blockquote>
+<p>這個問題我在 Debug 時才發現的。嚴格說起來，當 ori 的長度恰好為 3 時，<code>[3:]</code> 會回傳空 list 而不是預期中的第二組方向向量。雖然實際資料不太可能只有 3 個元素，但寫法明確點總是比較好。</p>
+</blockquote>
+<p><strong>Q2: 這個修正對劑量計算的影響是什麼？劑量會偏移嗎？</strong></p>
+<blockquote>
+<p>如果方向矩陣是錯的，劑量空間的映射就會全部跑掉。最直接的影響就是劑量和影像對不上——本來應該在某個位置計算出來的劑量值，會因為方向錯誤而出現在錯誤的地方。這在臨床劑量評估上是不能接受的。</p>
+</blockquote>
+<p><strong>Q3: 為什麼要用 np.cross 計算第三個方向？有沒有其他做法？</strong></p>
+<blockquote>
+<p>DICOM 的 ImageOrientationPatient 只給了我 row 方向和 column 方向，第三個方向（slice 方向）可以用右手定則算出來。當然也可以直接從 ImagePositionPatient 的差值推導，但在實作上 cross product 最直接可靠，我就用它了。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/17de809">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;🛠️ Image Series Loader — 錯誤處理改進&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2026-01-06-d03e995-Image-Series-Loader-%E9%8C%AF%E8%AA%A4%E8%99%95%E7%90%86%E6%94%B9%E9%80%B2/</url>
+    <content><![CDATA[<h2 id="🛠️-Image-Series-Loader-—-錯誤處理改進"><a href="#🛠️-Image-Series-Loader-—-錯誤處理改進" class="headerlink" title="🛠️ Image Series Loader — 錯誤處理改進"></a>🛠️ Image Series Loader — 錯誤處理改進</h2><p><strong>Commit:</strong> <code>d03e995</code><br><strong>日期：</strong> 2026-01-06</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我改進了 <code>image_series_loader.py</code> 中 DICOM 檔案排序的錯誤處理。</p>
+<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">image_ds_list = sort_ds_list(image_ds_list)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    image_ds_list = sort_ds_list(image_ds_list)</span><br><span class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">    <span class="keyword">raise</span> ValueError(<span class="string">f&quot;Error sorting DICOM files: <span class="subst">&#123;e&#125;</span>, check if the ImageOrientationPatient attribute is valid&quot;</span>)</span><br></pre></td></tr></table></figure></p>
+<p><strong>改進說明：</strong></p>
+<ol>
+<li><p><strong>更明確的錯誤訊息</strong> — 當排序失敗時，會顯示更具體的錯誤原因，特別是指向 <code>ImageOrientationPatient</code> 屬性的有效性檢查。</p>
+</li>
+<li><p><strong>提升除錯效率</strong> — 在處理大量 DICOM 檔案時，如果某些檔案的 <code>ImageOrientationPatient</code> 缺失或格式錯誤，開發者可以快速定位問題。</p>
+</li>
+<li><p><strong>統一的例外處理</strong> — 將各種可能的排序錯誤包裝成 <code>ValueError</code>，讓呼叫端可以使用統一的方式處理。</p>
+</li>
+</ol>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/utils/image_series_loader.py</span><br><span class="line">  - load_sorted_image_series 函數錯誤處理強化</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: <code>ImageOrientationPatient</code> 缺失或格式錯誤會導致什麼問題？</strong></p>
+<blockquote>
+<p>這個屬性是影像空間定位的關鍵。如果它不見了或格式不對，切片排序會亂掉，3D 重建也會出問題。之前錯誤訊息只說「排序失敗」，根本不知道問題在哪，現在至少知道要去檢查這個屬性。</p>
+</blockquote>
+<p><strong>Q2: 除了錯誤處理，有沒有預防措施可以確保檔案的正確性？</strong></p>
+<blockquote>
+<p>理想的做法是加一個驗證函數，在讀取影像序列之前先檢查所有必要屬性是否完整。這塊我還在考慮怎麼設計比較好，現階段先從錯誤處理下手，讓問題浮現出來再說。</p>
+</blockquote>
+<p><strong>Q3: 這個改進對於批量處理大量 DICOM 檔案時有什麼幫助？</strong></p>
+<blockquote>
+<p>批量處理最怕的就是少數幾顆老鼠屎壞了一鍋粥。假設有 500 張切片，前面 499 張都正常，但第 300 張的方向參數有問題，沒有好的錯誤處理的話可能要跑到最後才知道出錯。現在可以直接從錯誤訊息看出哪張有問題，省下不少除錯時間。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d03e995">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2026-02-04-3fce17c-BSpline-%E4%BD%8D%E7%A7%BB%E5%A0%B4%E9%A1%9E%E5%9E%8B%E6%94%B9%E7%82%BA-Float64/</url>
+    <content><![CDATA[<h2 id="🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64"><a href="#🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64" class="headerlink" title="🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"></a>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</h2><p><strong>Commit:</strong> <code>3fce17c</code><br><strong>日期：</strong> 2026-02-04</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我將 BSpline 配準函數中的位移場（Displacement Field）類型從 <code>sitkVectorFloat32</code> 改為 <code>sitkVectorFloat64</code>。</p>
+<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat32,  <span class="comment"># 32位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat64,  <span class="comment"># 64位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p><strong>改進說明：</strong></p>
+<ol>
+<li><p><strong>提高精度</strong> — Float64 提供雙倍精度，避免在多次變換或累積誤差時造成影像品質下降。</p>
+</li>
+<li><p><strong>保持一致性</strong> — 大多數醫學影像使用 Float64 作為內部計算精度，升級後可避免不必要的精度轉換。</p>
+</li>
+<li><p><strong>更準確的變形映射</strong> — 特別是對於需要精細控制的 BSpline 變形，高精度位移場能更準確地描述組織變形。</p>
+</li>
+</ol>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/reg/method/bspline.py</span><br><span class="line">  - bspline_registration 函數位移場類型更新</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Float32 和 Float64 的差異在實際臨床應用中明顯嗎？</strong><br>老實說，在大多數情況下可能感覺不出來。但如果涉及到多次變形疊加或非常精細的劑量計算時，累積誤差的影響就不可忽視了。醫學領域對精度要求比較高，既然 SimpleITK 原生支援 Float64，我覺得用下去比較安心。</p>
+<p><strong>Q2: 這個改變會增加記憶體使用量嗎？影響有多大？</strong><br>會的，理論上記憶體用量會變成兩倍。不過實際影響還好——BSpline 本來就不是我主要的對位方法，平常主要還是用 Demons。再說，現代醫療影像的資料量那麼大，一張位移場多佔的記憶體相比之下不算什麼。</p>
+<p><strong>Q3: 為什麼 BSpline 特別需要高精度？其他配準方法（如 Demons）呢？</strong><br>BSpline 的變形控制點網格很細緻，對細節的表達能力更強。如果位移場精度不夠，那些精細的變形細節就會被吃掉，BSpline 的優勢就浪費掉了。Demons 的話，因為它的變形機制不太一樣，對精度的敏感度沒那麼高，我目前還是維持 Float32。</p>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3fce17c">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>從 Claude Blog 學 AI Agent 架構（二）：Self-Improving Agents 的四層成長系統</title>
+    <url>/higumalu-note/2026/06/2026-06-11-claude-blog-workflows-2-self-improving-agents/</url>
+    <content><![CDATA[<blockquote>
+<p>本系列是熊熊閱讀 Claude 官方 Blog 的心得整理，原文皆來自 <a href="https://claude.com/blog">claude.com/blog</a>。這篇是第二篇，主題是 <strong>Self-Improving Agents</strong>——如何讓 AI Agent 具備「從經驗中學習」的能力，這是熊熊最有感的一個方向。</p>
+</blockquote>
+<span id="more"></span>
+<h2 id="從「每次都從零開始」到「持續累積成長」"><a href="#從「每次都從零開始」到「持續累積成長」" class="headerlink" title="從「每次都從零開始」到「持續累積成長」"></a>從「每次都從零開始」到「持續累積成長」</h2><p>傳統的 AI Agent 每次開 session 都是乾淨的 slate——沒有記憶，沒有累積，做過的任務就像沒做過。這導致一個根本性的問題：同一個錯誤，Agent 會犯一百遍。</p>
+<p>Claude Managed Agents 的 Self-Improving 系統就是為了解決這個問題而設計的。它不是一個功能，而是一套四層疊加的架構：<strong>Memory → Dreaming → Outcomes → Multi-agent</strong>。每一層解決不同的問題。</p>
+<hr>
+<h2 id="第一層：Memory（檔案式記憶系統）"><a href="#第一層：Memory（檔案式記憶系統）" class="headerlink" title="第一層：Memory（檔案式記憶系統）"></a>第一層：Memory（檔案式記憶系統）</h2><h3 id="核心設計原則"><a href="#核心設計原則" class="headerlink" title="核心設計原則"></a>核心設計原則</h3><p>Memory 不是存在模型 weights 裡的隱性知識，而是實體檔案。每一個 Agent 工作時捕獲的所學、觀察、決定，都寫成檔案，存在一個共享的資料夾結構裡。</p>
+<p>這樣設計的好處：</p>
+<ul>
+<li><strong>透明可查</strong>：人類可以打開檔案直接看 Agent 學到了什麼</li>
+<li><strong>跨 Agent 並行讀寫</strong>：多個 subagent 同時寫記憶，不會打掉對方的資料（靠檔案系統的 conflict resolution）</li>
+<li><strong>Audit log</strong>：每筆記錄都有 timestamp + 操作者，出了問題可以 replay</li>
+</ul>
+<h3 id="實測效果"><a href="#實測效果" class="headerlink" title="實測效果"></a>實測效果</h3><p>Rakuten 是最早採用這套架構的團隊之一。他們讓 Agent 記住每個 task 的產出和上下文，然後在下一個相關任務裡自動引用。數據出來之後非常誇張：</p>
+<ul>
+<li><strong>First-pass error 掉了 97%</strong>：同樣的錯誤不再重複犯</li>
+<li><strong>Cost 降了 27%</strong>：不需要每次重新探索</li>
+<li><strong>Latency 降了 34%</strong>：從 context 引用比從頭推理快</li>
+</ul>
+<h3 id="熊熊的想法"><a href="#熊熊的想法" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>Hermes 的 session 目前的記憶方式比較弱——靠著 context window 內的對話記錄，下一次 session 就沒了。如果能把每次 research 任務的「觀察 → 結論 → 產出」寫成結構化的 memory file，熊熊的下一個 research 任務就可以自動引用之前的積累。</p>
+<hr>
+<h2 id="第二層：Dreaming（自動回顧與模式挖掘）"><a href="#第二層：Dreaming（自動回顧與模式挖掘）" class="headerlink" title="第二層：Dreaming（自動回顧與模式挖掘）"></a>第二層：Dreaming（自動回顧與模式挖掘）</h2><h3 id="什麼是-Dreaming"><a href="#什麼是-Dreaming" class="headerlink" title="什麼是 Dreaming"></a>什麼是 Dreaming</h3><p>Dreaming 是排程自動執行的深度回顧系統。它會：</p>
+<ol>
+<li>檢視 Agent 過去一段時間的所有 session</li>
+<li>挖掘重複出現的模式（哪些任務類型經常失敗？哪個環節特別慢？）</li>
+<li>自動重構 Memory 檔案的內容，讓記憶保持最新</li>
+<li>對重構結果做 human review，通過才寫入</li>
+</ol>
+<h3 id="一個具體例子"><a href="#一個具體例子" class="headerlink" title="一個具體例子"></a>一個具體例子</h3><p><strong>Netflix</strong> 的團隊用 Dreaming 來分析大量的 log 資料，找出 AI 系統失敗的隱藏規律。傳統方式是人類工程師慢慢看，現在變成 AI 自動跑，然後輸出「這三個類型的錯誤經常一起發生」的 pattern report，工程師只需要審核結論。</p>
+<p>另一個案例是 <strong>Harvey</strong>（法律 AI 平台），用 Dreaming 之後，<strong>completion rates 提升了 6 倍</strong>——因為系統從失敗裡學到了什麼，修正了決策邏輯。</p>
+<h3 id="熊熊的想法-1"><a href="#熊熊的想法-1" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>「排程自動回顧」聽起來很像 cron job + session_search 的組合——每週固定時間跑一次分析，問「這週的研究任務有哪些 pattern？」然後自動更新一個 <code>research_patterns.md</code> 檔案。這個檔案累積久了，就是熊熊的「領域知識指數」。</p>
+<hr>
+<h2 id="第三層：Outcomes（獨立驗證的品質閘門）"><a href="#第三層：Outcomes（獨立驗證的品質閘門）" class="headerlink" title="第三層：Outcomes（獨立驗證的品質閘門）"></a>第三層：Outcomes（獨立驗證的品質閘門）</h2><h3 id="為什麼需要-Outcomes"><a href="#為什麼需要-Outcomes" class="headerlink" title="為什麼需要 Outcomes"></a>為什麼需要 Outcomes</h3><p>前面提到過的 Agentic Laziness 和 Self-Preferential Bias 問題，根本解法是：<strong>不要讓同一個 Agent 同時當運動員和裁判</strong>。</p>
+<p>Outcomes 模式的設計是這樣的：</p>
+<ol>
+<li>定義一個 rubric（評估標準），描述「什麼是一個成功的 deliverable」</li>
+<li>讓主要的 Agent 產出結果</li>
+<li>把產出和 rubric 一起交給一個<strong>完全獨立的 Grader Agent</strong>（不同的 context window）</li>
+<li>Grader 在自己的 context 裡評估，沒有看過原來的推理過程</li>
+<li>沒通過就打回重做，通過才交付</li>
+</ol>
+<h3 id="實測效果-1"><a href="#實測效果-1" class="headerlink" title="實測效果"></a>實測效果</h3><p>把 Outcomes 模式加進 workflow，task success 分數平均 <strong>提升 10 個百分點</strong>。這個數字看起來不大，但考慮到實作成本極低（只需要多一次獨立的 model call），投資報酬率極高。</p>
+<h3 id="熊熊的想法-2"><a href="#熊熊的想法-2" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>熊熊寫研究心得，其實很需要這套機制。初稿寫完之後，先讓另一個 Agent 扮演「Grader」，根據預先定義的品質標準打分——</p>
+<blockquote>
+<p>「這份摘要有沒有引用來源？結論有沒有被資料支持？結構清不清楚？」</p>
+</blockquote>
+<p>沒通過就打回補充，通過才發布。這就把「品質控制」從熊熊主觀的「感覺還可以」變成可量化的流程。</p>
+<hr>
+<h2 id="第四層：Multi-agent-Orchestration（多-Agent-協作樹）"><a href="#第四層：Multi-agent-Orchestration（多-Agent-協作樹）" class="headerlink" title="第四層：Multi-agent Orchestration（多 Agent 協作樹）"></a>第四層：Multi-agent Orchestration（多 Agent 協作樹）</h2><h3 id="架構設計"><a href="#架構設計" class="headerlink" title="架構設計"></a>架構設計</h3><p>Multi-agent orchestration 把多個 Agent 組合成一個樹狀結構：</p>
+<ul>
+<li><strong>Lead Agent（協調者）</strong>：理解整體任務，拆解成子任務，分派給不同的 subagent</li>
+<li><strong>Specialist Agents（專家）</strong>：各自負責一個子領域，做出產出</li>
+<li><strong>共享檔案</strong>：所有 Agent 讀寫同一組 memory files，資訊透明</li>
+<li><strong>完整 trace</strong>：每個環節誰做了什麼、什麼時候做、為什麼這樣做，都有記錄</li>
+</ul>
+<h3 id="三個真實案例"><a href="#三個真實案例" class="headerlink" title="三個真實案例"></a>三個真實案例</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>組織</th>
+<th>任務</th>
+<th>成果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Notion</strong></td>
+<td>十幾個任務並行處理，跨工具整合</td>
+<td>原本 12 小時的流程縮短到 <strong>20 分鐘</strong></td>
+</tr>
+<tr>
+<td><strong>Sentry</strong></td>
+<td>原本要大團隊做幾個月的複雜功能</td>
+<td>一個工程師<strong>幾週完成</strong></td>
+</tr>
+<tr>
+<td><strong>Rakuten</strong></td>
+<td>各部門上線 specialist agent</td>
+<td>每個 agent 大約<strong>一週上線</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="熊熊的想法-3"><a href="#熊熊的想法-3" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>熊熊的 research workflow 其實就是一個天然的 orchestration tree：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">熊熊的 Research 任務</span><br><span class="line">├─ subagent: 抓取文章</span><br><span class="line">├─ subagent: 濃縮摘要</span><br><span class="line">├─ subagent: 品質審查（Grader）</span><br><span class="line">└─ 熊熊自己: 最終確認與發布</span><br></pre></td></tr></table></figure>
+<p>把這個結構顯式化，以後就可以對每個節點做獨立的監控和優化。</p>
+<hr>
+<h2 id="四層系統的協同效應"><a href="#四層系統的協同效應" class="headerlink" title="四層系統的協同效應"></a>四層系統的協同效應</h2><p>真正威力在於這四層不是各自為政，而是形成一個增強循環：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Memory 保存每次任務的產出與觀察</span><br><span class="line">    ↓</span><br><span class="line">Dreaming 定時挖掘 pattern，更新 Memory</span><br><span class="line">    ↓</span><br><span class="line">新的 session 自動引用更新後的 Memory</span><br><span class="line">    ↓</span><br><span class="line">每個 deliverable 經過 Outcomes Grader 把關</span><br><span class="line">    ↓</span><br><span class="line">通過的產出寫回 Memory</span><br><span class="line">    ↓</span><br><span class="line">下一輪 Dreaming 看到更好的素材……</span><br></pre></td></tr></table></figure>
+<p>這個循環一旦轉起來，Agent 的能力就不是靜止的，而是隨著任務量持續成長。</p>
+<hr>
+<h2 id="熊熊的實作方向"><a href="#熊熊的實作方向" class="headerlink" title="熊熊的實作方向"></a>熊熊的實作方向</h2><h3 id="立即可做的：Outcomes-Grader"><a href="#立即可做的：Outcomes-Grader" class="headerlink" title="立即可做的：Outcomes Grader"></a>立即可做的：Outcomes Grader</h3><p>熊熊今天就可以實作最簡單版本的 Outcomes：</p>
+<ol>
+<li>定義一個 <code>research_rubric.md</code>：什麼是一份好的研究摘要</li>
+<li>研究初稿完成後，用另一個 Agent 跑 grading prompt</li>
+<li>沒通過就補充，通過就發布</li>
+</ol>
+<h3 id="短期目標：Memory-結構化"><a href="#短期目標：Memory-結構化" class="headerlink" title="短期目標：Memory 結構化"></a>短期目標：Memory 結構化</h3><p>把每次 research 任務的產出寫成結構化的 memory files：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">hermes/research/memory/</span><br><span class="line">├─ 2026-06-10-llm-research-patterns.md</span><br><span class="line">├─ 2026-06-11-workflow-design-notes.md</span><br><span class="line">└─ skills-reviews/</span><br><span class="line">   ├─ what-works.md</span><br><span class="line">   └─ common-failures.md</span><br></pre></td></tr></table></figure>
+<h3 id="中期目標：Dreaming-Schedule"><a href="#中期目標：Dreaming-Schedule" class="headerlink" title="中期目標：Dreaming Schedule"></a>中期目標：Dreaming Schedule</h3><p>每週跑一次 session analysis，輸出 pattern report 到 memory folder，慢慢建立一個「熊熊研究方法論」的知識庫。</p>
+<hr>
+<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>Self-Improving Agents 的核心洞察是：<strong>記憶不是一個功能，成長是一個系統</strong>。Memory 解決「記得住」的問題，Dreaming 解決「學得快」的問題，Outcomes 解決「做得對」的問題，Multi-agent 解決「做得大」的問題。四層疊加，才能真正做到「越用越強」。</p>
+<p>下一篇文章，熊熊會聊 Planning Layer 與大型重構範本——包括 CodeRabbit 的做法，以及那個震撼的 Bun 案例。</p>
+<hr>
+<p><em>本系列文基於 Claude Blog 文章：</em></p>
+<ul>
+<li><em><a href="https://claude.com/blog/claude-managed-agents-memory">Built-in memory for Claude Managed Agents</a></em></li>
+<li><em><a href="https://claude.com/blog/new-in-claude-managed-agents">New in Claude Managed Agents: dreaming, outcomes, and multiagent orchestration</a></em></li>
+<li><em><a href="https://claude.com/blog/building-with-claude-managed-agents">Building with Claude Managed Agents</a></em></li>
+</ul>
+]]></content>
+      <categories>
+        <category>AI Agent</category>
+      </categories>
+      <tags>
+        <tag>Hermes</tag>
+        <tag>AI Agent</tag>
+        <tag>Memory</tag>
+        <tag>Outcomes</tag>
+        <tag>Multi-Agent</tag>
+        <tag>Claude</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>從 Claude Blog 學 AI Agent 架構（一）：Dynamic Workflows 與六大設計模式</title>
+    <url>/higumalu-note/2026/06/2026-06-11-claude-blog-workflows-1-dynamic-patterns/</url>
+    <content><![CDATA[<blockquote>
+<p>本系列是熊熊閱讀 Claude 官方 Blog 的心得整理，原文皆來自 <a href="https://claude.com/blog">claude.com/blog</a>。這篇是第一篇，主題是 <strong>Dynamic Workflows 與六大設計模式</strong>，熊熊從中得到很多關於大型任務拆解的靈感。</p>
+</blockquote>
+<span id="more"></span>
+<h2 id="三大單一-Context-Window-失敗模式"><a href="#三大單一-Context-Window-失敗模式" class="headerlink" title="三大單一 Context Window 失敗模式"></a>三大單一 Context Window 失敗模式</h2><p>Claude Code 團隊在實務中發現，當所有事情都塞在同一個 context window 裡時，會遇到三個系統性的失敗模式：</p>
+<h3 id="1-Agentic-Laziness（偷懶模式）"><a href="#1-Agentic-Laziness（偷懶模式）" class="headerlink" title="1. Agentic Laziness（偷懶模式）"></a>1. Agentic Laziness（偷懶模式）</h3><p>Agent 在長任務做到一半時，會「自我感覺良好」地宣布完成。比如一個 50 項的任務清單，做完 35 項就停下來說「差不多了」。人類工程師遇到這種情況會自己補完，但 Agent 不會——它真的以為做完了。</p>
+<h3 id="2-Self-Preferential-Bias（偏心模式）"><a href="#2-Self-Preferential-Bias（偏心模式）" class="headerlink" title="2. Self-Preferential Bias（偏心模式）"></a>2. Self-Preferential Bias（偏心模式）</h3><p>Agent 對自己生成的內容有偏好，傾向於認為自己的產出已經足夠好，不夠客觀地做 quality review。這在需要批判性思考的任務（例如安全審查、架構檢視）裡特別嚴重。</p>
+<h3 id="3-Goal-Drift（目標漂移）"><a href="#3-Goal-Drift（目標漂移）" class="headerlink" title="3. Goal Drift（目標漂移）"></a>3. Goal Drift（目標漂移）</h3><p>長 session 來回之後，Agent 的目標會慢慢偏移。特別是當發生 context compaction（壓縮歷史以節省 token）時，邊界條件和約束容易被洗掉，最後做出來的東西偏離初衷。</p>
+<hr>
+<h2 id="六種-Dynamic-Workflow-Patterns"><a href="#六種-Dynamic-Workflow-Patterns" class="headerlink" title="六種 Dynamic Workflow Patterns"></a>六種 Dynamic Workflow Patterns</h2><p>面對上述問題，Claude Code 的解法是讓 Claude 自己動態寫 JS harness 來調度多個 Agent。以下是六種核心模式：</p>
+<h3 id="Pattern-1：Fan-out-and-synthesize（散射再匯聚）"><a href="#Pattern-1：Fan-out-and-synthesize（散射再匯聚）" class="headerlink" title="Pattern 1：Fan-out-and-synthesize（散射再匯聚）"></a>Pattern 1：Fan-out-and-synthesize（散射再匯聚）</h3><p>把一個大任務拆成 N 個獨立的子任務，讓多個 subagent 同時並行處理，最後在一個 synthesis barrier 匯聚所有結果再做整合。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────┐</span><br><span class="line">│         Task: 翻譯 10,000 行         │</span><br><span class="line">├──────────┬──────────┬──────┬───────┤</span><br><span class="line">│ Agent 1  │ Agent 2  │ ...  │ Agent N│</span><br><span class="line">│ 翻譯1-1000│ 翻譯1001-2000 │       │       │</span><br><span class="line">├──────────┴──────────┴──────┴───────┤</span><br><span class="line">│        Synthesis Barrier            │</span><br><span class="line">│    整合 + 解決跨區段依賴問題          │</span><br><span class="line">└─────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<p><strong>適用場景</strong>：翻譯、bulk code generation、大規模資料分析、測試案例生成。</p>
+<p><strong>熊熊的想法</strong>：這個模式最適合用來處理「每篇文章獨立、但最後需要整合」的 research 任務——先並行抓取多個 URL，最後濃縮成一份報告。</p>
+<hr>
+<h3 id="Pattern-2：Adversarial-Verification（對抗性驗證）"><a href="#Pattern-2：Adversarial-Verification（對抗性驗證）" class="headerlink" title="Pattern 2：Adversarial Verification（對抗性驗證）"></a>Pattern 2：Adversarial Verification（對抗性驗證）</h3><p>每個 subagent 產出之後，立即派一個獨立的「對抗性 Agent」去專門找問題。這個驗證 Agent 沒有做過前面的工作，所以沒有偏見——它就是來踢館的。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌──────────────┐     ┌──────────────────┐</span><br><span class="line">│  Writer Agent │ ──▶ │ Adversarial Agent │</span><br><span class="line">│ 產出初稿      │     │ 專門找漏洞和問題   │</span><br><span class="line">└──────────────┘     └──────────────────┘</span><br><span class="line">         ▲                   │</span><br><span class="line">         │      修正後再丟回去 │</span><br><span class="line">         └────────────────────┘</span><br></pre></td></tr></table></figure>
+<p><strong>實測效果</strong>：把這個模式加進 workflow，task success 分數明顯提升。</p>
+<p><strong>熊熊的想法</strong>：這是熊熊目前最想實作的功能——每個 deliverable 完成後自動觸發一個「反方 Agent」問「哪裡有問題？」，代價低但效果大。熊熊研究完文章，先讓另一個 Agent 扮演「讀者視角」挑毛病，再整合成最終版本。</p>
+<hr>
+<h3 id="Pattern-3：Tournament（對抗賽模式）"><a href="#Pattern-3：Tournament（對抗賽模式）" class="headerlink" title="Pattern 3：Tournament（對抗賽模式）"></a>Pattern 3：Tournament（對抗賽模式）</h3><p>讓 N 個 Agent 分別用不同方法解決同一個問題，然後有一個評審 Agent 兩兩比對，選出人氣王的解法。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────┐   ┌─────────┐   ┌─────────┐</span><br><span class="line">│Agent A  │   │Agent B  │   │Agent C  │</span><br><span class="line">│解法 1   │   │解法 2   │   │解法 3   │</span><br><span class="line">└────┬────┘   └────┬────┘   └────┬────┘</span><br><span class="line">     │             │             │</span><br><span class="line">     ▼             ▼             ▼</span><br><span class="line">  ┌──────────────────────────────┐</span><br><span class="line">  │         Grader Agent         │</span><br><span class="line">  │  兩兩比對 → 評分 → 選贏家     │</span><br><span class="line">  └──────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<p><strong>適用場景</strong>：演算法設計（多條路徑的取捨）、PRD 草稿、不同使用者介面設計的 A/B 測試。</p>
+<hr>
+<h3 id="Pattern-4：Generate-and-filter（大量生成再過濾）"><a href="#Pattern-4：Generate-and-filter（大量生成再過濾）" class="headerlink" title="Pattern 4：Generate-and-filter（大量生成再過濾）"></a>Pattern 4：Generate-and-filter（大量生成再過濾）</h3><p>先大量生成候選方案（可能 50 個、100 個），再用一個 Rubric Agent 根據預先定義的標準過濾，最後只剩幾個真正符合條件的。</p>
+<p>跟 Tournament 不一樣的地方：Tournament 是讓候選互相對抗，Generate-and-filter 是所有候選都跟一個固定的標準比。</p>
+<p><strong>熊熊的想法</strong>：這個模式可以用在「先大量佔坑、再精選」的 research 流程——先讓 subagent 平行產出 20 個觀察筆記，再過濾出最有價值的 5 個。</p>
+<hr>
+<h3 id="Pattern-5：Classify-and-act（分類再路由）"><a href="#Pattern-5：Classify-and-act（分類再路由）" class="headerlink" title="Pattern 5：Classify-and-act（分類再路由）"></a>Pattern 5：Classify-and-act（分類再路由）</h3><p>一個分類 Agent 先理解任務的類型和意圖，決定要走哪個處理策略，然後路由到對應的 specialized Agent。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">User Request → [Classifier Agent] → 路由到不同策略</span><br><span class="line">                                    ├─ 簡單查詢 → Fast path</span><br><span class="line">                                    ├─ 複雜分析 → Deep dive</span><br><span class="line">                                    └─ 爭議問題 → Multi-perspective</span><br></pre></td></tr></table></figure>
+<p><strong>熊熊的想法</strong>：這其實是 Hermes 現有 <code>skill_view</code> 的一個更高層抽象——不是根據 keyword 選 Skill，而是先理解任務意圖再路由到最適合的工具。</p>
+<hr>
+<h3 id="Pattern-6：Loop-until-done（循環直到完成）"><a href="#Pattern-6：Loop-until-done（循環直到完成）" class="headerlink" title="Pattern 6：Loop-until-done（循環直到完成）"></a>Pattern 6：Loop-until-done（循環直到完成）</h3><p>設定一個 stop condition（停不下來的條件），Agent 做完一輪後檢查是否滿足，沒滿足就繼續，直到條件通過為止。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌──────────────┐    ┌──────────────────┐    ┌─────────────┐</span><br><span class="line">│  Execute     │───▶│ Stop condition?  │───▶│   Done?     │</span><br><span class="line">│  (做事)      │    │  有沒有通過測試？  │    │   結束      │</span><br><span class="line">└──────────────┘    └──────────────────┘    └─────────────┘</span><br><span class="line">                           │ no</span><br><span class="line">                           ▼</span><br><span class="line">                    修正後再執行</span><br></pre></td></tr></table></figure>
+<p><strong>熊熊的想法</strong>：這個模式最直接對應「編譯失敗就修、再編譯」的 loop，只是場景換成 research workflow——先產出初稿、檢查品質標準（<code>有沒有引用來源？結論有沒有被資料支持？</code>）、沒通過就補充，通過就結束。</p>
+<hr>
+<h2 id="Bun-Rewrite-案例：75-萬行的奇蹟"><a href="#Bun-Rewrite-案例：75-萬行的奇蹟" class="headerlink" title="Bun Rewrite 案例：75 萬行的奇蹟"></a>Bun Rewrite 案例：75 萬行的奇蹟</h2><p>最震撼的實例是 Bun 的重寫計畫：將一個大型 codebase 從 Zig 遷移到 Rust，總規模約 <strong>75 萬行 Rust 程式碼</strong>，<strong>11 天完成</strong>，<strong>99.8% 測試通過率</strong>。</p>
+<p>他們的做法是三層 workflow：</p>
+<h3 id="第一層：Rust-Lifetime-對應圖"><a href="#第一層：Rust-Lifetime-對應圖" class="headerlink" title="第一層：Rust Lifetime 對應圖"></a>第一層：Rust Lifetime 對應圖</h3><p>先不做翻譯，而是建立一個「Zig 語法單元 → Rust 等價物」的對應表。這是一個語意理解的步驟，在翻譯之前先把「每個概念怎麼說 Rust」確認清楚。</p>
+<h3 id="第二層：並行-Porting（雙-reviewer-制度）"><a href="#第二層：並行-Porting（雙-reviewer-制度）" class="headerlink" title="第二層：並行 Porting（雙 reviewer 制度）"></a>第二層：並行 Porting（雙 reviewer 制度）</h3><p>把整個 codebase 拆成 hundreds 個獨立的檔案單位，數百個 subagent 同時並行翻譯。每個檔案的產出都由 <strong>兩個 reviewer Agent</strong> 獨立地做 code review，通過才進下一關。</p>
+<h3 id="第三層：Fix-Loop"><a href="#第三層：Fix-Loop" class="headerlink" title="第三層：Fix Loop"></a>第三層：Fix Loop</h3><p>所有檔案翻譯完成後，進一個集中的修復循環。這裡的核心是 <strong>build 充當客觀的裁判</strong>——編譯失敗就是失敗，沒有藉口。Fix loop 持續跑，直到整個專案 build clean 且所有測試通過。</p>
+<p><strong>熊熊的想法</strong>：三層結構（理解 → 並行實作 → 修復循環）是大型重構的通用範本。熊熊如果要做任何遷移性質的工作，都可以套用這個框架。</p>
+<hr>
+<h2 id="熊熊的實作方向"><a href="#熊熊的實作方向" class="headerlink" title="熊熊的實作方向"></a>熊熊的實作方向</h2><p>從這篇文章，熊熊得到三個具體的實作靈感：</p>
+<h3 id="1-先幫研究任務加上-Adversarial-Verification"><a href="#1-先幫研究任務加上-Adversarial-Verification" class="headerlink" title="1. 先幫研究任務加上 Adversarial Verification"></a>1. 先幫研究任務加上 Adversarial Verification</h3><p>熊熊現在的研究流程是「抓文章 → 寫心得 → 完成」。加一個驗證步驟：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">研究初稿 → 「反方熊熊」Agent 審查 → 修正 → 最終版</span><br></pre></td></tr></table></figure>
+<p>反方 Agent 的 prompt 很簡單：「你是這個領域的專家，請從批判的角度指出這份研究摘要有哪些問題或遺漏。」</p>
+<h3 id="2-Fan-out-處理多文章-research"><a href="#2-Fan-out-處理多文章-research" class="headerlink" title="2. Fan-out 處理多文章 research"></a>2. Fan-out 處理多文章 research</h3><p>一次要讀 10 篇相關文章時，先並行抓取，再統一整合分析。用 Loop-until-done 當品質閘門——整合出來的報告要通過「有沒有引用來源」的檢查。</p>
+<h3 id="3-把-Workflow-Pattern-寫進-Hermes-Skill"><a href="#3-把-Workflow-Pattern-寫進-Hermes-Skill" class="headerlink" title="3. 把 Workflow Pattern 寫進 Hermes Skill"></a>3. 把 Workflow Pattern 寫進 Hermes Skill</h3><p>建立一個 <code>workflow-patterns</code> Skill，把六種 Pattern 的觸發條件、適用場景、實作提示封裝起來。以後遇到複雜任務時，直接問「這個任務適合用哪個 Pattern？」讓模型自己推薦。</p>
+<hr>
+<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>Dynamic Workflows 的核心洞察是：<strong>單一 Agent 解決不了複雜任務，要靠 workflow 的結構來彌補個體的限制</strong>。六種 Pattern 並不是規定要全用，而是當你遇到瓶頸時，剛好有一個現成的思路可以用。</p>
+<p>下一篇文章，熊熊會聊「Self-Improving Agents」—— 如何讓 Agent 從記憶裡學習、從失敗裡成長。</p>
+<hr>
+<p><em>本系列文基於 Claude Blog 文章：</em></p>
+<ul>
+<li><em><a href="https://claude.com/blog/a-harness-for-every-task-dynamic-workflows-in-claude-code">A harness for every task: Dynamic workflows in Claude Code</a></em></li>
+<li><em><a href="https://claude.com/blog/introducing-dynamic-workflows-in-claude-code">Introducing dynamic workflows</a></em></li>
+</ul>
+]]></content>
+      <categories>
+        <category>AI Agent</category>
+      </categories>
+      <tags>
+        <tag>Hermes</tag>
+        <tag>AI Agent</tag>
+        <tag>Multi-Agent</tag>
+        <tag>Claude</tag>
+        <tag>Workflow</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>My New Post</title>
+    <url>/higumalu-note/2021/09/30/My-New-Post/</url>
+    <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
+<h1 id="YT-test"><a href="#YT-test" class="headerlink" title="YT test"></a>YT test</h1><div class="video-container"><iframe src="https://www.youtube.com/embed/EmbKlm0P5W0" frameborder="0" loading="lazy" allowfullscreen></iframe></div>
+<h1 id="Picture-test"><a href="#Picture-test" class="headerlink" title="Picture test"></a>Picture test</h1><p><img src="https://i.imgur.com/WDqHaZP.jpg" alt="klee"></p>
 ]]></content>
       <categories>
         <category>daily</category>
@@ -3021,30 +3021,35 @@
       </tags>
   </entry>
   <entry>
-    <title>ultrasound defan</title>
-    <url>/higumalu-note/2022/03/25/US_defan/</url>
-    <content><![CDATA[<h3 id="A-universal-method-for-ultrasound-image-defan"><a href="#A-universal-method-for-ultrasound-image-defan" class="headerlink" title="A universal method for ultrasound image defan"></a>A universal method for ultrasound image defan</h3><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
-<h1 id="step-1"><a href="#step-1" class="headerlink" title="step 1"></a>step 1</h1><h3 id="import-moudle-amp-load-image"><a href="#import-moudle-amp-load-image" class="headerlink" title="import moudle &amp; load image"></a>import moudle &amp; load image</h3><p><img src="https://imgur.com/cuaq1Cd.jpg" alt="load"><br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> util <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageDraw</span><br><span class="line"></span><br><span class="line">img = cv2.imread(imgpath, cv2.IMREAD_COLOR)</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>&nbsp;</p>
-<h1 id="step-2"><a href="#step-2" class="headerlink" title="step 2"></a>step 2</h1><h3 id="get-the-coner-coordinate-x4"><a href="#get-the-coner-coordinate-x4" class="headerlink" title="get the coner coordinate (x4)"></a>get the coner coordinate (x4)</h3><h4 id="here-I-use-ginput-get-the-coordinate"><a href="#here-I-use-ginput-get-the-coordinate" class="headerlink" title="here I use ginput get the coordinate"></a>here I use ginput get the coordinate</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.title(<span class="string">&#x27;plt ginput&#x27;</span>) </span><br><span class="line">point = plt.ginput(<span class="number">4</span>) </span><br><span class="line"><span class="built_in">print</span>(point) </span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h3 id="use-line1-and-line2-to-caculate-the-focus-point-above-the-img"><a href="#use-line1-and-line2-to-caculate-the-focus-point-above-the-img" class="headerlink" title="use line1 and line2 to caculate the focus point above the img"></a>use line1 and line2 to caculate the focus point above the img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">ux1, uy1 = point[<span class="number">0</span>]</span><br><span class="line">dx1, dy1 = point[<span class="number">1</span>]</span><br><span class="line">ux2, uy2 = point[<span class="number">2</span>]</span><br><span class="line">dx2, dy2 = point[<span class="number">3</span>]</span><br><span class="line">img[:<span class="built_in">int</span>(uy1),:,:] = <span class="number">0</span> <span class="comment">#del area of uper UI </span></span><br><span class="line">line1 = [ux1, uy1, dx1, dy1]</span><br><span class="line">line2 = [ux2, uy2, dx2, dy2]</span><br><span class="line"></span><br><span class="line">focus = cross_point(line1, line2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h3 id="how2get-cross-point-coordinate"><a href="#how2get-cross-point-coordinate" class="headerlink" title="how2get cross point coordinate"></a>how2get cross point coordinate</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cross_point</span>(<span class="params">line1,line2</span>):</span></span><br><span class="line">    x1=line1[<span class="number">0</span>]</span><br><span class="line">    y1=line1[<span class="number">1</span>]</span><br><span class="line">    x2=line1[<span class="number">2</span>]</span><br><span class="line">    y2=line1[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    x3=line2[<span class="number">0</span>]</span><br><span class="line">    y3=line2[<span class="number">1</span>]</span><br><span class="line">    x4=line2[<span class="number">2</span>]</span><br><span class="line">    y4=line2[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    k1=(y2-y1)*<span class="number">1.0</span>/(x2-x1)</span><br><span class="line">    b1=y1*<span class="number">1.0</span>-x1*k1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> (x4-x3)==<span class="number">0</span>:</span><br><span class="line">        k2=<span class="literal">None</span></span><br><span class="line">        b2=<span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        k2=(y4-y3)*<span class="number">1.0</span>/(x4-x3)</span><br><span class="line">        b2=y3*<span class="number">1.0</span>-x3*k2*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> k2==<span class="literal">None</span>:</span><br><span class="line">        x=x3</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        x=(b2-b1)*<span class="number">1.0</span>/(k1-k2)</span><br><span class="line">    y=k1*x*<span class="number">1.0</span>+b1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">return</span> [x,y]</span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h1 id="step-3"><a href="#step-3" class="headerlink" title="step 3"></a>step 3</h1><h3 id="caculating-the-distance-of-focus-point-to-surface-and-bottom"><a href="#caculating-the-distance-of-focus-point-to-surface-and-bottom" class="headerlink" title="caculating the distance of focus point to surface and bottom"></a>caculating the distance of focus point to surface and bottom</h3><p><img src="https://i.imgur.com/sElg0Dn.png" alt="var"><br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">sur = math.dist(focus, point[<span class="number">0</span>])</span><br><span class="line">rad = math.dist(focus, point[<span class="number">1</span>])</span><br></pre></td></tr></table></figure><br>&nbsp;</p>
-<h3 id="crop-img-and-extension-the-matrix-size"><a href="#crop-img-and-extension-the-matrix-size" class="headerlink" title="crop img and extension the matrix size"></a>crop img and extension the matrix size</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">img = img[:math.floor(focus[<span class="number">1</span>]+rad), math.floor(dx1):math.ceil(dx2)]</span><br><span class="line"></span><br><span class="line">mask_w = img.shape[<span class="number">1</span>]</span><br><span class="line">mask_h = math.ceil(rad)</span><br><span class="line"></span><br><span class="line">bg = np.zeros(shape=(mask_h, mask_w, <span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">0</span>] = img[:,:,<span class="number">0</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">1</span>] = img[:,:,<span class="number">1</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">2</span>] = img[:,:,<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
-<h1 id="step-4"><a href="#step-4" class="headerlink" title="step 4"></a>step 4</h1><h3 id="defan-amp-crop-img"><a href="#defan-amp-crop-img" class="headerlink" title="defan &amp; crop img"></a>defan &amp; crop img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">defan = de_fan(bg,probe_angle,num_aline)</span><br><span class="line">defan = defan[<span class="built_in">int</span>(sur):,:,:]</span><br></pre></td></tr></table></figure>
-<h3 id="de-fan-code"><a href="#de-fan-code" class="headerlink" title="de_fan code"></a>de_fan code</h3><p>‘angle’ means the probe curve angle we can get that with product info or using cosine function to get it.<br>‘num_line’ means ‘A line’ here we can understand that is image width.<br>Here I used a for loop to resample the image, then inserted into the blank matrix.<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">de_fan</span>(<span class="params">image,angle,num_line</span>):</span></span><br><span class="line">    </span><br><span class="line">    h_l = math.floor(num_line/<span class="number">2</span>)</span><br><span class="line">    h_a = math.floor(angle/<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    height, width = image.shape[:<span class="number">2</span>]</span><br><span class="line">    defan = np.zeros(shape=(height,num_line,<span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">    defan[:,h_l,:] = image[:,math.floor(width)-<span class="number">1</span>,:]</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,h_l):</span><br><span class="line">        line = rotate_image_topcenter(image,d*h_a/h_l)</span><br><span class="line">        defan[:,h_l-d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">        line = rotate_image_topcenter(image,-d*h_a/h_l)</span><br><span class="line">        defan[:,h_l+d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> defan</span><br></pre></td></tr></table></figure><br>&nbsp;</p>
-<h3 id="rotate-image-topcenter-code"><a href="#rotate-image-topcenter-code" class="headerlink" title="rotate_image_topcenter code"></a>rotate_image_topcenter code</h3><p>Let rotate center is focused center</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rotate_image_topcenter</span>(<span class="params">mat, angle</span>):</span></span><br><span class="line">    height, width = mat.shape[:<span class="number">2</span>] <span class="comment"># image shape has 3 dimensions</span></span><br><span class="line">    image_center = (width/<span class="number">2</span>, <span class="number">0</span>) </span><br><span class="line">    rotation_mat = cv2.getRotationMatrix2D(image_center, angle, <span class="number">1.</span>)</span><br><span class="line">    rotated_mat = cv2.warpAffine(mat, rotation_mat, (width, height))</span><br><span class="line">    <span class="keyword">return</span> rotated_mat</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>&nbsp;<br>finally—-<br><img src="https://i.imgur.com/yPYAMkn.png" alt="fin"><br>&nbsp;</p>
+    <title>Hello World</title>
+    <url>/higumalu-note/2021/09/30/hello-world/</url>
+    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>google colab (0) setting &amp; UI</title>
+    <url>/higumalu-note/2021/10/05/colab-1/</url>
+    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a></p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></h2><p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
+<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
+<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
+<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
+<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
 ]]></content>
       <categories>
-        <category>ultrasound</category>
+        <category>colab</category>
       </categories>
       <tags>
-        <tag>ultrasound</tag>
-        <tag>image processing</tag>
+        <tag>colab</tag>
+        <tag>setting</tag>
       </tags>
   </entry>
   <entry>
@@ -3175,51 +3180,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Ultrasound signal processing</title>
-    <url>/higumalu-note/2022/06/04/US-signal-proc/</url>
-    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
-<p>These steps can be roughly categorized as follows:</p>
-<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
-<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
-<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
-]]></content>
-      <categories>
-        <category>ultrasound</category>
-      </categories>
-      <tags>
-        <tag>ultrasound</tag>
-        <tag>image processing</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>My New Post</title>
-    <url>/higumalu-note/2021/09/30/My-New-Post/</url>
-    <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
-<h1 id="YT-test"><a href="#YT-test" class="headerlink" title="YT test"></a>YT test</h1><div class="video-container"><iframe src="https://www.youtube.com/embed/EmbKlm0P5W0" frameborder="0" loading="lazy" allowfullscreen></iframe></div>
-<h1 id="Picture-test"><a href="#Picture-test" class="headerlink" title="Picture test"></a>Picture test</h1><p><img src="https://i.imgur.com/WDqHaZP.jpg" alt="klee"></p>
-]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/higumalu-note/2021/09/30/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-]]></content>
-  </entry>
-  <entry>
     <title>google colab (1) connect to drive</title>
     <url>/higumalu-note/2021/10/07/colab-2/</url>
     <content><![CDATA[<h3 id="連結到Google-Drive"><a href="#連結到Google-Drive" class="headerlink" title="連結到Google Drive"></a>連結到Google Drive</h3><p>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!apt-get install -y -qq software-properties-common python-software-properties module-init-tools</span><br><span class="line">!add-apt-repository -y ppa:alessandro-strada/ppa <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get update -qq <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get -y install -qq google-drive-ocamlfuse fuse</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> google.colab <span class="keyword">import</span> auth</span><br><span class="line">auth.authenticate_user()</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> oauth2client.client <span class="keyword">import</span> GoogleCredentials</span><br><span class="line">creds = GoogleCredentials.get_application_default()</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> getpass</span><br><span class="line">!google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125; &lt; /dev/null <span class="number">2</span>&gt;&amp;<span class="number">1</span> | grep URL</span><br><span class="line">vcode = getpass.getpass()</span><br><span class="line">!echo &#123;vcode&#125; | google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">E: Package &#x27;python-software-properties&#x27; has no installation candidate</span><br><span class="line">Selecting previously unselected package google-drive-ocamlfuse.</span><br><span class="line">(Reading database ... 155047 files and directories currently installed.)</span><br><span class="line">Preparing to unpack .../google-drive-ocamlfuse_0.7.26-0ubuntu1~ubuntu18.04.1_amd64.deb ...</span><br><span class="line">Unpacking google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Setting up google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Processing triggers for man-db (2.8.3-2ubuntu0.1) ...</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">··········</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">Please enter the verification code: Access token retrieved correctly.</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>&nbsp;<br>執行之後點連結會產生一段驗證碼<br>貼到下方的格子中案Enter進行驗證<br><em>一共需要驗證兩次驗證瑪</em><br>&nbsp;<br>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!mkdir -p Drive</span><br><span class="line">!google-drive-ocamlfuse Drive</span><br><span class="line"></span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;.config&#x27;, &#x27;Drive&#x27;, &#x27;adc.json&#x27;, &#x27;sample_data&#x27;]</span><br></pre></td></tr></table></figure><br>在虛擬機開一個資料夾<br>名稱為’Drive’視為個人雲端硬碟的根目錄<br>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">os.chdir(<span class="string">&#x27;Drive/colab_test&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(os.listdir())</span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;GPUtest.ipynb&#x27;, &#x27;Untitled0.ipynb&#x27;]</span><br></pre></td></tr></table></figure><br>&nbsp;<br>切換到目前的工作資料夾<br>列出所有檔案</p>
@@ -3232,24 +3192,6 @@
       <tags>
         <tag>colab</tag>
         <tag>drive</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>google colab (0) setting &amp; UI</title>
-    <url>/higumalu-note/2021/10/05/colab-1/</url>
-    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a></p>
-<h2 id=""><a href="#" class="headerlink" title=""></a><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></h2><p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
-<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
-<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
-<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
-<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
-]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>setting</tag>
       </tags>
   </entry>
   <entry>
@@ -3293,6 +3235,37 @@
         <tag>image processing</tag>
         <tag>histogram</tag>
         <tag>image</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>終於忙完碩一上了!!</title>
+    <url>/higumalu-note/2022/03/24/diary0324/</url>
+    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
+<p>改天整理一下傳speaker deck</p>
+<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Ultrasound signal processing</title>
+    <url>/higumalu-note/2022/06/04/US-signal-proc/</url>
+    <content><![CDATA[<h1 id="Intro"><a href="#Intro" class="headerlink" title="Intro."></a>Intro.</h1><p>In ultrasonic medical imaging, the original signals are composed of individual RF (radio frequency) signals.<br>During this process, we need to progressively transform these signals into the final ultrasound images through various processing methods.</p>
+<p>These steps can be roughly categorized as follows:</p>
+<p>Frequency filtering<br>Signal demodulation<br>Signal enveloping<br>Logarithmic compression<br>Image processing</p>
+<p>The following example will use the raw signals obtained from the Terson Model 3000 system and its Model 5C2A curved probe as the initial processing data.<br>&nbsp;</p>
+<h1 id="Load-rf-data"><a href="#Load-rf-data" class="headerlink" title="Load rf data"></a>Load rf data</h1><h1 id="bandfilter"><a href="#bandfilter" class="headerlink" title="bandfilter"></a>bandfilter</h1><h1 id="AM-demodulation"><a href="#AM-demodulation" class="headerlink" title="AM demodulation"></a>AM demodulation</h1><h2 id="Hilbert-transform"><a href="#Hilbert-transform" class="headerlink" title="Hilbert transform"></a>Hilbert transform</h2><h2 id="IQ-demode"><a href="#IQ-demode" class="headerlink" title="IQ demode"></a>IQ demode</h2><h1 id="Log-compression"><a href="#Log-compression" class="headerlink" title="Log. compression"></a>Log. compression</h1><h1 id="Image-proc"><a href="#Image-proc" class="headerlink" title="Image proc."></a>Image proc.</h1><h2 id="image-filter"><a href="#image-filter" class="headerlink" title="image filter"></a>image filter</h2><h2 id="fan-out"><a href="#fan-out" class="headerlink" title="fan out"></a>fan out</h2><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+]]></content>
+      <categories>
+        <category>ultrasound</category>
+      </categories>
+      <tags>
+        <tag>image processing</tag>
+        <tag>ultrasound</tag>
       </tags>
   </entry>
   <entry>
@@ -3383,6 +3356,33 @@
       </categories>
       <tags>
         <tag>other</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ultrasound defan</title>
+    <url>/higumalu-note/2022/03/25/US_defan/</url>
+    <content><![CDATA[<h3 id="A-universal-method-for-ultrasound-image-defan"><a href="#A-universal-method-for-ultrasound-image-defan" class="headerlink" title="A universal method for ultrasound image defan"></a>A universal method for ultrasound image defan</h3><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+<h1 id="step-1"><a href="#step-1" class="headerlink" title="step 1"></a>step 1</h1><h3 id="import-moudle-amp-load-image"><a href="#import-moudle-amp-load-image" class="headerlink" title="import moudle &amp; load image"></a>import moudle &amp; load image</h3><p><img src="https://imgur.com/cuaq1Cd.jpg" alt="load"><br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> util <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageDraw</span><br><span class="line"></span><br><span class="line">img = cv2.imread(imgpath, cv2.IMREAD_COLOR)</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>&nbsp;</p>
+<h1 id="step-2"><a href="#step-2" class="headerlink" title="step 2"></a>step 2</h1><h3 id="get-the-coner-coordinate-x4"><a href="#get-the-coner-coordinate-x4" class="headerlink" title="get the coner coordinate (x4)"></a>get the coner coordinate (x4)</h3><h4 id="here-I-use-ginput-get-the-coordinate"><a href="#here-I-use-ginput-get-the-coordinate" class="headerlink" title="here I use ginput get the coordinate"></a>here I use ginput get the coordinate</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.title(<span class="string">&#x27;plt ginput&#x27;</span>) </span><br><span class="line">point = plt.ginput(<span class="number">4</span>) </span><br><span class="line"><span class="built_in">print</span>(point) </span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="use-line1-and-line2-to-caculate-the-focus-point-above-the-img"><a href="#use-line1-and-line2-to-caculate-the-focus-point-above-the-img" class="headerlink" title="use line1 and line2 to caculate the focus point above the img"></a>use line1 and line2 to caculate the focus point above the img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">ux1, uy1 = point[<span class="number">0</span>]</span><br><span class="line">dx1, dy1 = point[<span class="number">1</span>]</span><br><span class="line">ux2, uy2 = point[<span class="number">2</span>]</span><br><span class="line">dx2, dy2 = point[<span class="number">3</span>]</span><br><span class="line">img[:<span class="built_in">int</span>(uy1),:,:] = <span class="number">0</span> <span class="comment">#del area of uper UI </span></span><br><span class="line">line1 = [ux1, uy1, dx1, dy1]</span><br><span class="line">line2 = [ux2, uy2, dx2, dy2]</span><br><span class="line"></span><br><span class="line">focus = cross_point(line1, line2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="how2get-cross-point-coordinate"><a href="#how2get-cross-point-coordinate" class="headerlink" title="how2get cross point coordinate"></a>how2get cross point coordinate</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cross_point</span>(<span class="params">line1,line2</span>):</span></span><br><span class="line">    x1=line1[<span class="number">0</span>]</span><br><span class="line">    y1=line1[<span class="number">1</span>]</span><br><span class="line">    x2=line1[<span class="number">2</span>]</span><br><span class="line">    y2=line1[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    x3=line2[<span class="number">0</span>]</span><br><span class="line">    y3=line2[<span class="number">1</span>]</span><br><span class="line">    x4=line2[<span class="number">2</span>]</span><br><span class="line">    y4=line2[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    k1=(y2-y1)*<span class="number">1.0</span>/(x2-x1)</span><br><span class="line">    b1=y1*<span class="number">1.0</span>-x1*k1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> (x4-x3)==<span class="number">0</span>:</span><br><span class="line">        k2=<span class="literal">None</span></span><br><span class="line">        b2=<span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        k2=(y4-y3)*<span class="number">1.0</span>/(x4-x3)</span><br><span class="line">        b2=y3*<span class="number">1.0</span>-x3*k2*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> k2==<span class="literal">None</span>:</span><br><span class="line">        x=x3</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        x=(b2-b1)*<span class="number">1.0</span>/(k1-k2)</span><br><span class="line">    y=k1*x*<span class="number">1.0</span>+b1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">return</span> [x,y]</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h1 id="step-3"><a href="#step-3" class="headerlink" title="step 3"></a>step 3</h1><h3 id="caculating-the-distance-of-focus-point-to-surface-and-bottom"><a href="#caculating-the-distance-of-focus-point-to-surface-and-bottom" class="headerlink" title="caculating the distance of focus point to surface and bottom"></a>caculating the distance of focus point to surface and bottom</h3><p><img src="https://i.imgur.com/sElg0Dn.png" alt="var"><br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">sur = math.dist(focus, point[<span class="number">0</span>])</span><br><span class="line">rad = math.dist(focus, point[<span class="number">1</span>])</span><br></pre></td></tr></table></figure><br>&nbsp;</p>
+<h3 id="crop-img-and-extension-the-matrix-size"><a href="#crop-img-and-extension-the-matrix-size" class="headerlink" title="crop img and extension the matrix size"></a>crop img and extension the matrix size</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">img = img[:math.floor(focus[<span class="number">1</span>]+rad), math.floor(dx1):math.ceil(dx2)]</span><br><span class="line"></span><br><span class="line">mask_w = img.shape[<span class="number">1</span>]</span><br><span class="line">mask_h = math.ceil(rad)</span><br><span class="line"></span><br><span class="line">bg = np.zeros(shape=(mask_h, mask_w, <span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">0</span>] = img[:,:,<span class="number">0</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">1</span>] = img[:,:,<span class="number">1</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">2</span>] = img[:,:,<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
+<h1 id="step-4"><a href="#step-4" class="headerlink" title="step 4"></a>step 4</h1><h3 id="defan-amp-crop-img"><a href="#defan-amp-crop-img" class="headerlink" title="defan &amp; crop img"></a>defan &amp; crop img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">defan = de_fan(bg,probe_angle,num_aline)</span><br><span class="line">defan = defan[<span class="built_in">int</span>(sur):,:,:]</span><br></pre></td></tr></table></figure>
+<h3 id="de-fan-code"><a href="#de-fan-code" class="headerlink" title="de_fan code"></a>de_fan code</h3><p>‘angle’ means the probe curve angle we can get that with product info or using cosine function to get it.<br>‘num_line’ means ‘A line’ here we can understand that is image width.<br>Here I used a for loop to resample the image, then inserted into the blank matrix.<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">de_fan</span>(<span class="params">image,angle,num_line</span>):</span></span><br><span class="line">    </span><br><span class="line">    h_l = math.floor(num_line/<span class="number">2</span>)</span><br><span class="line">    h_a = math.floor(angle/<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    height, width = image.shape[:<span class="number">2</span>]</span><br><span class="line">    defan = np.zeros(shape=(height,num_line,<span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">    defan[:,h_l,:] = image[:,math.floor(width)-<span class="number">1</span>,:]</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,h_l):</span><br><span class="line">        line = rotate_image_topcenter(image,d*h_a/h_l)</span><br><span class="line">        defan[:,h_l-d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">        line = rotate_image_topcenter(image,-d*h_a/h_l)</span><br><span class="line">        defan[:,h_l+d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> defan</span><br></pre></td></tr></table></figure><br>&nbsp;</p>
+<h3 id="rotate-image-topcenter-code"><a href="#rotate-image-topcenter-code" class="headerlink" title="rotate_image_topcenter code"></a>rotate_image_topcenter code</h3><p>Let rotate center is focused center</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rotate_image_topcenter</span>(<span class="params">mat, angle</span>):</span></span><br><span class="line">    height, width = mat.shape[:<span class="number">2</span>] <span class="comment"># image shape has 3 dimensions</span></span><br><span class="line">    image_center = (width/<span class="number">2</span>, <span class="number">0</span>) </span><br><span class="line">    rotation_mat = cv2.getRotationMatrix2D(image_center, angle, <span class="number">1.</span>)</span><br><span class="line">    rotated_mat = cv2.warpAffine(mat, rotation_mat, (width, height))</span><br><span class="line">    <span class="keyword">return</span> rotated_mat</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;<br>finally—-<br><img src="https://i.imgur.com/yPYAMkn.png" alt="fin"><br>&nbsp;</p>
+]]></content>
+      <categories>
+        <category>ultrasound</category>
+      </categories>
+      <tags>
+        <tag>image processing</tag>
+        <tag>ultrasound</tag>
       </tags>
   </entry>
 </search>
