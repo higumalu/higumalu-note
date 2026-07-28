@@ -192,7 +192,7 @@
 <li>自適應執行頻率</li>
 </ul>
 <p><strong>保持自我改進能力，但費用只是原來的幾分之一。</strong></p>
-<h3 id="4-7-prompt-—-在編輯器裡寫-Prompt"><a href="#4-7-prompt-—-在編輯器裡寫-Prompt" class="headerlink" title="4.7 /prompt — 在編輯器裡寫 Prompt"></a>4.7 <code>/prompt</code> — 在編輯器裡寫 Prompt</h3><p>執行 <code>/prompt</code> 會開啟 <code>$EDITOR</code>，讓你在真正的 Markdown 編輯器裡寫長多行 Prompt，而非對著一行輸入框掙扎。草稿完成後自動進入佇列作為下一條訊息。</p>
+<h3 id="4-7-prompt-—-在編輯器裡寫-Prompt"><a href="#4-7-prompt-—-在編輯器裡寫-Prompt" class="headerlink" title="4.7 /prompt — 在編輯器裡寫 Prompt"></a>4.7 <code>/prompt</code> — 在編輯器裡寫 Prompt</h3><p>執行 <code>/prompt</code> 會開啟 <code><script type="math/tex">EDITOR</code>，讓你在真正的 Markdown 編輯器裡寫長多行 Prompt，而非對著一行輸入框掙扎。草稿完成後自動進入佇列作為下一條訊息。</p>
 <h3 id="4-8-Google-Vertex-AI-—-GCP-服務帳戶直接用"><a href="#4-8-Google-Vertex-AI-—-GCP-服務帳戶直接用" class="headerlink" title="4.8 Google Vertex AI — GCP 服務帳戶直接用"></a>4.8 Google Vertex AI — GCP 服務帳戶直接用</h3><p>Vertex AI 現在是 Gemini 模型的一級 provider。過去為什麼 custom-provider 設定總是在 session 中途失效？因為 Vertex 沒有靜態 API key，每個請求都需要從服務帳號 JSON 即時 mint 的短效 OAuth2 access token（約 1 小時 TTL）。Hermes 現在為你自動 mint 和刷新這些 token，組織內部跑 Gemini through Google Cloud 不再需要 paste token、不再有中途過期。</p>
 <h3 id="4-9-Desktop-App-新的「專案」系統"><a href="#4-9-Desktop-App-新的「專案」系統" class="headerlink" title="4.9 Desktop App 新的「專案」系統"></a>4.9 Desktop App 新的「專案」系統</h3><p>桌面應用獲得了真正的 per-profile 專案系統：</p>
 <ul>
@@ -404,8 +404,27 @@
 
 
 
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['</script>', '<script type="math/tex">'], ['\\(', '\\)']],
+    displayMath: [['</script><script type="math/tex">', '</script>$'], ['\\[', '\\]']],
+    processEscapes: true
+  },
+  options: {
+    enableMenu: false
+  },
+  startup: {
+    ready: function() {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(function() {
+        return MathJax.typesetPromise();
+      });
+    }
+  }
+};
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
-
 
 
 

@@ -187,8 +187,27 @@
 
 
 
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['<script type="math/tex">', '</script>'], ['\\(', '\\)']],
+    displayMath: [['<script type="math/tex"></script>', '<script type="math/tex"></script>'], ['\\[', '\\]']],
+    processEscapes: true
+  },
+  options: {
+    enableMenu: false
+  },
+  startup: {
+    ready: function() {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(function() {
+        return MathJax.typesetPromise();
+      });
+    }
+  }
+};
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
-
 
 
 
