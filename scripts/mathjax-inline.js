@@ -1,15 +1,61 @@
 'use strict';
-// Convert kramed-passed $...$ inline math to MathJax <script> tags.
-// kramed 0.5.6 only handles block-level $$...$$ math; single $...$ passes through
-// as plain text. This filter catches all remaining $...$ pairs and wraps them
-// in <script type="math/tex"> (inline, non-display) so MathJax can render them.
+// Convert $...$ inline math (not $$...$$) to MathJax <script> tags.
+// Handles adjacent formulas like $A$ $B$ (split by spaces) correctly.
+// Also removes any <em>...</em> remnants inside math expressions.
 hexo.extend.filter.register('after_render:html', function(content) {
   if (!content) return content;
-  // Replace $...$ (not $$...$$) with <script type="math/tex">...</script>
-  // [^$] ensures we don't match $$ which kramed already converted to display scripts
-  return content.replace(/\$([^$\n]+)\$/g, function(match, formula) {
-    // Don't convert if it looks like a currency price (contains digits at start/end)
-    if (/^\d/.test(formula.trim()) || /\d$/.test(formula.trim())) return match;
-    return '<script type="math/tex">' + formula + '</script>';
-  });
+
+  // Remove <em> tags INSIDE math expressions (from markdown _..._ processing)
+  // that escaped the earlier compat pass.
+  content = content.replace(/<em>([^<]*(?:<(?!\/?em>)[^<]*)*)<\/em>/g, '$1');
+
+  // Replace $formula$ with <script type="math/tex">formula</script>
+  // Non-greedy (.+?) but carefully handles adjacent formulas.
+  var result = '';
+  var i = 0;
+  var len = content.length;
+  while (i < len) {
+    if (content[i] === '$') {
+      // Look for closing $, but skip if it's an escaped \$ or part of $$
+      var j = i + 1;
+      var mathContent = '';
+      var found = false;
+      while (j < len) {
+        if (content[j] === '$' && content[j-1] !== '\\') {
+          // Found closing $
+          // Avoid matching $$...$$ (display math already handled by kramed)
+          var inner = content.substring(i+1, j);
+          if (inner.includes('$$') || inner.startsWith('$')) {
+            // This is display math or escaped dollar, treat as literal
+            result += content[i];
+            i++;
+            break;
+          }
+          mathContent = inner;
+          found = true;
+          j++;
+          break;
+        }
+        j++;
+      }
+      if (found) {
+        // Skip leading/trailing whitespace in math content
+        var trimmed = mathContent.trim();
+        // Don't convert price-like patterns (starts/ends with digit, no commands)
+        if (/^\d[\d\s]*$/.test(trimmed)) {
+          result += '$' + mathContent + '$';
+        } else {
+          result += '<script type="math/tex">' + mathContent + '</script>';
+        }
+        i = j;
+      } else {
+        result += content[i];
+        i++;
+      }
+    } else {
+      result += content[i];
+      i++;
+    }
+  }
+  return result;
 });
