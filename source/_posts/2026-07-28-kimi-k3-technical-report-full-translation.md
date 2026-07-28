@@ -179,11 +179,11 @@ $$s = \text{Softmax}(\text{Norm}(W_r x)) \in \mathbb{R}^n$$
 
 $$\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)$$
 
-最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和權重：
+最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和路由權重：
 
-$$\mathcal{T}_i = \text{argtop}_k(s_i + b), \quad w_{i,j} = \begin{cases} \frac{\text{Softmax}(s_{i,j} + b_j)}{\sum_{j' \in \mathcal{T}_i} \text{Softmax}(s_{i,j'} + b_{j'})} & j \in \mathcal{T}_i \\ 0 & \text{otherwise} \end{cases}$$
+$$s_i = \text{Sigmoid}(W_r x_i), \quad \mathcal{T}_i = \text{argtop}_k(s_i + b), \quad p_{i,j} = \begin{cases} \dfrac{s_{i,j}}{\sum_{r \in \mathcal{T}_i} s_{i,r}} & j \in \mathcal{T}_i \\ 0 & \text{otherwise} \end{cases}$$
 
-偏置 $b$ 從路由概率計算中省略，這樣它只調節 dispatch 而不改變混合權重或直接干擾梯度優化。
+偏置 $b$ 從路由概率 $p_{i,j}$ 計算中省略，這樣它只調節 dispatch（Top-k 選了哪些專家）而不改變混合權重或直接干擾路由器的梯度優化。
 
 #### 2.3.1 SiTU-GLU
 
