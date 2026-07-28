@@ -1,14 +1,14 @@
 'use strict';
 // Phase 1: Remove <em> remnants from markdown _..._ inside math expressions
-// Phase 2: Convert remaining $...$ inline math to MathJax <script> tags
-// Phase 3: Inject typeset call at </body> (after MathJax CDN loads asynchronously)
+// Phase 2: Convert $...$ inline math to MathJax <script type="math/tex"> tags
+// (typesetting handled by mathjax.ejs startup.ready → typesetPromise())
 hexo.extend.filter.register('after_render:html', function(content) {
   if (!content) return content;
 
   // === Phase 1: Remove <em> inside math ===
   content = content.replace(/<em>([^<]*(?:<(?!\/?em>)[^<]*)*)<\/em>/g, '$1');
 
-  // === Phase 2: Convert $formula$ to <script type="math/tex"> ===
+  // === Phase 2: Convert $formula$ to <script type="math/tex"> (character-by-character) ===
   var result = '';
   var i = 0;
   var len = content.length;
@@ -26,6 +26,7 @@ hexo.extend.filter.register('after_render:html', function(content) {
             break;
           }
           var trimmed = inner.trim();
+          // Don't convert pure digit sequences (page numbers, years, etc.)
           if (/^\d[\d\s]*$/.test(trimmed)) {
             result += '$' + inner + '$';
           } else {
@@ -44,18 +45,5 @@ hexo.extend.filter.register('after_render:html', function(content) {
     i++;
   }
   content = result;
-
-  // === Phase 3: Inject typeset call at </body> (safe - MathJax CDN loaded way before body end) ===
-  if (content.includes('math/tex')) {
-    var bodyEnd = content.toLowerCase().indexOf('</body>');
-    if (bodyEnd >= 0) {
-      var typesetScript = '<script>document.addEventListener("DOMContentLoaded", function() {' +
-'if (typeof MathJax !== "undefined" && MathJax.startup && MathJax.startup.promise) {' +
-'MathJax.startup.promise.then(function() { return MathJax.typesetPromise(); });' +
-'}});</script>';
-      content = content.slice(0, bodyEnd) + typesetScript + content.slice(bodyEnd);
-    }
-  }
-
   return content;
 });
