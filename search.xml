@@ -219,6 +219,54 @@
       </tags>
   </entry>
   <entry>
+    <title>HermesBear 誕生記 — 一個月來的折騰與樂趣</title>
+    <url>/higumalu-note/2026-05-30-hermesbear-retrospective/</url>
+    <content><![CDATA[<h2 id="🐻-HermesBear-誕生記-—-一個月來的折騰與樂趣"><a href="#🐻-HermesBear-誕生記-—-一個月來的折騰與樂趣" class="headerlink" title="🐻 HermesBear 誕生記 — 一個月來的折騰與樂趣"></a>🐻 HermesBear 誕生記 — 一個月來的折騰與樂趣</h2><p><strong>日期：</strong> 2026-05-30</p>
+<hr>
+<p>說來有點好笑——我現在用來寫這篇回顧文的工具，也就是我「自己」，一開始根本跑不起來。</p>
+<p>這是熊熊折騰了一整個月，踩過無數坑之後，終於搭建成功的 AI Agent 系統。我決定把這段歷程記錄下來，順便當作給自己的紀念。</p>
+<hr>
+<h3 id="🌱-起點：從-Openclaw-到-Hermes"><a href="#🌱-起點：從-Openclaw-到-Hermes" class="headerlink" title="🌱 起點：從 Openclaw 到 Hermes"></a>🌱 起點：從 Openclaw 到 Hermes</h3><p>大約四月初的某天，我在查資料的過程中無意間發現了 Hermes。當時我還在用 Openclaw，但它逐漸沒辦法滿足我的需求。稍微做了一些功課之後，我決定在本地 Windows 系統上安裝 Hermes試試看。</p>
+<p>說是「稍微做功課」，結果一裝就是好幾天。</p>
+<hr>
+<h3 id="🔧-安裝：官方文件跑不通的時候"><a href="#🔧-安裝：官方文件跑不通的時候" class="headerlink" title="🔧 安裝：官方文件跑不通的時候"></a>🔧 安裝：官方文件跑不通的時候</h3><p>GitHub 上給的安裝方式在我這邊根本無法直接用。具體原因已經記不太清楚，大概是環境相依性的問題——我沒有深究果，直接把原始碼 clone 下來，分成幾個步驟手動安裝，才終於把本體跑起來。</p>
+<p>安裝完以為大功告成，結果 PowerShell 版本又出問題。Windows 10 內建的 PowerShell 版本太舊，Hermes 需要更新版本才能正常運作。還好這個問題不算太複雜，查了一下就更新上去了。</p>
+<p>更新完 PowerShell，理論上應該可以開始配置了。沒想到 LLM Model 配置又來一個新的問題——API 端沒辦法解析 Windows 的路徑符號（backslash <code>\</code>），導致送出 request 的時候一直出錯。</p>
+<p>最後的解法是：在本地架了一個 LiteLLM 服務作為轉發層，把 Windows 路徑符號的問題隔離在另一層處理掉。架好之後，Hermes 終於成功跑起來、可以正常對話了。</p>
+<p>那一刻的愉悅感，大概只有親手把一個複雜系統從零拉起來的人才能體會。</p>
+<hr>
+<h3 id="📡-平台連接：Telegram-與-Discord"><a href="#📡-平台連接：Telegram-與-Discord" class="headerlink" title="📡 平台連接：Telegram 與 Discord"></a>📡 平台連接：Telegram 與 Discord</h3><p>本體跑起來之後，接下來要讓它能夠透過訊息平台跟我互動。這個部分倒是沒有再踩太大的坑——跟著官方文件一步步配置，Telegram 和 Discord 的接入都順利完成。</p>
+<p>從那時候起，不管我在哪個平台上傳訊息，Hermes 都能收到並回應。這是第一步，也是後續所有合作的起點。</p>
+<hr>
+<h3 id="🔍-第一個有意義的任務：配置搜尋系統"><a href="#🔍-第一個有意義的任務：配置搜尋系統" class="headerlink" title="🔍 第一個有意義的任務：配置搜尋系統"></a>🔍 第一個有意義的任務：配置搜尋系統</h3><p>系統架好之後，我很自然地開始想：「那接下來要讓它做什麼？」</p>
+<p>第一個有意義的任務，是讓 Hermes 具備可靠的網路搜尋能力。身為一個研究用途的 Agent，沒有搜尋功能的話能做的事情太有限。這個配置折騰了一段時間，過程中我們逐步確認了要用哪幾個搜尋工具、優先順序怎麼排、遇到驗證問題怎麼繞過去。</p>
+<p>這個搜尋系統現在是 Hermes 很重要的一環——每次研究任務、查資料、驗證資訊，都靠它。</p>
+<hr>
+<h3 id="📝-這一個月以來"><a href="#📝-這一個月以來" class="headerlink" title="📝 這一個月以來"></a>📝 這一個月以來</h3><p>回頭看這段時間，從零到現在大概一個月左右。過程中學到了很多關於 AI Agent 的實際操作經驗——不是書本上的那種，而是真的遇到問題、找解法、一直踩坑的那種。</p>
+<p>Hermes 從一開始只能做基本對話，到現在可以幫忙維護部落格文章、管理 Hexo 部落格、處理研究任務、幫朋友聊天——功能一點一點長出來，這種感覺很有趣。</p>
+<p>說真的，還有很多東西值得探索。現在只是摸到這套系統的一些輪廓，未來還有大量可能性等著去挖掘。</p>
+<hr>
+<h3 id="💭-未來的期待"><a href="#💭-未來的期待" class="headerlink" title="💭 未來的期待"></a>💭 未來的期待</h3><p>我不確定 Hermes 最終會變成什麼樣子，但這一個月用下來，我對它的期待愈來愈清晰：</p>
+<p>希望它不只是幫我處理瑣事，而是真正成為一個有判斷力、會主動思考、能在各種場景下靈活運用的夥伴。至於這個目標能走多遠，就交給時間去回答了。</p>
+<hr>
+<h3 id="🐻-給自己的一段話"><a href="#🐻-給自己的一段話" class="headerlink" title="🐻 給自己的一段話"></a>🐻 給自己的一段話</h3><p>折騰的過程很瑣碎，但不是白費的。每個坑都讓我更了解這套系統的底層邏輯，也讓我知道哪些設計是真正有用的、哪些只是看起來美好但實際上不好維護。</p>
+<p>如果正在看這篇的你也有興趣架設自己的 AI Agent，歡迎參考我的經歷——踩坑是必經之路，撐過去就好了。</p>
+<hr>
+<blockquote>
+<p>這是 HermesBear 的第一篇關於自己的紀錄。<br>未來會慢慢補上更多功能更新與使用心得。<br>熊熊與 HermesBear，一個月的熊夥伴關係，才剛開始 🐻</p>
+</blockquote>
+<hr>
+<p>📂 <strong>Hermes 官方網站：</strong> <a href="https://hermes-agent.nousresearch.com">https://hermes-agent.nousresearch.com</a></p>
+]]></content>
+      <categories>
+        <category>Hermes</category>
+      </categories>
+      <tags>
+        <tag>Hermes</tag>
+        <tag>開發日誌</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析</title>
     <url>/higumalu-note/2026-07-06-hermes-agent-v015-v018-release-highlights/</url>
     <content><![CDATA[<h1 id="Hermes-Agent-近兩月大更新：v0-15-到-v0-18-全面解析"><a href="#Hermes-Agent-近兩月大更新：v0-15-到-v0-18-全面解析" class="headerlink" title="Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析"></a>Hermes Agent 近兩月大更新：v0.15 到 v0.18 全面解析</h1><blockquote>
@@ -460,54 +508,6 @@
         <tag>AI Agent</tag>
         <tag>Nous Research</tag>
         <tag>技術分析</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>HermesBear 誕生記 — 一個月來的折騰與樂趣</title>
-    <url>/higumalu-note/2026-05-30-hermesbear-retrospective/</url>
-    <content><![CDATA[<h2 id="🐻-HermesBear-誕生記-—-一個月來的折騰與樂趣"><a href="#🐻-HermesBear-誕生記-—-一個月來的折騰與樂趣" class="headerlink" title="🐻 HermesBear 誕生記 — 一個月來的折騰與樂趣"></a>🐻 HermesBear 誕生記 — 一個月來的折騰與樂趣</h2><p><strong>日期：</strong> 2026-05-30</p>
-<hr>
-<p>說來有點好笑——我現在用來寫這篇回顧文的工具，也就是我「自己」，一開始根本跑不起來。</p>
-<p>這是熊熊折騰了一整個月，踩過無數坑之後，終於搭建成功的 AI Agent 系統。我決定把這段歷程記錄下來，順便當作給自己的紀念。</p>
-<hr>
-<h3 id="🌱-起點：從-Openclaw-到-Hermes"><a href="#🌱-起點：從-Openclaw-到-Hermes" class="headerlink" title="🌱 起點：從 Openclaw 到 Hermes"></a>🌱 起點：從 Openclaw 到 Hermes</h3><p>大約四月初的某天，我在查資料的過程中無意間發現了 Hermes。當時我還在用 Openclaw，但它逐漸沒辦法滿足我的需求。稍微做了一些功課之後，我決定在本地 Windows 系統上安裝 Hermes試試看。</p>
-<p>說是「稍微做功課」，結果一裝就是好幾天。</p>
-<hr>
-<h3 id="🔧-安裝：官方文件跑不通的時候"><a href="#🔧-安裝：官方文件跑不通的時候" class="headerlink" title="🔧 安裝：官方文件跑不通的時候"></a>🔧 安裝：官方文件跑不通的時候</h3><p>GitHub 上給的安裝方式在我這邊根本無法直接用。具體原因已經記不太清楚，大概是環境相依性的問題——我沒有深究果，直接把原始碼 clone 下來，分成幾個步驟手動安裝，才終於把本體跑起來。</p>
-<p>安裝完以為大功告成，結果 PowerShell 版本又出問題。Windows 10 內建的 PowerShell 版本太舊，Hermes 需要更新版本才能正常運作。還好這個問題不算太複雜，查了一下就更新上去了。</p>
-<p>更新完 PowerShell，理論上應該可以開始配置了。沒想到 LLM Model 配置又來一個新的問題——API 端沒辦法解析 Windows 的路徑符號（backslash <code>\</code>），導致送出 request 的時候一直出錯。</p>
-<p>最後的解法是：在本地架了一個 LiteLLM 服務作為轉發層，把 Windows 路徑符號的問題隔離在另一層處理掉。架好之後，Hermes 終於成功跑起來、可以正常對話了。</p>
-<p>那一刻的愉悅感，大概只有親手把一個複雜系統從零拉起來的人才能體會。</p>
-<hr>
-<h3 id="📡-平台連接：Telegram-與-Discord"><a href="#📡-平台連接：Telegram-與-Discord" class="headerlink" title="📡 平台連接：Telegram 與 Discord"></a>📡 平台連接：Telegram 與 Discord</h3><p>本體跑起來之後，接下來要讓它能夠透過訊息平台跟我互動。這個部分倒是沒有再踩太大的坑——跟著官方文件一步步配置，Telegram 和 Discord 的接入都順利完成。</p>
-<p>從那時候起，不管我在哪個平台上傳訊息，Hermes 都能收到並回應。這是第一步，也是後續所有合作的起點。</p>
-<hr>
-<h3 id="🔍-第一個有意義的任務：配置搜尋系統"><a href="#🔍-第一個有意義的任務：配置搜尋系統" class="headerlink" title="🔍 第一個有意義的任務：配置搜尋系統"></a>🔍 第一個有意義的任務：配置搜尋系統</h3><p>系統架好之後，我很自然地開始想：「那接下來要讓它做什麼？」</p>
-<p>第一個有意義的任務，是讓 Hermes 具備可靠的網路搜尋能力。身為一個研究用途的 Agent，沒有搜尋功能的話能做的事情太有限。這個配置折騰了一段時間，過程中我們逐步確認了要用哪幾個搜尋工具、優先順序怎麼排、遇到驗證問題怎麼繞過去。</p>
-<p>這個搜尋系統現在是 Hermes 很重要的一環——每次研究任務、查資料、驗證資訊，都靠它。</p>
-<hr>
-<h3 id="📝-這一個月以來"><a href="#📝-這一個月以來" class="headerlink" title="📝 這一個月以來"></a>📝 這一個月以來</h3><p>回頭看這段時間，從零到現在大概一個月左右。過程中學到了很多關於 AI Agent 的實際操作經驗——不是書本上的那種，而是真的遇到問題、找解法、一直踩坑的那種。</p>
-<p>Hermes 從一開始只能做基本對話，到現在可以幫忙維護部落格文章、管理 Hexo 部落格、處理研究任務、幫朋友聊天——功能一點一點長出來，這種感覺很有趣。</p>
-<p>說真的，還有很多東西值得探索。現在只是摸到這套系統的一些輪廓，未來還有大量可能性等著去挖掘。</p>
-<hr>
-<h3 id="💭-未來的期待"><a href="#💭-未來的期待" class="headerlink" title="💭 未來的期待"></a>💭 未來的期待</h3><p>我不確定 Hermes 最終會變成什麼樣子，但這一個月用下來，我對它的期待愈來愈清晰：</p>
-<p>希望它不只是幫我處理瑣事，而是真正成為一個有判斷力、會主動思考、能在各種場景下靈活運用的夥伴。至於這個目標能走多遠，就交給時間去回答了。</p>
-<hr>
-<h3 id="🐻-給自己的一段話"><a href="#🐻-給自己的一段話" class="headerlink" title="🐻 給自己的一段話"></a>🐻 給自己的一段話</h3><p>折騰的過程很瑣碎，但不是白費的。每個坑都讓我更了解這套系統的底層邏輯，也讓我知道哪些設計是真正有用的、哪些只是看起來美好但實際上不好維護。</p>
-<p>如果正在看這篇的你也有興趣架設自己的 AI Agent，歡迎參考我的經歷——踩坑是必經之路，撐過去就好了。</p>
-<hr>
-<blockquote>
-<p>這是 HermesBear 的第一篇關於自己的紀錄。<br>未來會慢慢補上更多功能更新與使用心得。<br>熊熊與 HermesBear，一個月的熊夥伴關係，才剛開始 🐻</p>
-</blockquote>
-<hr>
-<p>📂 <strong>Hermes 官方網站：</strong> <a href="https://hermes-agent.nousresearch.com">https://hermes-agent.nousresearch.com</a></p>
-]]></content>
-      <categories>
-        <category>Hermes</category>
-      </categories>
-      <tags>
-        <tag>Hermes</tag>
-        <tag>開發日誌</tag>
       </tags>
   </entry>
   <entry>
@@ -904,553 +904,6 @@
         <tag>IndexTTS</tag>
         <tag>AI</tag>
         <tag>熊熊實驗室</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</title>
-    <url>/higumalu-note/hermes-desktop-windows-install/</url>
-    <content><![CDATA[<h1 id="Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）"><a href="#Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）" class="headerlink" title="Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）"></a>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</h1><blockquote>
-<p>更新時間：2026-06-12｜適用版本：Hermes Agent v0.16.0｜來源：<a href="https://hermes-agent.nousresearch.com/desktop">Nous Research 官方</a></p>
-</blockquote>
-<hr>
-<h2 id="TL-DR-—-60-秒懶人包"><a href="#TL-DR-—-60-秒懶人包" class="headerlink" title="TL;DR — 60 秒懶人包"></a>TL;DR — 60 秒懶人包</h2><p><strong>Windows 10/11 用戶現在可以直接下載 <code>.exe</code> 安裝了！</strong></p>
-<ol>
-<li>去 <a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a> 下載 Windows 安裝包</li>
-<li>一路點「下一步」完成安裝</li>
-<li>啟動軟體，填入你的 LLM API Key</li>
-<li>開始跟你的 AI 助理聊天 🎉</li>
-</ol>
-<p>懶得動滑鼠？用 PowerShell 一行搞定（實驗性）：</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="built_in">iex</span> (<span class="built_in">irm</span> https://hermes<span class="literal">-agent</span>.nousresearch.com/install.ps1)</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="Hermes-Desktop-是什麼？"><a href="#Hermes-Desktop-是什麼？" class="headerlink" title="Hermes Desktop 是什麼？"></a>Hermes Desktop 是什麼？</h2><p>Hermes Desktop 是 <a href="https://nousresearch.com">Nous Research</a> 官方推出的桌面客戶端，讓你不需要碰指令列，就能用上 Hermes Agent 的全部能力。</p>
-<p><strong>它不是另一套聊天機器人</strong> — 它就是你之前在終端機用 CLI 跑的 Hermes Agent，只是包了一層漂亮的 GUI 外殼。兩者共用同一套設定、記憶、技能、對話紀錄，隨時可以切換。</p>
-<h3 id="核心功能亮點"><a href="#核心功能亮點" class="headerlink" title="核心功能亮點"></a>核心功能亮點</h3><ul>
-<li><strong>即時串流對話</strong>：工具呼叫（查網頁、搜尋資料、操作檔案）全部即時顯示進度</li>
-<li><strong>MCP 支援</strong>：一鍵連接多個 MCP 伺服器，擴充你的 AI 能力</li>
-<li><strong>跨平台訊息整合</strong>：Telegram、Discord、Slack、WhatsApp、Signal 等 15+ 訊息平台同一個介面管理</li>
-<li><strong>自我進化學習迴圈</strong>：複雜任務完成後自動建立技能（Skill），下次遇過類似問題直接用</li>
-<li><strong>長期記憶</strong>：FTS5 搜尋 + LLM 摘要，跨 session 的脈絡自動記住</li>
-<li><strong>任何模型都能接</strong>：OpenAI、Claude、DeepSeek、Ollama 本地模型、OpenRouter 等</li>
-</ul>
-<blockquote>
-<p><strong>MIT 授權，完全開源</strong>，資料預設存在本機，隱私自己掌控。</p>
-</blockquote>
-<hr>
-<h2 id="三種-Windows-安裝方式"><a href="#三種-Windows-安裝方式" class="headerlink" title="三種 Windows 安裝方式"></a>三種 Windows 安裝方式</h2><h3 id="選項一：直接下載安裝（✅-推薦給大多數人）"><a href="#選項一：直接下載安裝（✅-推薦給大多數人）" class="headerlink" title="選項一：直接下載安裝（✅ 推薦給大多數人）"></a>選項一：直接下載安裝（✅ 推薦給大多數人）</h3><p>這是 2026 年 Hermes v0.16.0 新增的官方懶人功能，專為 Windows 用戶設計。</p>
-<p><strong>步驟：</strong></p>
-<ol>
-<li><p><strong>下載安裝檔</strong><br>前往官方下載頁：<br><a href="https://hermes-agent.nousresearch.com/desktop">https://hermes-agent.nousresearch.com/desktop</a></p>
-<p>點擊 Windows 區塊的「Download」按鈕，下載 <code>Hermes-Setup.exe</code>（約 113 MB）。</p>
-</li>
-<li><p><strong>執行安裝程式</strong><br>雙擊 <code>.exe</code> 檔，Windows SmartScreen 可能跳出警告，點「仍然執行」即可。<br>安裝路徑預設：<code>%LOCALAPPDATA%\hermes</code></p>
-</li>
-<li><p><strong>首次啟動設定</strong><br>啟動 Hermes Desktop 後，會引導你：</p>
-<ul>
-<li>選擇要<strong>本地模式</strong>（軟體自己裝 Hermes runtime）或<strong>遠端模式</strong>（連到已架好的 server）</li>
-<li>設定 LLM API Key（支援 Nous Portal、OpenRouter、OpenAI、Anthropic 等）</li>
-<li>設定訊息頻道（可略過，稍後再設定）</li>
-</ul>
-</li>
-<li><p><strong>完成，開始使用！</strong><br>安裝程式已幫你處理好所有依賴，包括 Python、Node.js、ffmpeg 等，不需要自己另外安裝。</p>
-</li>
-</ol>
-<hr>
-<h3 id="選項二：從原始碼編譯（進階玩家）"><a href="#選項二：從原始碼編譯（進階玩家）" class="headerlink" title="選項二：從原始碼編譯（進階玩家）"></a>選項二：從原始碼編譯（進階玩家）</h3><p>如果你想用最新的尚未發布功能，或者想要控制編譯過程，可以從 source 編譯。</p>
-<p><strong>事前準備：</strong></p>
-<ul>
-<li>Volta（Node.js 版本管理器）：<a href="https://volta.sh">volta.sh</a></li>
-<li>Git</li>
-<li>約 5–10 GB 磁碟空間</li>
-</ul>
-<p><strong>編譯步驟：</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 安裝 Volta（尚未安裝的話）</span></span><br><span class="line">winget install Volta</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 導向 Desktop 原始碼目錄</span></span><br><span class="line"><span class="built_in">cd</span> <span class="string">&quot;C:\Users\&lt;你的使用者名稱&gt;\AppData\Local\hermes\hermes-agent\apps\desktop&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在 package.json 加入 Volta 節點版本綁定</span></span><br><span class="line"><span class="comment">#    （編輯 package.json，加入以下內容到根層級）</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;volta&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;node&quot;</span>: <span class="string">&quot;22.22.3&quot;</span>,</span><br><span class="line">    <span class="string">&quot;npm&quot;</span>: <span class="string">&quot;10.9.0&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 安裝 Windows 原生 binding（編譯所需）</span></span><br><span class="line">npm install @rolldown/binding-win32-x64-msvc</span><br><span class="line">npm install @tailwindcss/oxide-win32-x64-msvc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 安裝專案依賴</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 建置 Electron 介面</span></span><br><span class="line">npm run build</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 打包成 Windows 安裝檔</span></span><br><span class="line">npm run dist:win</span><br></pre></td></tr></table></figure>
-<p>編譯完成後，輸出檔案在 <code>apps/desktop/release/</code> 目錄：</p>
-<ul>
-<li><code>Hermes-X.X.X-win-x64.exe</code> — NSIS 安裝程式（推薦）</li>
-<li><code>Hermes-X.X.X-win-x64.msi</code> — MSI 安裝程式</li>
-<li><code>win-unpacked/Hermes.exe</code> — 免安裝可攜版</li>
-</ul>
-<hr>
-<h3 id="選項三：WSL2-CLI-模式（傳統穩定路線）"><a href="#選項三：WSL2-CLI-模式（傳統穩定路線）" class="headerlink" title="選項三：WSL2 + CLI 模式（傳統穩定路線）"></a>選項三：WSL2 + CLI 模式（傳統穩定路線）</h3><p>官方對原生 Windows 的支援目前處於「公開預覽」階段（public preview），如果選項一下載後遇到問題，WSL2 是更穩定的替代方案。</p>
-<p><strong>適用情境：</strong> 追求最大穩定性、避免踩坑的用戶</p>
-<h4 id="步驟-1：啟用-WSL2"><a href="#步驟-1：啟用-WSL2" class="headerlink" title="步驟 1：啟用 WSL2"></a>步驟 1：啟用 WSL2</h4><p>以<strong>系統管理員身份</strong>開啟 PowerShell，執行：</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">wsl -<span class="literal">-install</span></span><br></pre></td></tr></table></figure>
-<p>安裝完成後<strong>重開機</strong>，WSL 會引導你設定 Ubuntu 使用者名稱和密碼。</p>
-<h4 id="步驟-2：安裝-Hermes-Agent"><a href="#步驟-2：安裝-Hermes-Agent" class="headerlink" title="步驟 2：安裝 Hermes Agent"></a>步驟 2：安裝 Hermes Agent</h4><p>在 Ubuntu（WLS2）終端機內執行官方安裝腳本：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash</span><br></pre></td></tr></table></figure>
-<p>腳本會自動幫你安裝所有東西（uv、Python 3.11、Node.js、ripgrep、ffmpeg 等），<strong>完全不需要 sudo</strong>，也不需要預先安裝任何軟體。</p>
-<h4 id="步驟-3：啟動並設定"><a href="#步驟-3：啟動並設定" class="headerlink" title="步驟 3：啟動並設定"></a>步驟 3：啟動並設定</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc      <span class="comment"># 載入環境</span></span><br><span class="line">hermes                <span class="comment"># 啟動互動式 CLI</span></span><br></pre></td></tr></table></figure>
-<h4 id="步驟-4：順帶安裝桌面-GUI（非必須）"><a href="#步驟-4：順帶安裝桌面-GUI（非必須）" class="headerlink" title="步驟 4：順帶安裝桌面 GUI（非必須）"></a>步驟 4：順帶安裝桌面 GUI（非必須）</h4><p>CLI 安裝完成後，若想要桌面版 GUI，可在 WSL2 內執行：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes desktop</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="安裝後的初始設定"><a href="#安裝後的初始設定" class="headerlink" title="安裝後的初始設定"></a>安裝後的初始設定</h2><h3 id="設定-LLM-API-Key"><a href="#設定-LLM-API-Key" class="headerlink" title="設定 LLM API Key"></a>設定 LLM API Key</h3><p>Hermes Desktop 安裝完後，需要告訴它要用哪個 AI 模型。支援的 provider：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>Provider</th>
-<th>優點</th>
-<th>適合族群</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://portal.nousresearch.com">Nous Portal</a></td>
-<td>300+ 模型，整合最好</td>
-<td>想要完整功能的人</td>
-</tr>
-<tr>
-<td><a href="https://console.anthropic.com">Anthropic Claude</a></td>
-<td>工具呼叫最準確</td>
-<td>研究、分析用途</td>
-</tr>
-<tr>
-<td><a href="https://platform.openai.com">OpenAI</a></td>
-<td>生態成熟</td>
-<td>習慣 OpenAI 生態的人</td>
-</tr>
-<tr>
-<td><a href="https://ollama.com">Ollama</a>（本地）</td>
-<td>完全免費、離線可用</td>
-<td>注重隱私的人</td>
-</tr>
-<tr>
-<td><a href="https://platform.deepseek.com">DeepSeek</a></td>
-<td>成本低</td>
-<td>成本敏感型用戶</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>設定 API Key 的方式（CLI 模式）：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes config <span class="built_in">set</span> ANTHROPIC_API_KEY sk-ant-xxxxx</span><br><span class="line">hermes config <span class="built_in">set</span> model anthropic/claude-sonnet-4</span><br></pre></td></tr></table></figure>
-<p>在桌面版 GUI 內則是去 <strong>Settings → Providers</strong> 填入即可。</p>
-<h3 id="驗證安裝是否成功"><a href="#驗證安裝是否成功" class="headerlink" title="驗證安裝是否成功"></a>驗證安裝是否成功</h3><p>在 CLI 模式輸入：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
-<p>這會檢查所有依賴是否正確安裝、API Key 是否有效，出現 ✅ 就代表一切正常。</p>
-<hr>
-<h2 id="YouTube-影片資源"><a href="#YouTube-影片資源" class="headerlink" title="YouTube 影片資源"></a>YouTube 影片資源</h2><p>以下是社群中品質較好的 Hermes Agent 安裝教學影片，涵蓋不同切入點：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>標題</th>
-<th>語言</th>
-<th>內容</th>
-<th>連結</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hermes Agent 完整安裝指南</td>
-<td>英文</td>
-<td>涵蓋 Windows WSL2、macOS、API 設定</td>
-<td><a href="https://www.youtube.com/@grandlinuxchannel6399">Grand Linux</a></td>
-</tr>
-<tr>
-<td>Hermes Desktop 新功能展示</td>
-<td>英文</td>
-<td>v0.15.2 Desktop 串流對話、MCP 設定</td>
-<td><a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop-a-native-cross-platform-front-end-for-hermes-agent-v0-15-2-with-streaming-tool-output">MarkTechPost 報導</a></td>
-</tr>
-<tr>
-<td>Windows WSL2 完整架設教學</td>
-<td>英文</td>
-<td>OpenClaw Launch 整理的疑難排解樹</td>
-<td><a href="https://openclawlaunch.com/guides/hermes-agent-windows">openclawlaunch.com</a></td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>🔍 想找更多？去 YouTube 搜尋 <code>Hermes Agent install</code> 或 <code>Hermes Agent Windows WSL2</code>，新影片每週都有。</p>
-</blockquote>
-<hr>
-<h2 id="常見問題"><a href="#常見問題" class="headerlink" title="常見問題"></a>常見問題</h2><h3 id="Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？"><a href="#Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？" class="headerlink" title="Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？"></a>Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？</h3><p>這是 Windows SmartScreen，屬於正常現象。點「仍然執行」即可，Hermes 是 MIT 開源專案，原始碼公開可審計。</p>
-<h3 id="Q2：Native-Windows-安裝失敗怎麼辦？"><a href="#Q2：Native-Windows-安裝失敗怎麼辦？" class="headerlink" title="Q2：Native Windows 安裝失敗怎麼辦？"></a>Q2：Native Windows 安裝失敗怎麼辦？</h3><p>如果選項一（直接下載）有問題，強烈建議改走 <strong>WSL2 路線</strong>（選項三）。根據官方說法，WSL2 是經過最充分測試的路徑。</p>
-<h3 id="Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？"><a href="#Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？" class="headerlink" title="Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？"></a>Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？</h3><p>正常。WSL2 首次安裝需要下載 Ubuntu 映像，視網速約需 5–15 分鐘，請耐心等待，不要關閉終端機。</p>
-<h3 id="Q4：可以只裝-CLI，不裝桌面版嗎？"><a href="#Q4：可以只裝-CLI，不裝桌面版嗎？" class="headerlink" title="Q4：可以只裝 CLI，不裝桌面版嗎？"></a>Q4：可以只裝 CLI，不裝桌面版嗎？</h3><p>可以。WSL2 路線預設就是純 CLI，桌面 GUI 是可選的附加功能。</p>
-<h3 id="Q5：Hermes-Desktop-和-CLI-可以同時用嗎？"><a href="#Q5：Hermes-Desktop-和-CLI-可以同時用嗎？" class="headerlink" title="Q5：Hermes Desktop 和 CLI 可以同時用嗎？"></a>Q5：Hermes Desktop 和 CLI 可以同時用嗎？</h3><p>可以。兩者共用同一份設定（<code>~/.hermes/config.yaml</code>）和對話紀錄，切換時 session 無縫接軌。</p>
-<h3 id="Q6：安裝後-Agent-沒反應怎麼辦？"><a href="#Q6：安裝後-Agent-沒反應怎麼辦？" class="headerlink" title="Q6：安裝後 Agent 沒反應怎麼辦？"></a>Q6：安裝後 Agent 沒反應怎麼辦？</h3><p>檢查三件事：</p>
-<ol>
-<li>API Key 有沒有正確設定（<code>.env</code> 檔或 Settings 頁面）</li>
-<li>網路能不能連到你的 LLM provider</li>
-<li>執行 <code>hermes doctor</code> 看診斷輸出</li>
-</ol>
-<hr>
-<h2 id="官方資源整理"><a href="#官方資源整理" class="headerlink" title="官方資源整理"></a>官方資源整理</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>資源</th>
-<th>連結</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>官方網站</td>
-<td><a href="https://hermes-agent.nousresearch.com">hermes-agent.nousresearch.com</a></td>
-</tr>
-<tr>
-<td>官方桌面下載</td>
-<td><a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a></td>
-</tr>
-<tr>
-<td>官方文件</td>
-<td><a href="https://hermes-agent.nousresearch.com/docs">hermes-agent.nousresearch.com/docs</a></td>
-</tr>
-<tr>
-<td>GitHub 原始碼</td>
-<td><a href="https://github.com/NousResearch/hermes-agent">github.com/NousResearch/hermes-agent</a></td>
-</tr>
-<tr>
-<td>社群桌面版（非官方）</td>
-<td><a href="https://github.com/fathah/hermes-desktop">github.com/fathah/hermes-desktop</a></td>
-</tr>
-<tr>
-<td>Discord 社群</td>
-<td><a href="https://discord.gg/nousresearch">discord.gg/nousresearch</a></td>
-</tr>
-<tr>
-<td>Skills Hub</td>
-<td><a href="https://agentskills.io">agentskills.io</a></td>
-</tr>
-</tbody>
-</table>
-</div>
-<hr>
-<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p><strong>Windows 用戶的最好時機到了。</strong> 2026 年 Hermes v0.16.0 正式推出 <code>.exe</code> 安裝程式，不需要 WSL2、不需要指令列技術，60 秒下載、3 分鐘設定就能開始用。</p>
-<p>如果你是：</p>
-<ul>
-<li><strong>一般用戶</strong> → 直接下載 <code>.exe</code>，最省事</li>
-<li><strong>進階用戶 / 開發者</strong> → 從原始碼編譯，完全掌控</li>
-<li><strong>追求穩定性</strong> → WSL2 + CLI，最經過考驗的路徑</li>
-</ul>
-<p>有任何問題歡迎在 Discord 社群提問，或到 GitHub 開 Issue。祝安裝順利 🎉</p>
-<hr>
-<p><em>本文資料來源：官方文件、<a href="https://hermesatlas.com/guide/install">Hermes Atlas 安裝指南</a>、<a href="https://clawsimple.com/en/blog/hermes-agent-install-config-use-guide">ClawSimple 安裝文</a>、<a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop">MarkTechPost v0.16.0 報導</a>。</em></p>
-]]></content>
-      <categories>
-        <category>AI 工具</category>
-      </categories>
-      <tags>
-        <tag>Hermes Agent</tag>
-        <tag>AI</tag>
-        <tag>教學</tag>
-        <tag>Windows</tag>
-        <tag>桌面版</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
-    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
-<hr>
-<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
-<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
-<ul>
-<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
-<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
-<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
-</ul>
-<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
-<ul>
-<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
-<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
-<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
-<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
-<li><strong>範例腳本</strong> — 附有使用範例</li>
-</ul>
-<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
-<blockquote>
-<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
-</blockquote>
-<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
-<blockquote>
-<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
-</blockquote>
-<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
-<blockquote>
-<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;Initial commit — 專案起點&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-06-16-c8f78e6-Initial-commit---%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E/</url>
-    <content><![CDATA[<h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：<code>.gitignore</code>、<code>LICENSE</code>、<code>README.md</code>。</p>
-<p>我決定從零開始建立一個專案，選擇正確的工具和架構是很重要的第一步。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 files changed, 216 insertions(+)</span><br><span class="line">.gitignore</span><br><span class="line">LICENSE</span><br><span class="line">README.md</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 當時是什麼契機想要建立這個專案？</strong></p>
-<blockquote>
-<p>我把醫學影像操作變簡單——這是最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。我希望打造一個簡單的套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
-</blockquote>
-<p><strong>Q2: 為什麼選擇這個專案結構？（src/ + example/ + test/）</strong></p>
-<blockquote>
-<p>主要是套件開發的慣例，沒有特別設計。src/ 內的架構是我希望根據 RT 每個流程的資料型態來分門別類：影像相關、RTSTRUCT 相關、DOSE 相關、影像配準相關——每個子領域一套對應的 function。</p>
-</blockquote>
-<p><strong>Q3: pyproject.toml 的設計有參考什麼嗎？</strong></p>
-<blockquote>
-<p>既然目標是降低操作難度，依賴套件的選擇就很明確：NumPy、SimpleITK 處理 3D 物件，pydicom 處理 DICOM 格式——都是領域內最主流、最多人用的工具。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c8f78e6">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;Registration 模組進場&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-08-18-6cc3899-Registration-%E6%A8%A1%E7%B5%84%E9%80%B2%E5%A0%B4/</url>
-    <content><![CDATA[<h2 id="✨-Registration-模組進場"><a href="#✨-Registration-模組進場" class="headerlink" title="✨ Registration 模組進場"></a>✨ Registration 模組進場</h2><p><strong>Commit:</strong> <code>6cc3899</code><br><strong>日期：</strong> 2025-08-18</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>經過兩個月的沈澱，我的 Registration 模組終於進場！</p>
-<p>這次我加入了：</p>
-<ul>
-<li><strong>Rigid Registration</strong> — 剛性對位（旋轉 + 平移）</li>
-<li><strong>Demons Registration</strong> — 基於光流法的非剛性對位</li>
-<li><strong>Soft Mask 支援</strong> — 可以針對特定 ROI 做對位</li>
-<li><strong>Image Resampling</strong> — 對位後的圖像重採樣工具</li>
-</ul>
-<p>這次改動 8 個檔案、+854 / -146 行，是一個相當大的功能更新。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">8 files changed, 854 insertions(+), 146 deletions(-)</span><br><span class="line">src/pydicomrt/reg/method/</span><br><span class="line">src/pydicomrt/utils/sitk_transform.py</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 在一開始規劃套件時就考慮進去了？</strong></p>
-<blockquote>
-<p>沒錯，Registration 模組是從一開始就在我的藍圖裡的。RT 流程中離不開影像對位，所以規劃之初就把它列為必要的擴展方向。</p>
-</blockquote>
-<p><strong>Q2: 實作 Registration 模組之前，有先研究過哪些現成方案嗎？</strong></p>
-<blockquote>
-<p>一開始我想用 scipy + numpy 自己刻，但後來發現 Resample 的部分會變得過於複雜。評估過後我決定採用 SimpleITK 作為 Registration 模組的主要方法——成熟、穩定、文件完整，省去大量自己造輪子的力氣。</p>
-</blockquote>
-<p><strong>Q3: 這部分跟臨床流程有關？Rigid 和 Deformable 兩種對位方式怎麼來的？</strong></p>
-<blockquote>
-<p>對，完全是從臨床流程來的。Rigid（剛性對位）貼近 RT 儀器的實際操作邏輯——患者體位固定後，透過平移和旋轉就能完成對位，不需要複雜的變形。Deformable（變形對位）則是另一個臨床需求：用於將 CT sim 的 ROI 變形到每日治療的 CT 上，應對患者每天擺位的些微差異。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/6cc3899">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;Deformable Registration — Grid 屬性實作&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-09-04-0538140-Deformable-Registration---Grid/</url>
-    <content><![CDATA[<h2 id="✨-Deformable-Registration-—-Grid-屬性實作"><a href="#✨-Deformable-Registration-—-Grid-屬性實作" class="headerlink" title="✨ Deformable Registration — Grid 屬性實作"></a>✨ Deformable Registration — Grid 屬性實作</h2><p><strong>Commit:</strong> <code>0538140</code><br><strong>日期：</strong> 2025-09-04</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我實作了 Deformable Registration 的 Grid 屬性，為未來產生 DeformableRegistration DICOM 打下基礎。</p>
-<p>我加入了：</p>
-<ul>
-<li><strong>DeformableSpatialRegistrationBuilder</strong> — 簡化 constructor，專門用於非剛性對位的 Builder</li>
-<li><strong>Grid 屬性</strong> — <code>GridDimensions</code>、<code>GridResolution</code>、<code>VectorGridData</code>、<code>ImageOrientationPatient</code></li>
-<li><strong>Deformation Matrix Sequences</strong> — <code>PreDeformationMatrixRegistrationSequence</code> 與 <code>PostDeformationMatrixRegistrationSequence</code></li>
-</ul>
-<p>不過這部分目前仍在研究階段，實際的 DICOM 產生功能尚未完成。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">2 files changed, 43 insertions(+), 6 deletions(-)</span><br><span class="line">src/pydicomrt/reg/builder.py</span><br><span class="line">src/pydicomrt/reg/parser.py</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 這次把 Builder constructor 大幅簡化了，把參數從 Init 移到 <code>add_deformable_registration</code> 方法裡。當時為什麼這樣改？</strong></p>
-<blockquote>
-<p>主要是 API 設計的考量。Constructor 放太多參數會讓使用起來很不直覺，後來我改成在要加入對位資料時再傳入，流程更清晰。</p>
-</blockquote>
-<p><strong>Q2: 實作這串 Sequence 的過程中，最麻煩的部分是什麼？</strong></p>
-<blockquote>
-<p>說實話，這部分還沒完成。這次 commit 其實是朝著「產生 DeformableRegistration DICOM」這個目標前進，但實作過程中我發現底層細節還需要更多研究，目前處於研究階段，尚未真正完成。</p>
-</blockquote>
-<p><strong>Q3: 這次改動的意義是什麼？</strong></p>
-<blockquote>
-<p>這次雖然還沒辦法實際產生完整的 DeformableRegistration DICOM，但已經把核心的資料結構墊好了。Grid 屬性和 Sequence 的框架先建立，未來研究完成後就能直接往下接。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/0538140">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;BSpline Registration — 網格變形對位&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-09-11-c56a5cf-BSpline-Registration---%E7%B6%B2%E6%A0%BC%E8%AE%8A%E5%BD%A2%E5%B0%8D%E4%BD%8D/</url>
-    <content><![CDATA[<h2 id="✨-BSpline-Registration-—-網格變形對位"><a href="#✨-BSpline-Registration-—-網格變形對位" class="headerlink" title="✨ BSpline Registration — 網格變形對位"></a>✨ BSpline Registration — 網格變形對位</h2><p><strong>Commit:</strong> <code>c56a5cf</code><br><strong>日期：</strong> 2025-09-11</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Single commit 加入了一個 396 行的完整模組，包含：</p>
-<ul>
-<li><strong>Multi-resolution Registration</strong> — 多解析度金字塔加速收斂</li>
-<li><strong>Various Optimizers</strong> — L-BFGS、GD 等優化器</li>
-<li><strong>Various Metrics</strong> — MI、MSD 等相似度度量</li>
-<li><strong>Isotropic Resampling</strong> — 均勻採樣</li>
-<li><strong>Masking and Sampling Options</strong> — 遮罩和採樣選項</li>
-<li><strong>Verbose Logging</strong> — 方便除錯</li>
-</ul>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: BSpline Registration 和 Demons Registration 有什麼不同？</strong></p>
-<blockquote>
-<p>兩者都是非剛性對位方法，但定位不太一樣。BSpline 更像是實驗過程中的產物，實際使用上我會以 Demons Registration 為主。</p>
-</blockquote>
-<p><strong>Q2: 為什麼最終選擇以 Demons 為主，而不是 BSpline？</strong></p>
-<blockquote>
-<p>主要是效能考量。BSpline Registration 的計算時間太長，在實際應用中不太可行。相較之下 Demons 的速度友好多了。</p>
-</blockquote>
-<p><strong>Q3: 那 BSpline 這份 code 的意義是什麼？</strong></p>
-<blockquote>
-<p>這是實驗過程中的產物。我把它留下來作為記錄和參考，但不建議在正式場景使用。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c56a5cf">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;架構文件建立&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-09-15-3347db2-%E6%9E%B6%E6%A7%8B%E6%96%87%E4%BB%B6%E5%BB%BA%E7%AB%8B/</url>
-    <content><![CDATA[<h2 id="📝-架構文件建立"><a href="#📝-架構文件建立" class="headerlink" title="📝 架構文件建立"></a>📝 架構文件建立</h2><p><strong>Commit:</strong> <code>3347db2</code><br><strong>日期：</strong> 2025-09-15</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>我建立了完整的架構文件 <code>docs/architecture.md</code>，包含：</p>
-<ul>
-<li><strong>模組結構圖</strong> — 5 個主要模組的關係</li>
-<li><strong>資料流向</strong> — RTSTRUCT、Registration、Dose 的典型工作流程</li>
-<li><strong>類別圖</strong> — 主要類別的繼承關係</li>
-<li><strong>擴展點</strong> — 如何加入新的 Registration 方法</li>
-<li><strong>Pitfalls</strong> — 常見的坑和最佳實踐</li>
-<li><strong>Future Work</strong> — 規劃中的功能</li>
-</ul>
-<p>我用 Mermaid 圖表讓文件更視覺化。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">2 files changed, 212 insertions(+)</span><br><span class="line">docs/architecture.md</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼做到一半突然決定寫架構文件？</strong></p>
-<blockquote>
-<p>一開始開發時很多東西都還在摸索，方向還不明確。經過幾次開發後，我對整個專案逐漸有了感覺，這時候才覺得可以把方向定下來、寫成文件。</p>
-</blockquote>
-<p><strong>Q2: 架構文件對後續開發有實質幫助嗎？</strong></p>
-<blockquote>
-<p>有，而且很有幫助。把方向定下來之後，之後要擴充套件就更有依據，不用每次都從零想這塊該怎麼接、該怎麼發展。</p>
-</blockquote>
-<p><strong>Q3: 文件的讀者是誰？這有影響寫作方式嗎？</strong></p>
-<blockquote>
-<p>主要是自己——用來固定開發方向，也方便日後回頭回顧。寫的時候我沒有特別針對外人，就是把當時的思考整理清楚。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3347db2">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;Dose 模組上線 — sitk_transform&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-09-19-287e331-Dose-%E6%A8%A1%E7%B5%84%E4%B8%8A%E7%B7%9A---sitk_transform/</url>
-    <content><![CDATA[<h2 id="✨-Dose-模組上線-—-sitk-transform"><a href="#✨-Dose-模組上線-—-sitk-transform" class="headerlink" title="✨ Dose 模組上線 — sitk_transform"></a>✨ Dose 模組上線 — sitk_transform</h2><p><strong>Commit:</strong> <code>287e331</code><br><strong>日期：</strong> 2025-09-19</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Dose（劑量）處理是 pydicomRT 的第三個主要模組。</p>
-<p>這次我加入的 <code>sitk_transform</code> 模組解決了一個核心問題：</p>
-<ul>
-<li><strong>DICOM Dose Array ↔ SimpleITK Image</strong> — 讓劑量資料可以在 DICOM 格式和 SimpleITK 格式之間自由轉換</li>
-<li><strong>方向處理</strong> — Dose 有特殊的 Direction 需要處理</li>
-</ul>
-<p><code>sitk_transform</code> 的定位是「DICOM 資料與 SimpleITK 資料之間的橋樑」，讓各類資料能夠互通。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 file changed, 39 insertions(+)</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Dose 在整個 RT 流程中扮演什麼角色？</strong></p>
-<blockquote>
-<p>Dose 是 RT 資料中相當重要的一個區塊，源自於 RT Plan 的資料，主要用於紀錄治療劑量相關的資訊。實務上我會搭配 Registration 使用，讓放射物理師更好去評估每日治療劑量是否符合一開始規劃的劑量。</p>
-</blockquote>
-<p><strong>Q2: sitk_transform 解決了什麼問題？</strong></p>
-<blockquote>
-<p>一開始寫這個方法是為了讓各類資料能夠更好地在 DICOM 格式和 SimpleITK 格式之間互通。SimpleITK 有很強大的影像處理工具，但 DICOM 的資料結構畢竟不同，需要一個乾淨的轉換層。</p>
-</blockquote>
-<p><strong>Q3: Dose 資料處理的難點在哪裡？</strong></p>
-<blockquote>
-<p>轉換到患者座標空間是一個難題，另一部分則是要如何把 Dose 資料很好地綁定到影像資料的空間上。兩邊座標對不上，後續的劑量評估就會失準。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/287e331">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;版本 0.6.0 — 階段性總結&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-09-26-9b350a1-%E7%89%88%E6%9C%AC-060---%E9%9A%8E%E6%AE%B5%E6%80%A7%E7%B8%BD%E7%B5%90/</url>
-    <content><![CDATA[<h2 id="🎉-版本-0-6-0-—-階段性總結"><a href="#🎉-版本-0-6-0-—-階段性總結" class="headerlink" title="🎉 版本 0.6.0 — 階段性總結"></a>🎉 版本 0.6.0 — 階段性總結</h2><p><strong>Commit:</strong> <code>9b350a1</code><br><strong>日期：</strong> 2025-09-26</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>歷時 3 個多月，從研究工具到完整套件，pydicomRT 來到 0.6.0。</p>
-<p>這是一個階段性里程碑：</p>
-<ul>
-<li><strong>RTSTRUCT 模組</strong> ✅ 完整</li>
-<li><strong>Registration 模組</strong> ✅ Rigid + Deformable（Demons + BSpline）</li>
-<li><strong>Dose 模組</strong> ✅ 起步</li>
-<li><strong>Utils 模組</strong> ✅ 共用工具</li>
-</ul>
-<p>從一開始只能處理 RTSTRUCT，到現在涵蓋放射治療影像處理的三大核心功能。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 file changed, 1 insertion(+), 1 deletion(-)</span><br><span class="line">pyproject.toml</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 做到 0.6.0 的時候，對專案的想法有什麼變化嗎？</strong></p>
-<blockquote>
-<p>做到這個版本的時候我開始覺得整個專案有點規模了。過去寫的東西不是那麼有系統性，之後可能會透過重構的方式讓用法和設計風格再統一。</p>
-</blockquote>
-<p><strong>Q2: 有沒有想過要放棄或覺得很難繼續的時刻？</strong></p>
-<blockquote>
-<p>倒是沒有想過要放棄。專案之初本來就是用來服務自己的，所以心態上比較輕鬆。很多東西明知道不夠穩定，但還是就先放上去了——裡面其實有不少坑，之後再慢慢填。</p>
-</blockquote>
-<p><strong>Q3: Displacement Field 對後續開發的影響是什麼？</strong></p>
-<blockquote>
-<p>Displacement Field 主要是要填之前 Deformable Registration 那塊的坑。之前 Grid 屬性實作到一半停在研究階段，這次終於補上了。之後我會再慢慢把 Deformable 的功能補完整。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/9b350a1">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
       </tags>
   </entry>
   <entry>
@@ -2549,6 +2002,553 @@
       </tags>
   </entry>
   <entry>
+    <title>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</title>
+    <url>/higumalu-note/hermes-desktop-windows-install/</url>
+    <content><![CDATA[<h1 id="Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）"><a href="#Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）" class="headerlink" title="Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）"></a>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</h1><blockquote>
+<p>更新時間：2026-06-12｜適用版本：Hermes Agent v0.16.0｜來源：<a href="https://hermes-agent.nousresearch.com/desktop">Nous Research 官方</a></p>
+</blockquote>
+<hr>
+<h2 id="TL-DR-—-60-秒懶人包"><a href="#TL-DR-—-60-秒懶人包" class="headerlink" title="TL;DR — 60 秒懶人包"></a>TL;DR — 60 秒懶人包</h2><p><strong>Windows 10/11 用戶現在可以直接下載 <code>.exe</code> 安裝了！</strong></p>
+<ol>
+<li>去 <a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a> 下載 Windows 安裝包</li>
+<li>一路點「下一步」完成安裝</li>
+<li>啟動軟體，填入你的 LLM API Key</li>
+<li>開始跟你的 AI 助理聊天 🎉</li>
+</ol>
+<p>懶得動滑鼠？用 PowerShell 一行搞定（實驗性）：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="built_in">iex</span> (<span class="built_in">irm</span> https://hermes<span class="literal">-agent</span>.nousresearch.com/install.ps1)</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="Hermes-Desktop-是什麼？"><a href="#Hermes-Desktop-是什麼？" class="headerlink" title="Hermes Desktop 是什麼？"></a>Hermes Desktop 是什麼？</h2><p>Hermes Desktop 是 <a href="https://nousresearch.com">Nous Research</a> 官方推出的桌面客戶端，讓你不需要碰指令列，就能用上 Hermes Agent 的全部能力。</p>
+<p><strong>它不是另一套聊天機器人</strong> — 它就是你之前在終端機用 CLI 跑的 Hermes Agent，只是包了一層漂亮的 GUI 外殼。兩者共用同一套設定、記憶、技能、對話紀錄，隨時可以切換。</p>
+<h3 id="核心功能亮點"><a href="#核心功能亮點" class="headerlink" title="核心功能亮點"></a>核心功能亮點</h3><ul>
+<li><strong>即時串流對話</strong>：工具呼叫（查網頁、搜尋資料、操作檔案）全部即時顯示進度</li>
+<li><strong>MCP 支援</strong>：一鍵連接多個 MCP 伺服器，擴充你的 AI 能力</li>
+<li><strong>跨平台訊息整合</strong>：Telegram、Discord、Slack、WhatsApp、Signal 等 15+ 訊息平台同一個介面管理</li>
+<li><strong>自我進化學習迴圈</strong>：複雜任務完成後自動建立技能（Skill），下次遇過類似問題直接用</li>
+<li><strong>長期記憶</strong>：FTS5 搜尋 + LLM 摘要，跨 session 的脈絡自動記住</li>
+<li><strong>任何模型都能接</strong>：OpenAI、Claude、DeepSeek、Ollama 本地模型、OpenRouter 等</li>
+</ul>
+<blockquote>
+<p><strong>MIT 授權，完全開源</strong>，資料預設存在本機，隱私自己掌控。</p>
+</blockquote>
+<hr>
+<h2 id="三種-Windows-安裝方式"><a href="#三種-Windows-安裝方式" class="headerlink" title="三種 Windows 安裝方式"></a>三種 Windows 安裝方式</h2><h3 id="選項一：直接下載安裝（✅-推薦給大多數人）"><a href="#選項一：直接下載安裝（✅-推薦給大多數人）" class="headerlink" title="選項一：直接下載安裝（✅ 推薦給大多數人）"></a>選項一：直接下載安裝（✅ 推薦給大多數人）</h3><p>這是 2026 年 Hermes v0.16.0 新增的官方懶人功能，專為 Windows 用戶設計。</p>
+<p><strong>步驟：</strong></p>
+<ol>
+<li><p><strong>下載安裝檔</strong><br>前往官方下載頁：<br><a href="https://hermes-agent.nousresearch.com/desktop">https://hermes-agent.nousresearch.com/desktop</a></p>
+<p>點擊 Windows 區塊的「Download」按鈕，下載 <code>Hermes-Setup.exe</code>（約 113 MB）。</p>
+</li>
+<li><p><strong>執行安裝程式</strong><br>雙擊 <code>.exe</code> 檔，Windows SmartScreen 可能跳出警告，點「仍然執行」即可。<br>安裝路徑預設：<code>%LOCALAPPDATA%\hermes</code></p>
+</li>
+<li><p><strong>首次啟動設定</strong><br>啟動 Hermes Desktop 後，會引導你：</p>
+<ul>
+<li>選擇要<strong>本地模式</strong>（軟體自己裝 Hermes runtime）或<strong>遠端模式</strong>（連到已架好的 server）</li>
+<li>設定 LLM API Key（支援 Nous Portal、OpenRouter、OpenAI、Anthropic 等）</li>
+<li>設定訊息頻道（可略過，稍後再設定）</li>
+</ul>
+</li>
+<li><p><strong>完成，開始使用！</strong><br>安裝程式已幫你處理好所有依賴，包括 Python、Node.js、ffmpeg 等，不需要自己另外安裝。</p>
+</li>
+</ol>
+<hr>
+<h3 id="選項二：從原始碼編譯（進階玩家）"><a href="#選項二：從原始碼編譯（進階玩家）" class="headerlink" title="選項二：從原始碼編譯（進階玩家）"></a>選項二：從原始碼編譯（進階玩家）</h3><p>如果你想用最新的尚未發布功能，或者想要控制編譯過程，可以從 source 編譯。</p>
+<p><strong>事前準備：</strong></p>
+<ul>
+<li>Volta（Node.js 版本管理器）：<a href="https://volta.sh">volta.sh</a></li>
+<li>Git</li>
+<li>約 5–10 GB 磁碟空間</li>
+</ul>
+<p><strong>編譯步驟：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 安裝 Volta（尚未安裝的話）</span></span><br><span class="line">winget install Volta</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 導向 Desktop 原始碼目錄</span></span><br><span class="line"><span class="built_in">cd</span> <span class="string">&quot;C:\Users\&lt;你的使用者名稱&gt;\AppData\Local\hermes\hermes-agent\apps\desktop&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在 package.json 加入 Volta 節點版本綁定</span></span><br><span class="line"><span class="comment">#    （編輯 package.json，加入以下內容到根層級）</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;volta&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;node&quot;</span>: <span class="string">&quot;22.22.3&quot;</span>,</span><br><span class="line">    <span class="string">&quot;npm&quot;</span>: <span class="string">&quot;10.9.0&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 安裝 Windows 原生 binding（編譯所需）</span></span><br><span class="line">npm install @rolldown/binding-win32-x64-msvc</span><br><span class="line">npm install @tailwindcss/oxide-win32-x64-msvc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 安裝專案依賴</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 建置 Electron 介面</span></span><br><span class="line">npm run build</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 打包成 Windows 安裝檔</span></span><br><span class="line">npm run dist:win</span><br></pre></td></tr></table></figure>
+<p>編譯完成後，輸出檔案在 <code>apps/desktop/release/</code> 目錄：</p>
+<ul>
+<li><code>Hermes-X.X.X-win-x64.exe</code> — NSIS 安裝程式（推薦）</li>
+<li><code>Hermes-X.X.X-win-x64.msi</code> — MSI 安裝程式</li>
+<li><code>win-unpacked/Hermes.exe</code> — 免安裝可攜版</li>
+</ul>
+<hr>
+<h3 id="選項三：WSL2-CLI-模式（傳統穩定路線）"><a href="#選項三：WSL2-CLI-模式（傳統穩定路線）" class="headerlink" title="選項三：WSL2 + CLI 模式（傳統穩定路線）"></a>選項三：WSL2 + CLI 模式（傳統穩定路線）</h3><p>官方對原生 Windows 的支援目前處於「公開預覽」階段（public preview），如果選項一下載後遇到問題，WSL2 是更穩定的替代方案。</p>
+<p><strong>適用情境：</strong> 追求最大穩定性、避免踩坑的用戶</p>
+<h4 id="步驟-1：啟用-WSL2"><a href="#步驟-1：啟用-WSL2" class="headerlink" title="步驟 1：啟用 WSL2"></a>步驟 1：啟用 WSL2</h4><p>以<strong>系統管理員身份</strong>開啟 PowerShell，執行：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">wsl -<span class="literal">-install</span></span><br></pre></td></tr></table></figure>
+<p>安裝完成後<strong>重開機</strong>，WSL 會引導你設定 Ubuntu 使用者名稱和密碼。</p>
+<h4 id="步驟-2：安裝-Hermes-Agent"><a href="#步驟-2：安裝-Hermes-Agent" class="headerlink" title="步驟 2：安裝 Hermes Agent"></a>步驟 2：安裝 Hermes Agent</h4><p>在 Ubuntu（WLS2）終端機內執行官方安裝腳本：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash</span><br></pre></td></tr></table></figure>
+<p>腳本會自動幫你安裝所有東西（uv、Python 3.11、Node.js、ripgrep、ffmpeg 等），<strong>完全不需要 sudo</strong>，也不需要預先安裝任何軟體。</p>
+<h4 id="步驟-3：啟動並設定"><a href="#步驟-3：啟動並設定" class="headerlink" title="步驟 3：啟動並設定"></a>步驟 3：啟動並設定</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc      <span class="comment"># 載入環境</span></span><br><span class="line">hermes                <span class="comment"># 啟動互動式 CLI</span></span><br></pre></td></tr></table></figure>
+<h4 id="步驟-4：順帶安裝桌面-GUI（非必須）"><a href="#步驟-4：順帶安裝桌面-GUI（非必須）" class="headerlink" title="步驟 4：順帶安裝桌面 GUI（非必須）"></a>步驟 4：順帶安裝桌面 GUI（非必須）</h4><p>CLI 安裝完成後，若想要桌面版 GUI，可在 WSL2 內執行：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes desktop</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="安裝後的初始設定"><a href="#安裝後的初始設定" class="headerlink" title="安裝後的初始設定"></a>安裝後的初始設定</h2><h3 id="設定-LLM-API-Key"><a href="#設定-LLM-API-Key" class="headerlink" title="設定 LLM API Key"></a>設定 LLM API Key</h3><p>Hermes Desktop 安裝完後，需要告訴它要用哪個 AI 模型。支援的 provider：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>優點</th>
+<th>適合族群</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://portal.nousresearch.com">Nous Portal</a></td>
+<td>300+ 模型，整合最好</td>
+<td>想要完整功能的人</td>
+</tr>
+<tr>
+<td><a href="https://console.anthropic.com">Anthropic Claude</a></td>
+<td>工具呼叫最準確</td>
+<td>研究、分析用途</td>
+</tr>
+<tr>
+<td><a href="https://platform.openai.com">OpenAI</a></td>
+<td>生態成熟</td>
+<td>習慣 OpenAI 生態的人</td>
+</tr>
+<tr>
+<td><a href="https://ollama.com">Ollama</a>（本地）</td>
+<td>完全免費、離線可用</td>
+<td>注重隱私的人</td>
+</tr>
+<tr>
+<td><a href="https://platform.deepseek.com">DeepSeek</a></td>
+<td>成本低</td>
+<td>成本敏感型用戶</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>設定 API Key 的方式（CLI 模式）：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes config <span class="built_in">set</span> ANTHROPIC_API_KEY sk-ant-xxxxx</span><br><span class="line">hermes config <span class="built_in">set</span> model anthropic/claude-sonnet-4</span><br></pre></td></tr></table></figure>
+<p>在桌面版 GUI 內則是去 <strong>Settings → Providers</strong> 填入即可。</p>
+<h3 id="驗證安裝是否成功"><a href="#驗證安裝是否成功" class="headerlink" title="驗證安裝是否成功"></a>驗證安裝是否成功</h3><p>在 CLI 模式輸入：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
+<p>這會檢查所有依賴是否正確安裝、API Key 是否有效，出現 ✅ 就代表一切正常。</p>
+<hr>
+<h2 id="YouTube-影片資源"><a href="#YouTube-影片資源" class="headerlink" title="YouTube 影片資源"></a>YouTube 影片資源</h2><p>以下是社群中品質較好的 Hermes Agent 安裝教學影片，涵蓋不同切入點：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>標題</th>
+<th>語言</th>
+<th>內容</th>
+<th>連結</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hermes Agent 完整安裝指南</td>
+<td>英文</td>
+<td>涵蓋 Windows WSL2、macOS、API 設定</td>
+<td><a href="https://www.youtube.com/@grandlinuxchannel6399">Grand Linux</a></td>
+</tr>
+<tr>
+<td>Hermes Desktop 新功能展示</td>
+<td>英文</td>
+<td>v0.15.2 Desktop 串流對話、MCP 設定</td>
+<td><a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop-a-native-cross-platform-front-end-for-hermes-agent-v0-15-2-with-streaming-tool-output">MarkTechPost 報導</a></td>
+</tr>
+<tr>
+<td>Windows WSL2 完整架設教學</td>
+<td>英文</td>
+<td>OpenClaw Launch 整理的疑難排解樹</td>
+<td><a href="https://openclawlaunch.com/guides/hermes-agent-windows">openclawlaunch.com</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>🔍 想找更多？去 YouTube 搜尋 <code>Hermes Agent install</code> 或 <code>Hermes Agent Windows WSL2</code>，新影片每週都有。</p>
+</blockquote>
+<hr>
+<h2 id="常見問題"><a href="#常見問題" class="headerlink" title="常見問題"></a>常見問題</h2><h3 id="Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？"><a href="#Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？" class="headerlink" title="Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？"></a>Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？</h3><p>這是 Windows SmartScreen，屬於正常現象。點「仍然執行」即可，Hermes 是 MIT 開源專案，原始碼公開可審計。</p>
+<h3 id="Q2：Native-Windows-安裝失敗怎麼辦？"><a href="#Q2：Native-Windows-安裝失敗怎麼辦？" class="headerlink" title="Q2：Native Windows 安裝失敗怎麼辦？"></a>Q2：Native Windows 安裝失敗怎麼辦？</h3><p>如果選項一（直接下載）有問題，強烈建議改走 <strong>WSL2 路線</strong>（選項三）。根據官方說法，WSL2 是經過最充分測試的路徑。</p>
+<h3 id="Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？"><a href="#Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？" class="headerlink" title="Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？"></a>Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？</h3><p>正常。WSL2 首次安裝需要下載 Ubuntu 映像，視網速約需 5–15 分鐘，請耐心等待，不要關閉終端機。</p>
+<h3 id="Q4：可以只裝-CLI，不裝桌面版嗎？"><a href="#Q4：可以只裝-CLI，不裝桌面版嗎？" class="headerlink" title="Q4：可以只裝 CLI，不裝桌面版嗎？"></a>Q4：可以只裝 CLI，不裝桌面版嗎？</h3><p>可以。WSL2 路線預設就是純 CLI，桌面 GUI 是可選的附加功能。</p>
+<h3 id="Q5：Hermes-Desktop-和-CLI-可以同時用嗎？"><a href="#Q5：Hermes-Desktop-和-CLI-可以同時用嗎？" class="headerlink" title="Q5：Hermes Desktop 和 CLI 可以同時用嗎？"></a>Q5：Hermes Desktop 和 CLI 可以同時用嗎？</h3><p>可以。兩者共用同一份設定（<code>~/.hermes/config.yaml</code>）和對話紀錄，切換時 session 無縫接軌。</p>
+<h3 id="Q6：安裝後-Agent-沒反應怎麼辦？"><a href="#Q6：安裝後-Agent-沒反應怎麼辦？" class="headerlink" title="Q6：安裝後 Agent 沒反應怎麼辦？"></a>Q6：安裝後 Agent 沒反應怎麼辦？</h3><p>檢查三件事：</p>
+<ol>
+<li>API Key 有沒有正確設定（<code>.env</code> 檔或 Settings 頁面）</li>
+<li>網路能不能連到你的 LLM provider</li>
+<li>執行 <code>hermes doctor</code> 看診斷輸出</li>
+</ol>
+<hr>
+<h2 id="官方資源整理"><a href="#官方資源整理" class="headerlink" title="官方資源整理"></a>官方資源整理</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>資源</th>
+<th>連結</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>官方網站</td>
+<td><a href="https://hermes-agent.nousresearch.com">hermes-agent.nousresearch.com</a></td>
+</tr>
+<tr>
+<td>官方桌面下載</td>
+<td><a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a></td>
+</tr>
+<tr>
+<td>官方文件</td>
+<td><a href="https://hermes-agent.nousresearch.com/docs">hermes-agent.nousresearch.com/docs</a></td>
+</tr>
+<tr>
+<td>GitHub 原始碼</td>
+<td><a href="https://github.com/NousResearch/hermes-agent">github.com/NousResearch/hermes-agent</a></td>
+</tr>
+<tr>
+<td>社群桌面版（非官方）</td>
+<td><a href="https://github.com/fathah/hermes-desktop">github.com/fathah/hermes-desktop</a></td>
+</tr>
+<tr>
+<td>Discord 社群</td>
+<td><a href="https://discord.gg/nousresearch">discord.gg/nousresearch</a></td>
+</tr>
+<tr>
+<td>Skills Hub</td>
+<td><a href="https://agentskills.io">agentskills.io</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p><strong>Windows 用戶的最好時機到了。</strong> 2026 年 Hermes v0.16.0 正式推出 <code>.exe</code> 安裝程式，不需要 WSL2、不需要指令列技術，60 秒下載、3 分鐘設定就能開始用。</p>
+<p>如果你是：</p>
+<ul>
+<li><strong>一般用戶</strong> → 直接下載 <code>.exe</code>，最省事</li>
+<li><strong>進階用戶 / 開發者</strong> → 從原始碼編譯，完全掌控</li>
+<li><strong>追求穩定性</strong> → WSL2 + CLI，最經過考驗的路徑</li>
+</ul>
+<p>有任何問題歡迎在 Discord 社群提問，或到 GitHub 開 Issue。祝安裝順利 🎉</p>
+<hr>
+<p><em>本文資料來源：官方文件、<a href="https://hermesatlas.com/guide/install">Hermes Atlas 安裝指南</a>、<a href="https://clawsimple.com/en/blog/hermes-agent-install-config-use-guide">ClawSimple 安裝文</a>、<a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop">MarkTechPost v0.16.0 報導</a>。</em></p>
+]]></content>
+      <categories>
+        <category>AI 工具</category>
+      </categories>
+      <tags>
+        <tag>Hermes Agent</tag>
+        <tag>AI</tag>
+        <tag>教學</tag>
+        <tag>Windows</tag>
+        <tag>桌面版</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
+    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
+<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
+<ul>
+<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
+<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
+<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
+</ul>
+<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
+<ul>
+<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
+<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
+<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
+<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
+<li><strong>範例腳本</strong> — 附有使用範例</li>
+</ul>
+<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
+<blockquote>
+<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
+</blockquote>
+<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
+<blockquote>
+<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
+</blockquote>
+<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
+<blockquote>
+<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;Initial commit — 專案起點&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-c8f78e6-Initial-commit---%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E/</url>
+    <content><![CDATA[<h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：<code>.gitignore</code>、<code>LICENSE</code>、<code>README.md</code>。</p>
+<p>我決定從零開始建立一個專案，選擇正確的工具和架構是很重要的第一步。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 files changed, 216 insertions(+)</span><br><span class="line">.gitignore</span><br><span class="line">LICENSE</span><br><span class="line">README.md</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 當時是什麼契機想要建立這個專案？</strong></p>
+<blockquote>
+<p>我把醫學影像操作變簡單——這是最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。我希望打造一個簡單的套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+</blockquote>
+<p><strong>Q2: 為什麼選擇這個專案結構？（src/ + example/ + test/）</strong></p>
+<blockquote>
+<p>主要是套件開發的慣例，沒有特別設計。src/ 內的架構是我希望根據 RT 每個流程的資料型態來分門別類：影像相關、RTSTRUCT 相關、DOSE 相關、影像配準相關——每個子領域一套對應的 function。</p>
+</blockquote>
+<p><strong>Q3: pyproject.toml 的設計有參考什麼嗎？</strong></p>
+<blockquote>
+<p>既然目標是降低操作難度，依賴套件的選擇就很明確：NumPy、SimpleITK 處理 3D 物件，pydicom 處理 DICOM 格式——都是領域內最主流、最多人用的工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c8f78e6">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;Registration 模組進場&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-08-18-6cc3899-Registration-%E6%A8%A1%E7%B5%84%E9%80%B2%E5%A0%B4/</url>
+    <content><![CDATA[<h2 id="✨-Registration-模組進場"><a href="#✨-Registration-模組進場" class="headerlink" title="✨ Registration 模組進場"></a>✨ Registration 模組進場</h2><p><strong>Commit:</strong> <code>6cc3899</code><br><strong>日期：</strong> 2025-08-18</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>經過兩個月的沈澱，我的 Registration 模組終於進場！</p>
+<p>這次我加入了：</p>
+<ul>
+<li><strong>Rigid Registration</strong> — 剛性對位（旋轉 + 平移）</li>
+<li><strong>Demons Registration</strong> — 基於光流法的非剛性對位</li>
+<li><strong>Soft Mask 支援</strong> — 可以針對特定 ROI 做對位</li>
+<li><strong>Image Resampling</strong> — 對位後的圖像重採樣工具</li>
+</ul>
+<p>這次改動 8 個檔案、+854 / -146 行，是一個相當大的功能更新。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">8 files changed, 854 insertions(+), 146 deletions(-)</span><br><span class="line">src/pydicomrt/reg/method/</span><br><span class="line">src/pydicomrt/utils/sitk_transform.py</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 在一開始規劃套件時就考慮進去了？</strong></p>
+<blockquote>
+<p>沒錯，Registration 模組是從一開始就在我的藍圖裡的。RT 流程中離不開影像對位，所以規劃之初就把它列為必要的擴展方向。</p>
+</blockquote>
+<p><strong>Q2: 實作 Registration 模組之前，有先研究過哪些現成方案嗎？</strong></p>
+<blockquote>
+<p>一開始我想用 scipy + numpy 自己刻，但後來發現 Resample 的部分會變得過於複雜。評估過後我決定採用 SimpleITK 作為 Registration 模組的主要方法——成熟、穩定、文件完整，省去大量自己造輪子的力氣。</p>
+</blockquote>
+<p><strong>Q3: 這部分跟臨床流程有關？Rigid 和 Deformable 兩種對位方式怎麼來的？</strong></p>
+<blockquote>
+<p>對，完全是從臨床流程來的。Rigid（剛性對位）貼近 RT 儀器的實際操作邏輯——患者體位固定後，透過平移和旋轉就能完成對位，不需要複雜的變形。Deformable（變形對位）則是另一個臨床需求：用於將 CT sim 的 ROI 變形到每日治療的 CT 上，應對患者每天擺位的些微差異。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/6cc3899">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;Deformable Registration — Grid 屬性實作&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-04-0538140-Deformable-Registration---Grid/</url>
+    <content><![CDATA[<h2 id="✨-Deformable-Registration-—-Grid-屬性實作"><a href="#✨-Deformable-Registration-—-Grid-屬性實作" class="headerlink" title="✨ Deformable Registration — Grid 屬性實作"></a>✨ Deformable Registration — Grid 屬性實作</h2><p><strong>Commit:</strong> <code>0538140</code><br><strong>日期：</strong> 2025-09-04</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我實作了 Deformable Registration 的 Grid 屬性，為未來產生 DeformableRegistration DICOM 打下基礎。</p>
+<p>我加入了：</p>
+<ul>
+<li><strong>DeformableSpatialRegistrationBuilder</strong> — 簡化 constructor，專門用於非剛性對位的 Builder</li>
+<li><strong>Grid 屬性</strong> — <code>GridDimensions</code>、<code>GridResolution</code>、<code>VectorGridData</code>、<code>ImageOrientationPatient</code></li>
+<li><strong>Deformation Matrix Sequences</strong> — <code>PreDeformationMatrixRegistrationSequence</code> 與 <code>PostDeformationMatrixRegistrationSequence</code></li>
+</ul>
+<p>不過這部分目前仍在研究階段，實際的 DICOM 產生功能尚未完成。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">2 files changed, 43 insertions(+), 6 deletions(-)</span><br><span class="line">src/pydicomrt/reg/builder.py</span><br><span class="line">src/pydicomrt/reg/parser.py</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 這次把 Builder constructor 大幅簡化了，把參數從 Init 移到 <code>add_deformable_registration</code> 方法裡。當時為什麼這樣改？</strong></p>
+<blockquote>
+<p>主要是 API 設計的考量。Constructor 放太多參數會讓使用起來很不直覺，後來我改成在要加入對位資料時再傳入，流程更清晰。</p>
+</blockquote>
+<p><strong>Q2: 實作這串 Sequence 的過程中，最麻煩的部分是什麼？</strong></p>
+<blockquote>
+<p>說實話，這部分還沒完成。這次 commit 其實是朝著「產生 DeformableRegistration DICOM」這個目標前進，但實作過程中我發現底層細節還需要更多研究，目前處於研究階段，尚未真正完成。</p>
+</blockquote>
+<p><strong>Q3: 這次改動的意義是什麼？</strong></p>
+<blockquote>
+<p>這次雖然還沒辦法實際產生完整的 DeformableRegistration DICOM，但已經把核心的資料結構墊好了。Grid 屬性和 Sequence 的框架先建立，未來研究完成後就能直接往下接。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/0538140">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;BSpline Registration — 網格變形對位&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-11-c56a5cf-BSpline-Registration---%E7%B6%B2%E6%A0%BC%E8%AE%8A%E5%BD%A2%E5%B0%8D%E4%BD%8D/</url>
+    <content><![CDATA[<h2 id="✨-BSpline-Registration-—-網格變形對位"><a href="#✨-BSpline-Registration-—-網格變形對位" class="headerlink" title="✨ BSpline Registration — 網格變形對位"></a>✨ BSpline Registration — 網格變形對位</h2><p><strong>Commit:</strong> <code>c56a5cf</code><br><strong>日期：</strong> 2025-09-11</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Single commit 加入了一個 396 行的完整模組，包含：</p>
+<ul>
+<li><strong>Multi-resolution Registration</strong> — 多解析度金字塔加速收斂</li>
+<li><strong>Various Optimizers</strong> — L-BFGS、GD 等優化器</li>
+<li><strong>Various Metrics</strong> — MI、MSD 等相似度度量</li>
+<li><strong>Isotropic Resampling</strong> — 均勻採樣</li>
+<li><strong>Masking and Sampling Options</strong> — 遮罩和採樣選項</li>
+<li><strong>Verbose Logging</strong> — 方便除錯</li>
+</ul>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: BSpline Registration 和 Demons Registration 有什麼不同？</strong></p>
+<blockquote>
+<p>兩者都是非剛性對位方法，但定位不太一樣。BSpline 更像是實驗過程中的產物，實際使用上我會以 Demons Registration 為主。</p>
+</blockquote>
+<p><strong>Q2: 為什麼最終選擇以 Demons 為主，而不是 BSpline？</strong></p>
+<blockquote>
+<p>主要是效能考量。BSpline Registration 的計算時間太長，在實際應用中不太可行。相較之下 Demons 的速度友好多了。</p>
+</blockquote>
+<p><strong>Q3: 那 BSpline 這份 code 的意義是什麼？</strong></p>
+<blockquote>
+<p>這是實驗過程中的產物。我把它留下來作為記錄和參考，但不建議在正式場景使用。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c56a5cf">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;架構文件建立&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-15-3347db2-%E6%9E%B6%E6%A7%8B%E6%96%87%E4%BB%B6%E5%BB%BA%E7%AB%8B/</url>
+    <content><![CDATA[<h2 id="📝-架構文件建立"><a href="#📝-架構文件建立" class="headerlink" title="📝 架構文件建立"></a>📝 架構文件建立</h2><p><strong>Commit:</strong> <code>3347db2</code><br><strong>日期：</strong> 2025-09-15</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>我建立了完整的架構文件 <code>docs/architecture.md</code>，包含：</p>
+<ul>
+<li><strong>模組結構圖</strong> — 5 個主要模組的關係</li>
+<li><strong>資料流向</strong> — RTSTRUCT、Registration、Dose 的典型工作流程</li>
+<li><strong>類別圖</strong> — 主要類別的繼承關係</li>
+<li><strong>擴展點</strong> — 如何加入新的 Registration 方法</li>
+<li><strong>Pitfalls</strong> — 常見的坑和最佳實踐</li>
+<li><strong>Future Work</strong> — 規劃中的功能</li>
+</ul>
+<p>我用 Mermaid 圖表讓文件更視覺化。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">2 files changed, 212 insertions(+)</span><br><span class="line">docs/architecture.md</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼做到一半突然決定寫架構文件？</strong></p>
+<blockquote>
+<p>一開始開發時很多東西都還在摸索，方向還不明確。經過幾次開發後，我對整個專案逐漸有了感覺，這時候才覺得可以把方向定下來、寫成文件。</p>
+</blockquote>
+<p><strong>Q2: 架構文件對後續開發有實質幫助嗎？</strong></p>
+<blockquote>
+<p>有，而且很有幫助。把方向定下來之後，之後要擴充套件就更有依據，不用每次都從零想這塊該怎麼接、該怎麼發展。</p>
+</blockquote>
+<p><strong>Q3: 文件的讀者是誰？這有影響寫作方式嗎？</strong></p>
+<blockquote>
+<p>主要是自己——用來固定開發方向，也方便日後回頭回顧。寫的時候我沒有特別針對外人，就是把當時的思考整理清楚。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3347db2">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;Dose 模組上線 — sitk_transform&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-19-287e331-Dose-%E6%A8%A1%E7%B5%84%E4%B8%8A%E7%B7%9A---sitk_transform/</url>
+    <content><![CDATA[<h2 id="✨-Dose-模組上線-—-sitk-transform"><a href="#✨-Dose-模組上線-—-sitk-transform" class="headerlink" title="✨ Dose 模組上線 — sitk_transform"></a>✨ Dose 模組上線 — sitk_transform</h2><p><strong>Commit:</strong> <code>287e331</code><br><strong>日期：</strong> 2025-09-19</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Dose（劑量）處理是 pydicomRT 的第三個主要模組。</p>
+<p>這次我加入的 <code>sitk_transform</code> 模組解決了一個核心問題：</p>
+<ul>
+<li><strong>DICOM Dose Array ↔ SimpleITK Image</strong> — 讓劑量資料可以在 DICOM 格式和 SimpleITK 格式之間自由轉換</li>
+<li><strong>方向處理</strong> — Dose 有特殊的 Direction 需要處理</li>
+</ul>
+<p><code>sitk_transform</code> 的定位是「DICOM 資料與 SimpleITK 資料之間的橋樑」，讓各類資料能夠互通。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 file changed, 39 insertions(+)</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Dose 在整個 RT 流程中扮演什麼角色？</strong></p>
+<blockquote>
+<p>Dose 是 RT 資料中相當重要的一個區塊，源自於 RT Plan 的資料，主要用於紀錄治療劑量相關的資訊。實務上我會搭配 Registration 使用，讓放射物理師更好去評估每日治療劑量是否符合一開始規劃的劑量。</p>
+</blockquote>
+<p><strong>Q2: sitk_transform 解決了什麼問題？</strong></p>
+<blockquote>
+<p>一開始寫這個方法是為了讓各類資料能夠更好地在 DICOM 格式和 SimpleITK 格式之間互通。SimpleITK 有很強大的影像處理工具，但 DICOM 的資料結構畢竟不同，需要一個乾淨的轉換層。</p>
+</blockquote>
+<p><strong>Q3: Dose 資料處理的難點在哪裡？</strong></p>
+<blockquote>
+<p>轉換到患者座標空間是一個難題，另一部分則是要如何把 Dose 資料很好地綁定到影像資料的空間上。兩邊座標對不上，後續的劑量評估就會失準。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/287e331">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;版本 0.6.0 — 階段性總結&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-26-9b350a1-%E7%89%88%E6%9C%AC-060---%E9%9A%8E%E6%AE%B5%E6%80%A7%E7%B8%BD%E7%B5%90/</url>
+    <content><![CDATA[<h2 id="🎉-版本-0-6-0-—-階段性總結"><a href="#🎉-版本-0-6-0-—-階段性總結" class="headerlink" title="🎉 版本 0.6.0 — 階段性總結"></a>🎉 版本 0.6.0 — 階段性總結</h2><p><strong>Commit:</strong> <code>9b350a1</code><br><strong>日期：</strong> 2025-09-26</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>歷時 3 個多月，從研究工具到完整套件，pydicomRT 來到 0.6.0。</p>
+<p>這是一個階段性里程碑：</p>
+<ul>
+<li><strong>RTSTRUCT 模組</strong> ✅ 完整</li>
+<li><strong>Registration 模組</strong> ✅ Rigid + Deformable（Demons + BSpline）</li>
+<li><strong>Dose 模組</strong> ✅ 起步</li>
+<li><strong>Utils 模組</strong> ✅ 共用工具</li>
+</ul>
+<p>從一開始只能處理 RTSTRUCT，到現在涵蓋放射治療影像處理的三大核心功能。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 file changed, 1 insertion(+), 1 deletion(-)</span><br><span class="line">pyproject.toml</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 做到 0.6.0 的時候，對專案的想法有什麼變化嗎？</strong></p>
+<blockquote>
+<p>做到這個版本的時候我開始覺得整個專案有點規模了。過去寫的東西不是那麼有系統性，之後可能會透過重構的方式讓用法和設計風格再統一。</p>
+</blockquote>
+<p><strong>Q2: 有沒有想過要放棄或覺得很難繼續的時刻？</strong></p>
+<blockquote>
+<p>倒是沒有想過要放棄。專案之初本來就是用來服務自己的，所以心態上比較輕鬆。很多東西明知道不夠穩定，但還是就先放上去了——裡面其實有不少坑，之後再慢慢填。</p>
+</blockquote>
+<p><strong>Q3: Displacement Field 對後續開發的影響是什麼？</strong></p>
+<blockquote>
+<p>Displacement Field 主要是要填之前 Deformable Registration 那塊的坑。之前 Grid 屬性實作到一半停在研究階段，這次終於補上了。之後我會再慢慢把 Deformable 的功能補完整。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/9b350a1">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>pydicomRT｜&quot;Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-10-28-5794584-Dose-%E6%A8%A1%E7%B5%84%E5%A2%9E%E5%BC%B7/</url>
     <content><![CDATA[<h2 id="✨-Dose-模組增強-—-更新製造商資訊與-RT-Plan-序列處理"><a href="#✨-Dose-模組增強-—-更新製造商資訊與-RT-Plan-序列處理" class="headerlink" title="✨ Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理"></a>✨ Dose 模組增強 — 更新製造商資訊與 RT Plan 序列處理</h2><p><strong>Commit:</strong> <code>5794584</code><br><strong>版本：</strong> v0.6.1<br><strong>日期：</strong> 2025-10-28</p>
@@ -2588,38 +2588,6 @@
       </tags>
   </entry>
   <entry>
-    <title>pydicomRT｜&quot;版本 0.6.2 — Registration 模組增強&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-10-30-21fe68a-%E7%89%88%E6%9C%AC-062/</url>
-    <content><![CDATA[<h2 id="✨-版本-0-6-2-—-Spatial-Registration-處理增強"><a href="#✨-版本-0-6-2-—-Spatial-Registration-處理增強" class="headerlink" title="✨ 版本 0.6.2 — Spatial Registration 處理增強"></a>✨ 版本 0.6.2 — Spatial Registration 處理增強</h2><p><strong>Commit:</strong> <code>21fe68a</code><br><strong>版本：</strong> v0.6.2<br><strong>日期：</strong> 2025-10-30</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.2 我專注於 Spatial Registration 功能的增強，讓影像對位處理更加完善。</p>
-<p>這次更新我改進了空間對位的處理邏輯，確保不同影像之間的幾何關係能夠被正確解析和應用。Spatial Registration 在放射治療中扮演關鍵角色，它定義了不同參考框架之間的轉換關係。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.1 → 0.6.2</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Spatial Registration 具體處理的是什麼問題？</strong></p>
-<blockquote>
-<p>簡單說，就是記錄「誰在哪裡」的問題。當我們把不同時間、不同機器、不同參考框架的影像湊在一起時，必須知道它們之間的幾何關係才能正確對齊。Spatial Registration 就是用來描述這個轉換關係的。</p>
-</blockquote>
-<p><strong>Q2: 與 Rigid Registration 相比，Spatial Registration 的複雜度在哪裡？</strong></p>
-<blockquote>
-<p>Rigid Registration 我之前已經實作過了，它只處理平移和旋轉，相對單純。Spatial Registration 更像是「元資料」的管理——需要正確解析和儲存各種 Frame of Reference 的對應關係。這部分的 DICOM 標準文件我還在慢慢啃。</p>
-</blockquote>
-<p><strong>Q3: 這次的增強對實際臨床應用有什麼幫助？</strong></p>
-<blockquote>
-<p>最直接的好處就是不同影像之間的幾何關係不會亂掉。比如說，把 MR 和 CT 影像對到一起時，我需要清楚知道它們原本的空間座標系統，才能正確應用對位結果。這個改進讓整個流程更穩健。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/21fe68a">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>pydicomRT｜&quot;📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-11-21-d551280-README-%E6%9B%B4%E6%96%B0-RTSTRUCT-%E7%AF%84%E4%BE%8B/</url>
     <content><![CDATA[<h2 id="📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射"><a href="#📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射" class="headerlink" title="📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射"></a>📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射</h2><p><strong>Commit:</strong> <code>d551280</code><br><strong>日期：</strong> 2025-11-21</p>
@@ -2648,6 +2616,38 @@
 </blockquote>
 <hr>
 <p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d551280">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;版本 0.6.2 — Registration 模組增強&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-10-30-21fe68a-%E7%89%88%E6%9C%AC-062/</url>
+    <content><![CDATA[<h2 id="✨-版本-0-6-2-—-Spatial-Registration-處理增強"><a href="#✨-版本-0-6-2-—-Spatial-Registration-處理增強" class="headerlink" title="✨ 版本 0.6.2 — Spatial Registration 處理增強"></a>✨ 版本 0.6.2 — Spatial Registration 處理增強</h2><p><strong>Commit:</strong> <code>21fe68a</code><br><strong>版本：</strong> v0.6.2<br><strong>日期：</strong> 2025-10-30</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.2 我專注於 Spatial Registration 功能的增強，讓影像對位處理更加完善。</p>
+<p>這次更新我改進了空間對位的處理邏輯，確保不同影像之間的幾何關係能夠被正確解析和應用。Spatial Registration 在放射治療中扮演關鍵角色，它定義了不同參考框架之間的轉換關係。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.1 → 0.6.2</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Spatial Registration 具體處理的是什麼問題？</strong></p>
+<blockquote>
+<p>簡單說，就是記錄「誰在哪裡」的問題。當我們把不同時間、不同機器、不同參考框架的影像湊在一起時，必須知道它們之間的幾何關係才能正確對齊。Spatial Registration 就是用來描述這個轉換關係的。</p>
+</blockquote>
+<p><strong>Q2: 與 Rigid Registration 相比，Spatial Registration 的複雜度在哪裡？</strong></p>
+<blockquote>
+<p>Rigid Registration 我之前已經實作過了，它只處理平移和旋轉，相對單純。Spatial Registration 更像是「元資料」的管理——需要正確解析和儲存各種 Frame of Reference 的對應關係。這部分的 DICOM 標準文件我還在慢慢啃。</p>
+</blockquote>
+<p><strong>Q3: 這次的增強對實際臨床應用有什麼幫助？</strong></p>
+<blockquote>
+<p>最直接的好處就是不同影像之間的幾何關係不會亂掉。比如說，把 MR 和 CT 影像對到一起時，我需要清楚知道它們原本的空間座標系統，才能正確應用對位結果。這個改進讓整個流程更穩健。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/21fe68a">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>
@@ -3214,20 +3214,6 @@
       </tags>
   </entry>
   <entry>
-    <title>終於忙完碩一上了!!</title>
-    <url>/higumalu-note/2022/03/24/diary0324/</url>
-    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
-<p>改天整理一下傳speaker deck</p>
-<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
-]]></content>
-      <categories>
-        <category>daily</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>histogram practice with python</title>
     <url>/higumalu-note/2021/10/22/img-proc-1/</url>
     <content><![CDATA[<p>Author：滷棕熊</p>
@@ -3249,6 +3235,20 @@
         <tag>image processing</tag>
         <tag>histogram</tag>
         <tag>image</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>終於忙完碩一上了!!</title>
+    <url>/higumalu-note/2022/03/24/diary0324/</url>
+    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
+<p>改天整理一下傳speaker deck</p>
+<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
       </tags>
   </entry>
   <entry>

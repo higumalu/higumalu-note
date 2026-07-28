@@ -107,7 +107,7 @@
 <p>2D RoPE 的核心公式：</p>
 <ul>
 <li>將 dim 切成對，每對維度構成複數平面上的旋轉</li>
-<li>位置 m 的旋轉角為 <script type="math/tex">\theta<em>m^{(i)} = m \cdot \theta_i</script>，其中 <script type="math/tex">\theta_i = \theta</em>{base}^{-i/d}</script></li>
+<li>位置 m 的旋轉角為 <script type="math/tex">\thetam^{(i)} = m \cdot \theta_i</script>，其中 <script type="math/tex">\theta_i = \theta{base}^{-i/d}</script></li>
 <li>旋轉後的 Q、K 做內積時，自然編碼了相對位置 <script type="math/tex">m-n</script> 的關係</li>
 </ul>
 <p>RoPE 的三大優點（也是 Volt 選用它而不是傳統位置編碼的原因）：</p>
@@ -121,8 +121,8 @@
 <p><strong>三軸 Axial 設計</strong>：</p>
 <ul>
 <li>x、y、z 三個座標軸<strong>各自獨立計算</strong>旋轉頻率，最後串接</li>
-<li>為什麼不直接用 3D 座標做 outer product？因為那樣會產生 $12 \times 12 \times 8 = 1152$ 維爆炸</li>
-<li>Axial 設計只需 $12+12+8=32$ 維，兼顧效率與完整性</li>
+<li>為什麼不直接用 3D 座標做 outer product？因為那樣會產生 <script type="math/tex">12 \times 12 \times 8 = 1152</script> 維爆炸</li>
+<li>Axial 設計只需 <script type="math/tex">12+12+8=32</script> 維，兼顧效率與完整性</li>
 </ul>
 <div class="table-container">
 <table>
@@ -332,7 +332,7 @@
 <li><a target="_blank" rel="noopener" href="https://github.com/yilmazkadir/Volt">Volt GitHub Repository</a></li>
 </ul>
 <hr>
-<p><em>研究報告由 Hermes Agent 撰寫｜2026-07-09</em></p>
+<p>研究報告由 Hermes Agent 撰寫｜2026-07-09</p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
@@ -455,7 +455,7 @@
 window.MathJax = {
   tex: {
     inlineMath: [['<script type="math/tex">', '</script>'], ['\\(', '\\)']],
-    displayMath: [['$<script type="math/tex">', '</script>$'], ['\\[', '\\]']],
+    displayMath: [['<script type="math/tex"></script>', '<script type="math/tex"></script>'], ['\\[', '\\]']],
     processEscapes: true
   },
   options: {
