@@ -874,523 +874,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Kimi K3 技術報告（全量翻譯 + 譯註）</title>
-    <url>/higumalu-note/2026-07-28-kimi-k3-technical-report-full-translation/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>前言：</strong> 本文的翻譯盡量貼近原文表述，並在必要處加入譯註說明背景概念。</p>
-</blockquote>
-<span id="more"></span>
-
-<h2 id="Kimi-K3：開放前沿智能"><a href="#Kimi-K3：開放前沿智能" class="headerlink" title="Kimi K3：開放前沿智能"></a>Kimi K3：開放前沿智能</h2><h3 id="Kimi-K3-技術報告"><a href="#Kimi-K3-技術報告" class="headerlink" title="Kimi K3 技術報告"></a>Kimi K3 技術報告</h3><p><em>Kimi 團隊</em></p>
-<hr>
-<h2 id="摘要（Abstract）"><a href="#摘要（Abstract）" class="headerlink" title="摘要（Abstract）"></a>摘要（Abstract）</h2><p>我們提出 Kimi K3，一個 2.8 兆參數的專家混合模型，擁有 1040 億激活參數、原生視覺能力，以及 100 萬 Token 的上下文窗口。Kimi K3 基於 Kimi Delta Attention [64] 和 Attention Residuals [58] 構建，這兩項技術分別提升了序列長度和模型深度的信息流動。配合 Stable LatentMoE（每個 Token 有效激活 896 個路由專家中的 16 個）以及經過精煉的訓練配方與數據配方，這些進步帶來了相比 Kimi K2 [59] 約 <strong>2.5 倍</strong>的整體擴展效率提升。後訓練的亮點包括：在通用領域、Agent 領域和 Coding 領域開展強化學習，並覆蓋多個推理努力層級，實現了組合泛化和強健的長程執行能力。在 2.8 兆參數的規模下，Kimi K3 得到多個基礎設施領域的支撐：KDA 的演算法-系統共同設計、完美均衡的專家並行訓練（高效內存管理）、百萬 Token Agentic 強化學習（持久化 Rollout 與 Sandbox 狀態），以及部署創新。</p>
-<p>廣泛的評估表明，Kimi K3 在長程 Coding、Agentic、知識、推理和視覺任務上達到了前沿水準。儘管其整體表現仍落後於最強的私有模型——Claude Fable 5 和 GPT-5.6 Sol——但 Kimi K3 一致性地超越了評估套件中的其他開源和私有模型。我們發布了完整的 Kimi K3 模型權重，以促進未來研究並加速前沿智能的更廣泛部署與應用。¹</p>
-<hr>
-<h2 id="1-引言（Introduction）"><a href="#1-引言（Introduction）" class="headerlink" title="1. 引言（Introduction）"></a>1. 引言（Introduction）</h2><p>在大型語言模型（LLM）發展的相當長一段時間裡，「scaling」意味著在部署前投入更多計算——訓練更大的模型、使用更多的數據 [55, 46]。推理模型的興起將「測試時計算」（test-time computation）確立為第二條 scaling 軸線：OpenAI 的 o 系列通過強化學習和測試時推理實現 scaling [85, 84]；Anthropic 的 Extended-Thinking 模型分配自適應思考預算並交織推理與工具使用 [6, 7]；DeepSeek-R1 [41] 和 Kimi K1.5 [119] 表明，大規模強化學習可以從強大的預訓練模型中引發複雜的推理行為；Kimi K2.5 Agent Swarm [60] 進一步將測試時 scaling 從順序推理擴展到並行 Agent 協調。這些進步使測試時 scaling 成為前沿研究的核心焦點。然而，開源模型生態系統在第二條軸線上快速進展的同時，在第一條軸線上進展緩慢：許多近期模型仍停留在 1 兆參數級別或略高 [146, 29, 136, 121]。隨著越來越複雜的推理和 Agentic 強化學習方法被應用到相似規模的預訓練基礎上，開源進展有趨同的風險，而與最強私有系統的差距正在擴大。透過 Kimi K3，我們同時追求兩條 scaling 軸線到前沿：將預訓練基礎擴展到前所未有的 3 兆參數級別，同時在 100 萬上下文長度上擴展強化學習、推理努力和長程交互。</p>
-<p>我們提出 Kimi K3，一個原生多模態專家混合模型，總參數 2.8 兆，激活參數 1040 億，上下文窗口最長 100 萬 Token。其架構在三個互補維度上擴展信息流：</p>
-<ul>
-<li><strong>序列維度</strong>：Kimi Delta Attention（KDA）[64] 提供高效的長序列混合，並以週期性插入的 Gated MLA 層保留全局交互</li>
-<li><strong>深度維度</strong>：Attention Residuals（AttnRes）[58] 允許每層選擇性地從所有先前層的表示中檢索</li>
-<li><strong>寬度維度</strong>：每層注意力後接 Stable LatentMoE，稀疏地激活每個 Token 的 896 個專家中的 16 個，配合 Normalization、SiTU-GLU 和 Quantile Balancing 在極度稀疏下穩定優化</li>
-</ul>
-<p>這些架構進步結合精煉的數據和訓練配方，帶來相比 Kimi K2 [59] 約 2.5 倍的整體擴展效率提升。</p>
-<p>我們將這一預訓練基礎與明確為 100 萬上下文測試時 scaling 設計的後訓練相結合。Kimi K3 在長程 Coding、通用 Agent、通用推理與知識任務上接受強化學習，每個任務涵蓋多個推理努力層級。訓練環境包括：可驗證搜索與專業知識工作、軟體工程與內核優化、視覺 in-the-loop 工具使用的多模態推理、持久化助理工作流、網頁開發，以及自主執行任務。這些環境訓練一個通用的推理-行動-觀察-驗證-適應循環，往往跨越數百或數千次工具調用和數百萬累計上下文 Token。領域和努力級別專門的策略透過多教師 On-Policy 蒸餾 [76, 135, 29] 整合到統一模型中。</p>
-<p>實現這一 regime 需要能隨架構複雜度、模型規模和軌跡長度擴展的基礎設施。針對 KDA 的系統共同設計，我們開發了融合內核、KDA Context Parallelism 和狀態感知前綴緩存，使 KDA 在設備內、跨設備和跨請求上都高效。對於 2.8 兆參數 MoE 預訓練，MoonEP 提供完美均衡的專家執行（靜態計算形狀、零拷貝通信），配合內存高效訓練和多模態編碼器優化，在有限內存下維持高利用率。針對百萬 Token Agentic 強化學習，我們的協作系統結合部分 Rollout、外部 KV-Cache 保留、自適應節流和可恢復 MicroVM Sandbox，以保持長壽模型和環境狀態。最後，專門化內核與緩存/預算感知調度將這些創新轉化為可預測的生產服務。</p>
-<p>由此產生的模型建立了新的開放前沿。在涵蓋長程 Coding、Agentic、知識、推理和視覺任務的基準測試上，Kimi K3 總體落後於最強的私有系統——Claude Fable 5 和 GPT-5.6 Sol——但一致性地超越了評估套件中的其他開源和私有模型（如圖 1 所示）。</p>
-<p>我們的貢獻總結如下：</p>
-<ul>
-<li><strong>開放前沿的預訓練。</strong> 我們訓練了一個 2.8 兆參數的原生多模態 MoE 模型，激活參數 1040 億，上下文窗口 100 萬 Token。KDA、AttnRes、Stable LatentMoE 和精煉的數據/訓練配方共同帶來相比 Kimi K2 約 2.5 倍的整體擴展效率提升。</li>
-<li><strong>多努力層級推理時 scaling 的強化學習。</strong> 我們在通用、Agentic 和 Coding 領域以及多個推理努力層級上開展強化學習，然後將結果能力整合到統一模型中。</li>
-<li><strong>多兆參數、百萬 Token 智能的基礎設施。</strong> 我們提出 KDA 系統共同設計；MoonEP 和 2.8 兆參數 MoE 預訓練的內存高效基礎設施；帶可恢復沙箱的協作強化學習系統（處理百萬 Token Agentic 軌跡）；以及更多基礎設施創新。</li>
-<li><strong>一個開放前沿模型。</strong> 我們發布完整的 Kimi K3 模型權重，使前沿智能可用於研究、部署和進一步創新。</li>
-</ul>
-<hr>
-<h2 id="2-模型架構（Model-Architecture）"><a href="#2-模型架構（Model-Architecture）" class="headerlink" title="2. 模型架構（Model Architecture）"></a>2. 模型架構（Model Architecture）</h2><p>Kimi K3 的架構設計為在三個互補維度上擴展信息流：<strong>序列長度、網絡深度、模型寬度</strong>。</p>
-<ul>
-<li><strong>序列維度</strong>：Hybrid Attention 將三層 Kimi Delta Attention（KDA）[64] 與一層 Gated MLA 結合，在提供高效長上下文 Token 混合的同時保留選擇性高容量注意力（§2.1）。</li>
-<li><strong>深度維度</strong>：Attention Residuals（AttnRes）[58] 允許每個模塊選擇性地從 Embedding、當前 block 和先前 block 中檢索表示，將信息訪問擴展到傳統順序殘差累積之外（§2.2）。</li>
-<li><strong>寬度維度</strong>：每層注意力後接 Stable LatentMoE 層，稀疏地執行通道混合，每個 Token 有效激活 896 個路由專家中的 16 個（§2.3）。</li>
-<li><strong>原生視覺</strong>：MoonViT-V2 編碼圖像和視頻，輕量級投影器將視覺特徵映射到共享 Embedding 空間，再送入骨幹網絡處理（§2.4）。</li>
-<li>配合 Per-Head Muon 優化器（§2.5），這些組件提供了跨 Token、層和通道擴展信息流的統一架構。</li>
-</ul>
-<p>結合精煉的數據和訓練配方，它們帶來相比 Kimi K2 約 <strong>2.5 倍</strong>的整體擴展效率提升。圖 2 提供了架構總覽。</p>
-<p><img src="/higumalu-note/images/k3_tech_report/page03.png" alt="Kimi K3 整體架構 Figure 2"><br><em>圖 2：Kimi K3 架構，按 Token、Channel 和 Layer 三個混合維度組織，輸入端有原生視覺通道。每個 Block 包含三層 KDA 與一層 Gated MLA，每層注意力配對一個 Stable LatentMoE 前饋網絡。AttnRes 使用學習的偽查詢（w）來計算對 Embedding 和先前 Block 輸出的注意力權重（α），實現跨深度的選擇性信息流。左上：Stable LatentMoE 模塊（共享專家 + 路由專家）；左下：KDA 模塊；右下：原生視覺通道</em></p>
-<hr>
-<h3 id="2-1-Hybrid-Attention"><a href="#2-1-Hybrid-Attention" class="headerlink" title="2.1 Hybrid Attention"></a>2.1 Hybrid Attention</h3><p>Kimi K3 使用層級混合的線性注意力和全局注意力，結合 KDA [64] 與 Gated MLA。每個 Block 包含 3 層 KDA 後接 1 層 Gated MLA，給出 3:1 的混合比例。此模式在整個骨幹網絡中重複。兩種注意力機制將在下面分別描述。骨架末端追加一個額外的 Gated MLA 層，確保最終層始終執行全局注意力。</p>
-<h4 id="2-1-1-Kimi-Delta-Attention"><a href="#2-1-1-Kimi-Delta-Attention" class="headerlink" title="2.1.1 Kimi Delta Attention"></a>2.1.1 Kimi Delta Attention</h4><p>KDA 在 Delta Rule 遞歸 [106, 139] 的基礎上增加通道級遺忘門 [64]。考慮隱藏狀態序列 $x_t \in \mathbb{R}^d$，其中 $t$ 索引 Token 位置，$d$ 是模型隱維度。為清晰起見，我們先描述單個注意力頭，Query 和 Key 向量 $q_t, k_t \in \mathbb{R}^{d_k}$，Value 向量 $v_t \in \mathbb{R}^{d_v}$，以及遞歸狀態 $S_t \in \mathbb{R}^{d_k \times d_v}$。KDA 在 Delta Rule 更新前應用通道級衰減：</p>
-<p>$$S_t = (I - \beta_t k_t k_t^\top) \odot \text{Diag}(\alpha_t) \cdot S_{t-1} + \beta_t k_t v_t^\top, \quad \tilde{o}_t = S_t^\top q_t$$</p>
-<p>其中 $\alpha_t \in (0, 1)^{d_k}$ 是通道級單步 retention factor，$\beta_t \in (0, 1)$ 控制 Delta Rule 寫入強度。</p>
-<p>跟隨 Kimi Linear [64]，KDA 將每頭量參數化為：</p>
-<p>$$q_t^h, k_t^h = \text{L2Norm}\left(\text{Swish}\left(\text{ShortConv}\left(W_t^{q/k} x_t\right)\right)\right) \in \mathbb{R}^{d_k}$$</p>
-<p>$$v_t^h = \text{Swish}\left(\text{ShortConv}\left(W_t^v x_t\right)\right) \in \mathbb{R}^{d_v}$$</p>
-<p>$$\beta_t^h = \text{Sigmoid}\left(W_\beta x_t\right) \in (0, 1)$$</p>
-<p>$$z_t^h = W_\alpha^\uparrow W_\alpha^\downarrow x_t + b_\alpha^h \in \mathbb{R}^{d_k}$$</p>
-<p>Query、Key、Value 投影依次應用 ShortConv 和 Swish [139]，Query 和 Key 進一步以 L2Norm [142] 歸一化。低秩投影和頭特定偏置 $b_\alpha^h \in \mathbb{R}^{d_k}$ 為每個 Key 通道產生細粒度衰減 logit $z_t^h$。從 $z_t^h$ 到 $\alpha_t^h$ 的下限有界映射將在分塊並行形式之後引入。</p>
-<p><strong>分塊並行形式</strong></p>
-<p>跟隨 Kimi Linear [64]，KDA 在 chunk 級別遞歸，在每個 chunk 內並行。對於 chunk size $C$，$X[t]$ 堆疊第 $t$ 個 chunk 中的 Token 向量（$X \in {Q, K, V, O, U, W}$）。矩陣 $S[t] \in \mathbb{R}^{d_k \times d_v}$ 表示進入 chunk $t$ 的遞歸狀態。對位置 $1 \leq i \leq j \leq C$，定義通道級累積衰減：</p>
-<p>$$\gamma_{i \to j}^{[t]} := \prod_{r=i}^j \alpha_r^{[t]}, \quad \gamma_r^{[t]} := \gamma_{1 \to r}^{[t]}$$</p>
-<p>如 Kimi Linear 中，$\Gamma_{1 \to C}^{[t]} \in \mathbb{R}^{C \times d_k}$ 將 $\gamma_1^{[t]}, …, \gamma_C^{[t]}$ 按行堆疊。UT 變換產生 $U[t]$ 和 $W[t]$，從而定義偽 Value 項 $eV[t] := U[t] - W[t]S[t]$。給定傳入狀態 $S[t]$，chunk $t$ 中的所有輸出並行計算為：</p>
-<p>$$A[t] = \text{Tril}\left((Q[t] \odot \Gamma_{1 \to C}^{[t]}) \cdot (K[t] / \Gamma_{1 \to C}^{[t]})^\top\right)$$</p>
-<p>$$O[t] = \underbrace{(\Gamma_{1 \to C}^{[t]} \odot Q[t]) S[t]}<em>{\text{inter-chunk}} + \underbrace{A[t] \cdot eV[t]}</em>{\text{intra-chunk}}$$</p>
-<p>對於矩陣 $M$，$\text{Tril}(M)$ 將所有嚴格上三角 entries 置零，保留下三角 entries（包括對角線）。此 mask 在 chunk 內強制執行因果交互，對角線保留是因為每個輸出讀取當前 Token 更新後的狀態。$O[t]$ 的第一項承載來自先前 chunks 的信息，第二項處理當前 chunk 內的交互。</p>
-<p><strong>下限有界衰減（核心創新）</strong></p>
-<p>方程 4 在每個 chunk 中以倒數累積衰減 $1/\Gamma_{1 \to C}^{[t]}$ 重新縮放 Keys。由於 $\Gamma_{1 \to C}^{[t]}$ 是 $(0, 1)$ 內 retention factor 的乘積，其倒數可能無界、在有限精度下溢出 [141, 64]。Kimi Linear 透過在 log 空間計算相對衰減並將每個 chunk 進一步劃分為次級 16-token tile 來控制數值範圍 [141, 64]。Off-diagonal tile 可以直接用 Tensor Core 密集矩陣乘法計算；相比之下，diagonal tile 仍需要顯式位置對計算，這是主要的 intra-chunk 瓶頸。</p>
-<p>Kimi K3 透過改變從衰減 logit $z_t^h$ 到單步 log-decay $g_t^h$ 的映射來解決這一瓶頸。跟隨 GDN 和 Mamba-2，Kimi Linear 使用負 Softplus 映射 $g_t^h = -e^{A_h} \text{Softplus}(z_t^h) \in (-\infty, 0)^{d_k}$ [139, 24, 64]。Kimi K3 轉而使用縮放 Sigmoid 從下方約束 log-decay：</p>
-<p>$$g_t^h = g_{\min} \cdot \text{Sigmoid}(e^{A_h} z_t^h) \in (g_{\min}, 0)^{d_k}$$</p>
-<p>$$\alpha_t^h = \exp(g_t^h) \in (e^{g_{\min}}, 1)^{d_k}$$</p>
-<p>其中 $A_h$ 是每頭可學習 log-scale，$g_{\min} = -5$ 固定。我們初始化 $A_h = 0$，各偏置 $b_\alpha^h$ 按 [64, 24, 139] 初始化。$g_{\min} = -5$ 確保每個 retention factor $\alpha_{t,j}^h &gt; e^{-5} \approx 6.7 \times 10^{-3}$，16-token tile 上的累積 log-decay 位於 $(-80, 0)$。相應的倒數重新縮放因子因此小於 $e^{80}$，保持在 BF16 動態範圍內。這一有限範圍使對角線和 off-diagonal tile 都能使用密集 Tensor Core 矩陣乘法，消除了位置對角線路徑。</p>
-<p><img src="/higumalu-note/images/k3_tech_report/page05.png" alt="KDA 下限有界衰減 Figure 3"><br><em>圖 3：(a) Log-decay 參數化：Kimi Linear 使用無界負 Softplus 映射，Kimi K3 以縮放 Sigmoid 約束 log-decay 下界；(b) 對角線 tile 計算：Kimi Linear 對每個對角線 tile 執行顯式位置對計算，而 Kimi K3 的有界範圍使所有因果 tile 使用密集 Tensor Core 矩陣乘法</em></p>
-<p><strong>全秩輸出門</strong></p>
-<p>最後，Kimi K3 將 KDA 的輸出門從 Kimi Linear [64] 使用的低秩參數化改為輸入依賴的全秩投影。對遞歸輸出應用頭級 RMSNorm [147] 後，KDA 應用數據依賴輸出門控 [100]：</p>
-<p>$$y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \text{RMSNorm}(\tilde{o}_t)]$$</p>
-<h4 id="2-1-2-Gated-MLA"><a href="#2-1-2-Gated-MLA" class="headerlink" title="2.1.2 Gated MLA"></a>2.1.2 Gated MLA</h4><p>Multi-head Latent Attention（MLA）在 DeepSeek-V2 [28] 中引入，將每個 Token 的 Key-Value 表示壓縮到低維潛向量 $c_t = W_c x_t$。MLA 不緩存完整的頭特定 Keys 和 Values，而是緩存 $c_t$ 並在注意力計算期間透過學習的上投影重建內容 Keys 和 Values。這種分解減少了 KV-Cache 佔用，同時保留了全局 Token 間注意力。MLA 後被 Kimi K2 和 Kimi K2.5 [59, 60] 採用，Kimi K3 在週期性全局注意力層中保留 MLA。</p>
-<p>不同於 Kimi K2 和 K2.5，Kimi K3 跟隨 Kimi Linear [64] 的混合設計，對所有 MLA 層應用 <strong>No Position Encoding（NoPE）</strong>。因此，不對它們的 Query 或 Key 應用顯式位置編碼。穿插的 KDA 層提供位置敏感和近因感知的序列混合，而 MLA 層提供無限制的全局內容交互。這種分離也避免了在擴展上下文長度時修改位置編碼參數，例如重新調優 RoPE 頻率基或應用 YaRN [93]。</p>
-<p>此外，Kimi K3 以輸入依賴、通道級全秩輸出門增強 MLA。令 $\tilde{o}_t$ 為位置 $t$ 的無門控 MLA 輸出，門控輸出為：</p>
-<p>$$y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \tilde{o}_t]$$</p>
-<p>門投影 $W_g$ 是全秩的，與 Kimi K3 中 KDA 的新參數化一致。此門允許每個 Token 調製從全局注意力讀取的通道。</p>
-<p>為修正 Flash Attention 中出現的有偏舍入誤差，我們採用 [99] 的方法，在訓練期間將注意力輸出保持為 FP32。這使輸出 tile 的片上佔用增加一倍；因此我們重新設計訓練內核，讓它與 KV 緩衝區而不是 Query tile 重疊，為更深的 KV 管線和更高訓練吞吐量釋放共享內存。</p>
-<hr>
-<h3 id="2-2-Attention-Residuals"><a href="#2-2-Attention-Residuals" class="headerlink" title="2.2 Attention Residuals"></a>2.2 Attention Residuals</h3><p>標準殘差連接 [44] 將所有先前信息壓縮到深度上的單一狀態 $h_l$——這是一種令人聯想到時間維度 RNN 的 bottleneck。對於序列建模，Transformer 以注意力 [10, 126] 取代了遞歸，允許每個位置以數據依賴權重選擇性地訪問所有先前位置。Attention Residuals（AttnRes）[58] 將相同方法論應用於深度維度：每層選擇性地從所有先前層的表示中檢索，而非均勻累積。</p>
-<p><strong>完全 Attention Residuals</strong></p>
-<p>對於每層 $l$，我們定義層特定可學習偽查詢 $q_l = w_l \in \mathbb{R}^d$ 及其 Keys 和 Values：</p>
-<p>$$k_i = v_i = \begin{cases} h_1 &amp; i = 0 \ f_i(h_i) &amp; 1 \leq i \leq l-1 \end{cases}$$</p>
-<p>其中 $f_i(h_i)$ 是第 $i$ 層的輸出，$h_1$ 是 Token Embedding。注意力權重遵循 softmax kernel $\phi(q, k) = \exp(q^\top \text{RMSNorm}(k))$ [56, 147]，其中 RMSNorm 防止大幅度輸出的層主導權重：</p>
-<p>$$\alpha_{i \to l} = \frac{\phi(q_l, k_i)}{\sum_{j=0}^{l-1} \phi(q_l, k_j)}, \quad h_l = \sum_{i=0}^{l-1} \alpha_{i \to l} \cdot v_i$$</p>
-<p>由於網絡深度適中（$L &lt; 100$），這種完全形式 $O(L^2 d)$ 的算術代價是可接受的；實際開銷是為保持所有層輸出存活所需的 $O(Ld)$ 內存（以及管道並行下跨階段通信）。</p>
-<p><strong>分塊 Attention Residuals</strong></p>
-<p>為減少此開銷，我們將 $L$ 層劃分為 $N$ 個 block，每個 block $S = L/N$ 層。Block $n$（層索引 $B_n$）內的層輸出通過求和歸約為單一表示 $b_n = \sum_{j \in B_n} f_j(h_j)$，其中 $b_n^i$ 表示 block 前 $i$ 層的部分和；設 $b_0 = h_1$，因此 Token Embedding 始終作為來源包含在內。跨 block，只對 $N$ 個 block 級表示應用完全注意力：對 block $n$ 的第 $i$ 層，Value 矩陣為：</p>
-<p>$$V = \begin{cases} [b_0, b_1, …, b_{n-1}]^\top &amp; i = 1 \text{（block 首層）} \ [b_0, b_1, …, b_{n-1}, b_{n-1}^i]^\top &amp; i \geq 2 \text{（後續層）} \end{cases}$$</p>
-<hr>
-<h3 id="2-3-Stable-LatentMoE"><a href="#2-3-Stable-LatentMoE" class="headerlink" title="2.3 Stable LatentMoE"></a>2.3 Stable LatentMoE</h3><p>LatentMoE 在前饋網絡中引入潛路由，將 FFN 轉換為潛專家混合。路由的 Key-Value 表示被壓縮為低維向量，激活時通過上投影重建。具體來說，令 $x \in \mathbb{R}^d$ 為輸入，路由器首先計算：</p>
-<p>$$s = \text{Softmax}(\text{Norm}(W_r x)) \in \mathbb{R}^n$$</p>
-<p>其中 $n = 896$ 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：</p>
-<p>$$\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)$$</p>
-<p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和權重：</p>
-<p>$$\mathcal{T}<em>i = \text{argtop}<em>k(s_i + b), \quad w</em>{i,j} = \begin{cases} \frac{\text{Softmax}(s</em>{i,j} + b_j)}{\sum_{j’ \in \mathcal{T}<em>i} \text{Softmax}(s</em>{i,j’} + b_{j’})} &amp; j \in \mathcal{T}_i \ 0 &amp; \text{otherwise} \end{cases}$$</p>
-<p>偏置 $b$ 從路由概率計算中省略，這樣它只調節 dispatch 而不改變混合權重或直接干擾梯度優化。</p>
-<h4 id="2-3-1-SiTU-GLU"><a href="#2-3-1-SiTU-GLU" class="headerlink" title="2.3.1 SiTU-GLU"></a>2.3.1 SiTU-GLU</h4><p>在 FFN 投影之間，我們用 SiTU-GLU 取代標准 SwiGLU。SiTU-GLU 將 Swish 激活函數的 cap 替換為平滑的 Tanh cap：</p>
-<p>$$\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)$$</p>
-<p>Gate branch 的 $\beta_1 = 4$，Up branch 的 $\beta_2 = 25$。由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。在原點附近，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 $\beta \to \infty$ 精確退化為 SwiGLU。</p>
-<h4 id="2-3-2-Quantile-Balancing"><a href="#2-3-2-Quantile-Balancing" class="headerlink" title="2.3.2 Quantile Balancing"></a>2.3.2 Quantile Balancing</h4><p>隨著專家數增長到近千，均衡路由變得越來越重要。傳統輔助損失方法 [30] 在每個 Token 上增加一個負載不平衡罰項，但這會直接干擾路由決策與梯度優化。我們採用無輔助損失的路由均衡：對每個專家維護一個偏置項 $b_j$，根據目標加載 $q := mk/n$ 週期性更新：</p>
-<p>$$b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_i \mathbf{1}_{j \in \mathcal{T}_i} - \frac{k}{n} \right)$$</p>
-<p>此更新將專家加載推向目標，類似於 SignSGD，但直接作用於偏置而非路由器參數。</p>
-<p><img src="/higumalu-note/images/k3_tech_report/page08.png" alt="Quantile Balancing Figure 5"><br><em>圖 5：Quantile Balancing 示意（m=8 tokens, n=4 experts, k=1）。(a) 不均衡路由：初始加載 (4, 3, 1, 0)；(b) 分位數平衡：每列繪製偏差後的分數灰條，紅色虛線為偏差調整線；(c) 均衡路由：最終加載 (2, 2, 2, 2)</em></p>
-<p>對於精確的偏差估計，我們從最優平衡分配問題的對偶推导出 Alternating Quantile Solver：交替求解 token 側閾值 $\alpha$ 和專家側閾值 $\beta$，每步封閉形式精確求解。實務上，用 1000 個 bin 的直方圖估計分位數，僅需一次整數 All-Reduce 通信，代價不到原始 margin 通信的 1%。</p>
-<hr>
-<h3 id="2-4-原生視覺"><a href="#2-4-原生視覺" class="headerlink" title="2.4 原生視覺"></a>2.4 原生視覺</h3><p>Kimi K3 的視覺編碼器 MoonViT-V2 將圖像和視頻編碼為視覺 Token 序列。輕量級投影器將視覺特徵映射到與語言骨幹共享的 Embedding 空間，然後一起送入骨幹網絡處理。這種原生多模態設計使視覺理解與語言推理深度融合，而非事後拼接。</p>
-<hr>
-<h3 id="2-5-Per-Head-Muon"><a href="#2-5-Per-Head-Muon" class="headerlink" title="2.5 Per-Head Muon"></a>2.5 Per-Head Muon</h3><p>我們對注意力頭使用 Per-Head Muon 優化器。Muon（Matrix u for u, Newton-ish）是一種為 Transformer 設計的牛頓類優化器，在某些設置下收斂速度比 AdamW 快 [22]。Per-Head 版本對每個注意力頭維護單獨的學習率和狀態，進一步提升收斂穩定性。</p>
-<hr>
-<h2 id="3-預訓練（Pre-Training）"><a href="#3-預訓練（Pre-Training）" class="headerlink" title="3. 預訓練（Pre-Training）"></a>3. 預訓練（Pre-Training）</h2><h3 id="3-1-數據配方"><a href="#3-1-數據配方" class="headerlink" title="3.1 數據配方"></a>3.1 數據配方</h3><p>Kimi K3 的預訓練數據包括多語言語料、專業領域文本（代碼、數學、科學論文）和網頁內容。關鍵改進包括：</p>
-<ul>
-<li><strong>數據質量過濾</strong>：多階段質量分類器去除低質量內容</li>
-<li><strong>領域平衡</strong>：確保數學、編程、推理密集內容的充分覆蓋</li>
-<li><strong>去重</strong>：大規模語義去重減少冗餘</li>
-</ul>
-<h3 id="3-2-訓練穩定性"><a href="#3-2-訓練穩定性" class="headerlink" title="3.2 訓練穩定性"></a>3.2 訓練穩定性</h3><p>2.8 兆參數規模的訓練面臨獨特挑戰：</p>
-<ul>
-<li><strong>權重裁剪</strong>：從 Kimi K2 沿用的權重裁剪機制防止梯度爆炸</li>
-<li><strong>漸進式課程學習</strong>：從短序列開始，逐步過渡到百萬 Token</li>
-<li><strong>BF16/FP32 混合精度</strong>：關鍵操作使用 FP32 防止累積誤差</li>
-</ul>
-<h3 id="3-3-擴展法則"><a href="#3-3-擴展法則" class="headerlink" title="3.3 擴展法則"></a>3.3 擴展法則</h3><p><img src="/higumalu-note/images/k3_tech_report/page11.png" alt="擴展法則 Figure 7"><br><em>圖 7：Kimi K2 和 Kimi K3 的擬合擴展法則曲線。Kimi K3 在相同 FLOPs 下達到更低驗證損失，相比 Kimi K2 提升 2.5× 擴展效率</em></p>
-<table>
-<thead>
-<tr>
-<th>參數</th>
-<th>Kimi K2</th>
-<th>Kimi K3</th>
-<th>變化</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>層數</td>
-<td>61</td>
-<td>93</td>
-<td>↑52%</td>
-</tr>
-<tr>
-<td>總參數</td>
-<td>1.04T</td>
-<td>2.78T</td>
-<td>↑167%</td>
-</tr>
-<tr>
-<td>激活參數</td>
-<td>32.6B</td>
-<td>104.2B</td>
-<td>↑220%</td>
-</tr>
-<tr>
-<td>Latent MoE 維度</td>
-<td>—</td>
-<td>3584</td>
-<td>新增</td>
-</tr>
-<tr>
-<td>每 Token 激活專家</td>
-<td>8</td>
-<td>16</td>
-<td>↑100%</td>
-</tr>
-<tr>
-<td>上下文長度</td>
-<td>128K</td>
-<td>1M</td>
-<td>↑8×</td>
-</tr>
-<tr>
-<td>注意力機制</td>
-<td>MLA</td>
-<td>Hybrid KDA–MLA</td>
-<td>新架構</td>
-</tr>
-<tr>
-<td>激活函數</td>
-<td>SwiGLU</td>
-<td>SiTU-GLU</td>
-<td>新函數</td>
-</tr>
-<tr>
-<td>視覺編碼器</td>
-<td>—</td>
-<td>MoonViT-V2 (27層, patch=14)</td>
-<td>新增</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="4-後訓練（Post-Training）"><a href="#4-後訓練（Post-Training）" class="headerlink" title="4. 後訓練（Post-Training）"></a>4. 後訓練（Post-Training）</h2><h3 id="4-1-強化學習"><a href="#4-1-強化學習" class="headerlink" title="4.1 強化學習"></a>4.1 強化學習</h3><p>Kimi K3 的後訓練明確為 100 萬上下文測試時 scaling 設計。跨四個領域開展強化學習，每個領域覆蓋多個推理努力層級（low / medium / high / max）。</p>
-<p><strong>通用領域</strong>：可驗證搜索、專業知識工作，訓練模型在長上下文中的精確信息檢索與綜合能力。</p>
-<p><strong>Agentic 領域</strong>：持久化助理工作流、網頁開發、自主執行任務，訓練數百至數千次工具調用、數百萬累計上下文 Token 的長程執行能力。</p>
-<p><strong>Coding 領域</strong>：軟體工程、內核優化，訓練模型在複雜代碼庫中的導航、修改和調試能力。</p>
-<p><strong>多模態領域</strong>：視覺 in-the-loop 工具使用，訓練模型結合視覺理解和工具調用的能力。</p>
-<p><strong>領域專門化策略的統一</strong>：每個領域和努力層級的專門化策略透過多教師 On-Policy 蒸餾 [76, 135, 29] 整合到統一模型中。</p>
-<h3 id="4-2-Long-Context-SFT"><a href="#4-2-Long-Context-SFT" class="headerlink" title="4.2 Long-Context SFT"></a>4.2 Long-Context SFT</h3><p>在強化學習之前，Kimi K3 在長上下文任務上接受監督微調（SFT），涵蓋長程推理、多文檔問答和代碼補全。關鍵是使用真實的長上下文數據而非簡單的序列拼接。</p>
-<hr>
-<h2 id="5-基礎設施（Infrastructure）"><a href="#5-基礎設施（Infrastructure）" class="headerlink" title="5. 基礎設施（Infrastructure）"></a>5. 基礎設施（Infrastructure）</h2><p>Kimi K3 結合了三種罕見的系統挑戰：混合 KDA 注意力、3 兆類稀疏多模態訓練/推理，以及百萬 Token Agentic 工作負載。我們的基礎設施在每個領域都進行了共同設計。</p>
-<h3 id="5-1-KDA-演算法-系統共同設計"><a href="#5-1-KDA-演算法-系統共同設計" class="headerlink" title="5.1 KDA 演算法-系統共同設計"></a>5.1 KDA 演算法-系統共同設計</h3><p>KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準注意力中的 Key-Value Cache。這種設計允許廉價的狀態傳遞和復用，但對並行執行提出挑戰。</p>
-<p><strong>設備內 KDA 內核</strong>：我們開發了 FlashKDA，一個基於 CUTLASS 的實現，重疊 intra-chunk 計算與 cross-chunk 狀態傳播。對工作進行 Token 並行階段和 Head 並行遞歸分解，在 NVIDIA Hopper GPU 上超越 Triton 參考實現。</p>
-<p><strong>KDA Context Parallelism</strong>：將 Head 在設備間分割，不縮短遞歸。我們觀察到，在純 TP 部署下，超長序列 Prefill 會導致 SM 閒置（各 rank 持有 head 數過少）。我們重新設計 Prefill 內核，通過異步狀態傳遞隱藏延遲，保持高 SM 利用率。</p>
-<p><strong>狀態感知前綴緩存</strong>：對於重複前綴的請求，跨請求緩存和復用 KDA 狀態。KV-Cache 級別的前綴緩存識別常見前綴（如系統提示）並避免重新計算。</p>
-<h3 id="5-2-2-8-兆參數-MoE-預訓練"><a href="#5-2-2-8-兆參數-MoE-預訓練" class="headerlink" title="5.2 2.8 兆參數 MoE 預訓練"></a>5.2 2.8 兆參數 MoE 預訓練</h3><p><strong>MoonEP：完美均衡專家並行</strong>。我們開發 MoonEP，一個 EP 通信庫，提供完美均衡的專家執行。核心觀察：對給定路由器輸出 $I$，存在一個執行計劃使每個 EP rank 恰好接收 $S \times K$ 個 Token，且所有 rank 的遠程 Token 來自另一個單一 rank。理論上界：$M(I) \leq E/R$（每 rank 冗餘專家數不超過 $E/R$）。</p>
-<p><strong>內存高效訓練</strong>：結合 activation checkpointing、混合並行策略和量化，在有限 GPU 內存下維持高 MFU。</p>
-<h3 id="5-3-百萬-Token-Agentic-強化學習"><a href="#5-3-百萬-Token-Agentic-強化學習" class="headerlink" title="5.3 百萬 Token Agentic 強化學習"></a>5.3 百萬 Token Agentic 強化學習</h3><p>百萬 Token 軌跡的強化學習帶來全新的系統挑戰：Rollout 和環境狀態可能跨越數百萬 Token，必須持久化以支持長程執行。</p>
-<p><strong>協作 RL 系統</strong>：我們的協作系統結合部分 Rollout（長軌跡分段執行）、外部 KV-Cache 保留（跨分段持久化狀態）、自適應節流（根據環境響應時間動態調整執行節奏）和可恢復 MicroVM Sandbox（每個 Rollout 在隔離的微型 VM 中執行，狀態可暫停/恢復）。</p>
-<hr>
-<h2 id="6-評估（Evaluation）"><a href="#6-評估（Evaluation）" class="headerlink" title="6. 評估（Evaluation）"></a>6. 評估（Evaluation）</h2><h3 id="6-1-主要結果"><a href="#6-1-主要結果" class="headerlink" title="6.1 主要結果"></a>6.1 主要結果</h3><p><img src="/higumalu-note/images/k3_tech_report/page27.png" alt="Benchmark 結果 Table 2"><br><em>表 2：跨推理、Coding、Agentic、Vision 四大領域的基準測試對比</em></p>
-<p><strong>知識/推理領域</strong></p>
-<table>
-<thead>
-<tr>
-<th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>GPQA Diamond</td>
-<td>93.5</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td>CritPt</td>
-<td><strong>74.7</strong></td>
-<td>71.2</td>
-<td>71.8</td>
-<td>—</td>
-<td>65.3</td>
-<td>—</td>
-</tr>
-<tr>
-<td>AA-LCR</td>
-<td><strong>59.5</strong></td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td>HLE-Full</td>
-<td>43.5 / 56.0</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-</tr>
-</tbody></table>
-<p><strong>Coding 領域</strong></p>
-<table>
-<thead>
-<tr>
-<th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>DeepSWE</td>
-<td>67.5</td>
-<td>72.1</td>
-<td><strong>73.0</strong></td>
-<td>46.2</td>
-<td>59.0</td>
-<td>64.2</td>
-</tr>
-<tr>
-<td>ProgramBench</td>
-<td><strong>77.8</strong></td>
-<td>71.7</td>
-<td>72.9</td>
-<td>69.0</td>
-<td>64.8</td>
-<td>64.2</td>
-</tr>
-<tr>
-<td>Terminal-Bench 2.1</td>
-<td>67.0</td>
-<td>67.5</td>
-<td><strong>67.5</strong></td>
-<td>64.8</td>
-<td>61.8</td>
-<td>59.6</td>
-</tr>
-<tr>
-<td>Fronti</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody></table>
-<hr>
-<p><strong>Coding 領域（續）</strong></p>
-<table>
-<thead>
-<tr>
-<th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>FrontierSWE</td>
-<td>84.6</td>
-<td><strong>88.0</strong></td>
-<td>71.3</td>
-<td>63.7</td>
-<td>64.9</td>
-<td>66.7</td>
-</tr>
-<tr>
-<td>SWE-Marathon</td>
-<td><strong>42.0</strong></td>
-<td>14.0</td>
-<td>39.0</td>
-<td>13.0</td>
-<td>35.0</td>
-<td>14.0</td>
-</tr>
-<tr>
-<td>PostTrainBench</td>
-<td>83.4</td>
-<td><strong>88.8</strong></td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-</tr>
-</tbody></table>
-<p><strong>Agentic 領域</strong></p>
-<table>
-<thead>
-<tr>
-<th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>BrowseComp</td>
-<td><strong>93.5</strong></td>
-<td>89.9</td>
-<td>91.3</td>
-<td>70.8</td>
-<td>88.0</td>
-<td>71.9</td>
-</tr>
-<tr>
-<td>DeepSearchQA (F1)</td>
-<td><strong>95.0</strong></td>
-<td>88.3</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td>JobBench</td>
-<td>54.3</td>
-<td><strong>57.4</strong></td>
-<td>45.4</td>
-<td>48.4</td>
-<td>43.4</td>
-<td>38.3</td>
-</tr>
-<tr>
-<td>AutomationBench</td>
-<td><strong>30.8</strong></td>
-<td>29.1</td>
-<td>29.7</td>
-<td>27.2</td>
-<td>22.7</td>
-<td>12.9</td>
-</tr>
-</tbody></table>
-<p><strong>Vision 領域</strong></p>
-<table>
-<thead>
-<tr>
-<th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>OmniDocBench</td>
-<td><strong>91.1</strong></td>
-<td>86.8</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td>MMMU-Pro</td>
-<td>71.9 / 83.7</td>
-<td>—</td>
-<td><strong>75.2 / 84.4</strong></td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td>CharXiv (RQ)</td>
-<td>88.0 / <strong>90.4</strong></td>
-<td><strong>91.2</strong></td>
-<td>84.4</td>
-<td>82.7</td>
-<td>84.3</td>
-<td>—</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="7-案例研究（Case-Studies）"><a href="#7-案例研究（Case-Studies）" class="headerlink" title="7. 案例研究（Case Studies）"></a>7. 案例研究（Case Studies）</h2><p><img src="/higumalu-note/images/k3_tech_report/page33.png" alt="GPU 內核優化案例 Figure 14"><br><em>圖 14：AttnRes 內核優化案例，Kimi K3 +59.7% 與 Claude Fable 5 +57.1% 並列第一</em></p>
-<h3 id="7-1-GPU-內核優化"><a href="#7-1-GPU-內核優化" class="headerlink" title="7.1 GPU 內核優化"></a>7.1 GPU 內核優化</h3><p>Kimi K3 在一個標準化配置的沙箱中優化 GPU 內核（每任務最多 24 小時），評估四個代表性內核：AttnRes、DeepSeek Sparse Attention（DSA）、KDA 和 MLA（head dimension 512）。這些在 NVIDIA Hopper GPU 和替代供應商 GPGPU 上運行。</p>
-<p><strong>結果</strong>：Kimi K3 將 AttnRes 延遲從 283.6ms 降至 114.4ms（**提升 59.7%**），與 Claude Fable 5（+57.1%）並列第一。DSA 加速 55.1%，KDA 加速 73.6%，MLA 超過 50% 峰值 TFLOPS。</p>
-<h3 id="7-2-MiniTriton-編譯器開發"><a href="#7-2-MiniTriton-編譯器開發" class="headerlink" title="7.2 MiniTriton 編譯器開發"></a>7.2 MiniTriton 編譯器開發</h3><p>Kimi K3 從零開發了一個完整的 Triton-like 編譯器 MiniTriton，包含自定義 tile 級 Python 前端、Warp 級 MLIR 標注/優化層和 PTX 代碼生成管線。在 NVIDIA L20 上，MiniTriton 在幾何平均意義下超越 PyTorch eager 和 <code>torch.compile</code>。</p>
-<h3 id="7-3-晶片設計"><a href="#7-3-晶片設計" class="headerlink" title="7.3 晶片設計"></a>7.3 晶片設計</h3><p>早期概念驗證：Kimi K3 為 nano 模型設計推理晶片原型，採用混合 KDA + NoPE-MLA 注意力、Block AttnRes（block size=2）、Group-wise INT4 量化權重。在 4 mm² 面積預算內達到 100 MHz 時序閉合，RTL 模擬吞吐量 &gt; 8,700 tokens/s。</p>
-<hr>
-<h2 id="8-相關工作（Related-Work）"><a href="#8-相關工作（Related-Work）" class="headerlink" title="8. 相關工作（Related Work）"></a>8. 相關工作（Related Work）</h2><p>本節回顧與 Kimi K3 設計相關的先前工作，涵蓋注意力機制、MoE 架構、測試時 scaling 和基礎設施優化等領域。</p>
-<p><strong>注意力機制</strong>：標準 Transformer 的 softmax 注意力在序列長度上具有 $O(n^2)$ 複雜度。線性注意力 [142, 141] 將其降低到 $O(n)$，代價是引入局部性偏差。Mamba [49] 和 Gated Delta Networks [139] 引入選擇性狀態空間機制。KDA 在此基礎上增加了通道級遺忘門和下限有界衰減，實現硬體高效實現。</p>
-<p><strong>專家混合</strong>：MoE [33, 23] 通過稀疏激活減少計算成本。Switch Transformer [33] 使用簡單的 Top-1 路由，DeepSeekMoE [23] 引入了細粒度專家分割和共享專家。BASE Layers [68] 和 Expert Choice [117] 從最優傳輸角度重新定義路由。Kimi K3 的 Quantile Balancing 從最優平衡分配的對偶推导出，數學嚴謹且收斂快速。</p>
-<p><strong>測試時 Scaling</strong>：OpenAI o-series [85, 84]、Anthropic Extended Thinking [6, 7]、DeepSeek-R1 [41] 和 Kimi K1.5 [119] 展示了 RL 驅動推理能力提升的巨大潛力。Kimi K3 在此基礎上將測試時 scaling 擴展到百萬 Token 長度和多模態場景。</p>
-<hr>
-<h2 id="附錄（Appendices）"><a href="#附錄（Appendices）" class="headerlink" title="附錄（Appendices）"></a>附錄（Appendices）</h2><h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 $z$，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 $\beta_1, \beta_2 \to \infty$，SiTU-GLU 精確退化為 SwiGLU。</p>
-<p>由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。這種平滑約束在原點附近保留非零梯度，不同於硬截斷，訓練表現更好。</p>
-<h3 id="附錄-C：Quantile-Balancing-的推導"><a href="#附錄-C：Quantile-Balancing-的推導" class="headerlink" title="附錄 C：Quantile Balancing 的推導"></a>附錄 C：Quantile Balancing 的推導</h3><p>QB 從最優平衡分配問題推導而來。令 $s \in \mathbb{R}^{m \times n}$ 收集 $m$ 個 Token 對 $n$ 個專家的路由器分數，其中每個 Token 恰好選擇 $k$ 個專家，最大分數平衡分配為：</p>
-<p>$$\max_{x_{i,j} \in {0,1}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}$$</p>
-<p>將約束放寬到連續值後，通過對偶理論推導出封閉形式的最優解，交替求解 token 側閾值 $\alpha_i$ 和專家側閾值 $\beta_j$，兩者都是分位數形式，收斂快速且精確。</p>
-<h3 id="附錄-D：Histogram-Based-分位數估計"><a href="#附錄-D：Histogram-Based-分位數估計" class="headerlink" title="附錄 D：Histogram-Based 分位數估計"></a>附錄 D：Histogram-Based 分位數估計</h3><p>QB 更新（方程 14）需要對整個訓練步計算分位數：對 $n$ 個專家中的每一個，取 margin $s_{:,j} - \alpha$ 的 $(1 - k/n)$-分位數，其中 Token 數 $m$ 跨越數百萬，分散在數據並行 rank 和梯度累積步之間。</p>
-<p>我們的關鍵觀察是：更新從不需要 margin 本身，只需要它們的逐專家分佈——這可以用直方圖以固定代價總結。具體來說：</p>
-<ul>
-<li><strong>Binning</strong>：將區間 $[b_{\min} - 1, b_{\max} + 1]$ 划分为 $B = 1000$ 個均勻 bin</li>
-<li><strong>Accumulation</strong>：每個 rank 在前向傳播期間 scatter-add 到每專家計數矩陣 $H \in \mathbb{N}^{n \times B}$，無需通信</li>
-<li><strong>All-reduce</strong>：步結束時一次整數 All-Reduce 求和局部計數</li>
-<li><strong>Quantile recovery</strong>：對每個專家，選擇第一個累積計數達到 $\lceil q \rceil$ 的 bin，線性插值恢復分位數</li>
-</ul>
-<p>此估計器精確（誤差不超過 bin 寬度）、便宜（僅需一次整數 All-Reduce，代價不到原始 margin 通信的 1%），且估計正確量（計數可加，全球直方圖精確等於 Pooled 全域分佈，與 Token 分片方式無關）。</p>
-<h3 id="附錄-E：MoonEP-一般上界證明"><a href="#附錄-E：MoonEP-一般上界證明" class="headerlink" title="附錄 E：MoonEP 一般上界證明"></a>附錄 E：MoonEP 一般上界證明</h3><p>對給定路由器輸出 $I$，令 $M(I) = \min_P \max_r { m_r(P) }$ 為最優執行計劃下每個 EP rank 的最大冗餘專家數。定理 1：$M(I) \leq E/R$（$E$ 為每設備專家數，$R$ 為 EP ranks 數）。構造證明：反覆從超載 rank 向欠載 rank 遷移 Token 直到完美均衡，每次填補使一個欠載 rank 達到均衡且此後不再改變，過程在 $R-1$ 次內終止，且每個 rank 的遠程 Token 來自單一其他 rank，因此冗餘不超過 $E/R$。</p>
-<h3 id="附錄-F：Chat-Template（XTML）"><a href="#附錄-F：Chat-Template（XTML）" class="headerlink" title="附錄 F：Chat Template（XTML）"></a>附錄 F：Chat Template（XTML）</h3><p>Kimi K3 的 Chat Template 重新設計為圍繞三個目標：</p>
-<ol>
-<li><strong>可擴展性</strong>：新能力通過向後兼容的消息格式引入，無需模板修訂</li>
-<li><strong>低對齊稅</strong>：格式以最少監督數據學習，支持輕微微調後直接進入 RL 的流程</li>
-<li><strong>解碼友好</strong>：結構容許簡單編碼器、流式解析器和語法約束執行器</li>
-</ol>
-<p>Template 採用 XTML（eXtensible Token Markup Language），用三個保留的特殊 Token 替代 XML 語法：<code>[open]</code>、<code>[sep]</code> 和 <code>[close]</code>，加上一個生成停止標記 <code>[end_of_msg]</code>。</p>
-<p>消息結構分為兩個類別：<strong>輸入消息</strong>（序列化請求的 messages 字段）和<strong>選項消息</strong>（將請求選項轉換為模型在上下文中讀取的指令）。全局選項（工具聲明、推理努力設置）在所有輸入消息之前；一次性選項（tool_choice、response_format）在輸入消息之後，使每請求更改不影響歷史 KV Cache。</p>
-<p>助手消息的 body 按<strong>通道</strong>組織：<code>think</code> 攜帶推理軌跡，<code>response</code> 攜帶用戶可見答案，<code>tools</code> 攜帶工具調用。兩種生成模式通過生成前綴選擇：<code>[open]think[sep]</code> 為思考模式，<code>[open]response[sep]</code> 為指令模式。</p>
-<hr>
-<h2 id="譯註（Translator’s-Notes）"><a href="#譯註（Translator’s-Notes）" class="headerlink" title="譯註（Translator’s Notes）"></a>譯註（Translator’s Notes）</h2><blockquote>
-<p>以下概念說明基於 research 整理，幫助讀者理解技術背景。</p>
-</blockquote>
-<p><strong>¹ Delta Rule（Delta Rule 遞歸）</strong></p>
-<p>這裡的 Delta Rule 不是神經網絡中用於梯度下降的 delta rule。它來自於「線性注意力是某種快速權重記憶系統」的思想（Mackay, 1990; Schmidhuber, 1992）。本質上：狀態 $S_t$ 儲存「如何根據新的 Query 權重重新加權歷史 Values」，Delta Rule 的含義是「相對於前一個狀態的增量修改」，而不是「覆蓋」。通道級衰減 $\alpha_t$ 控制歷史信息保留多少，$\beta_t$ 控制新信息寫入強度。</p>
-<p><strong>² Linear Attention vs Softmax Attention</strong></p>
-<p>標準 softmax attention 需要對所有先前 token 計算 attention score，複雜度 $O(n^2)$。Linear attention 將其重寫為遞歸形式，複雜度降到 $O(n)$。代價是：linear attention 是全局的（每個 token 可見所有歷史），但缺乏 softmax 的「選擇性」——它不能根據內容動態決定關注什麼。KDA 透過 gated delta mechanism 部分解決這個問題：$\beta_t$ 閘控允許模型根據輸入內容決定「寫入多少新信息」。</p>
-<p><strong>³ MoE Load Balancing / Dead Experts</strong></p>
-<p>在 MoE 中，如果某些專家被選中的頻率遠高於其他專家，會造成：① 這些專家所在設備通信成為瓶頸；② 未被選中的專家（「dead experts」）長期缺乏訓練，權重退化。傳統輔助損失方法對不平衡加懲罰，但這直接干擾路由決策——損失函數的兩個目標（預測準確 + 負載均衡）相互矛盾，訓練動態複雜。輔助損失-free 方法（BASE Layers, Expert Choice, QB）則只修改路由偏置項，不改變 router 的梯度優化方向。</p>
-<p><strong>⁴ NoPE (No Position Encoding)</strong></p>
-<p>標準 Transformer 需要某種方式告訴模型 token 的位置（因為注意力是位置無關的）。RoPE 通過旋轉矩陣將位置編碼融入 query/key；ALiBi 通過 distance-based penalty 實現。NoPE 的思想是：如果注意力機制本身具有「順序敏感性」（例如遞歸狀態攜帶了位置信息），那就不需要顯式位置編碼。KDA 的遞歸狀態本身就攜帶了「哪個 token 是哪個」的相對位置信息，因此不需要 NoPE。</p>
-<p><strong>⁵ Tensor Core vs CUDA Core</strong></p>
-<p>GPU 上執行矩陣乘法有兩種方式：CUDA Core 是通用計算單元，可以執行任意精度、任意形狀的操作；Tensor Core 是專門為矩陣乘法設計的硬體單元，在 Volta 架構（2017）引入後顯著加速了深度學習中的矩陣運算。Tensor Core 要求輸入矩陣滿足特定形狀（通常是 16×16 或 8×8 的小塊），因此稱為「密集矩陣乘法」。KDA 的下界有界衰減確保所有 tile 都滿足這個要求，使整個計算都落在 Tensor Core 上，大幅提升效率。</p>
-<p><strong>⁶ CUTLASS / Triton</strong></p>
-<p>CUTLASS 是 NVIDIA 開發的 CUDA C++ 模板庫，提供高效矩陣乘法和其他底層操作的參考實現，是開發自定義 GPU kernel 的基礎。Triton 是 OpenAI 開發的 DSL（領域特定語言），允許用 Python-like 語法編寫高效 GPU kernel，編譯器自動處理記憶體合併、共享內存分配等問題。相比 PyTorch 的 autograd，寫自定義 kernel 可以：</p>
-<ul>
-<li>融合多個操作減少記憶體傳輸</li>
-<li>針對特定硬體優化記憶體訪問模式</li>
-<li>實現 PyTorch 不支持的運算（如 KDA 的遞歸狀態傳遞）</li>
-</ul>
-<p><strong>⁷ On-Policy Distillation</strong></p>
-<p>On-Policy 意味着用當前策略生成樣本再用這些樣本更新策略。Multi-Teacher On-Policy Distillation（MOPD）是說：有多個不同領域/推理努力級別的教師模型，各自擅長不同的任務；用這些教師生成的樣本蒸餾到一個統一模型中，使統一模型同時具備多個領域的能力。</p>
-<p><strong>⁸ Muon 優化器</strong></p>
-<p>Muon = “Matrix u for u, Newton-ish”，是一種牛頓類優化器，專門為 Transformer 中的矩陣參數設計。它使用 Newton-Schulz 正交化來維持權重矩陣的正交性，聲稱在某些設置下收斂速度比 AdamW 快。Per-Head 版本將正交化應用於每個注意力頭的分塊矩陣，而非整個 Q/K/V 投影矩陣，避免不同 head 因梯度尺度不同而在更新中相互干擾。</p>
-<p><strong>⁹ RMSNorm</strong></p>
-<p>Root Mean Square Layer Normalization。與標準 LayerNorm 不同，RMSNorm 只計算 RMS（均方根）而不用均值，在某些場景下訓練更穩定且計算更簡單。</p>
-<hr>
-<p><em>本翻譯基於 Kimi K3 Technical Report (2026-07)，原文版權歸 Kimi Team 所有。翻譯僅供學習參考。</em></p>
-]]></content>
-      <categories>
-        <category>AI</category>
-        <category>模型分析</category>
-      </categories>
-      <tags>
-        <tag>Kimi</tag>
-        <tag>MoE</tag>
-        <tag>LLM</tag>
-        <tag>KDA</tag>
-        <tag>技術報告</tag>
-        <tag>翻譯</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Kimi K3 技術報告：架構、訓練與效能深度解析</title>
     <url>/higumalu-note/2026-07-28-kimi-k3-technical-report/</url>
     <content><![CDATA[<blockquote>
@@ -1986,6 +1469,523 @@
         <tag>教學</tag>
         <tag>Windows</tag>
         <tag>桌面版</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Kimi K3 技術報告（全量翻譯 + 譯註）</title>
+    <url>/higumalu-note/2026-07-28-kimi-k3-technical-report-full-translation/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>前言：</strong> 本文的翻譯盡量貼近原文表述，並在必要處加入譯註說明背景概念。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="Kimi-K3：開放前沿智能"><a href="#Kimi-K3：開放前沿智能" class="headerlink" title="Kimi K3：開放前沿智能"></a>Kimi K3：開放前沿智能</h2><h3 id="Kimi-K3-技術報告"><a href="#Kimi-K3-技術報告" class="headerlink" title="Kimi K3 技術報告"></a>Kimi K3 技術報告</h3><p><em>Kimi 團隊</em></p>
+<hr>
+<h2 id="摘要（Abstract）"><a href="#摘要（Abstract）" class="headerlink" title="摘要（Abstract）"></a>摘要（Abstract）</h2><p>我們提出 Kimi K3，一個 2.8 兆參數的專家混合模型，擁有 1040 億激活參數、原生視覺能力，以及 100 萬 Token 的上下文窗口。Kimi K3 基於 Kimi Delta Attention [64] 和 Attention Residuals [58] 構建，這兩項技術分別提升了序列長度和模型深度的信息流動。配合 Stable LatentMoE（每個 Token 有效激活 896 個路由專家中的 16 個）以及經過精煉的訓練配方與數據配方，這些進步帶來了相比 Kimi K2 [59] 約 <strong>2.5 倍</strong>的整體擴展效率提升。後訓練的亮點包括：在通用領域、Agent 領域和 Coding 領域開展強化學習，並覆蓋多個推理努力層級，實現了組合泛化和強健的長程執行能力。在 2.8 兆參數的規模下，Kimi K3 得到多個基礎設施領域的支撐：KDA 的演算法-系統共同設計、完美均衡的專家並行訓練（高效內存管理）、百萬 Token Agentic 強化學習（持久化 Rollout 與 Sandbox 狀態），以及部署創新。</p>
+<p>廣泛的評估表明，Kimi K3 在長程 Coding、Agentic、知識、推理和視覺任務上達到了前沿水準。儘管其整體表現仍落後於最強的私有模型——Claude Fable 5 和 GPT-5.6 Sol——但 Kimi K3 一致性地超越了評估套件中的其他開源和私有模型。我們發布了完整的 Kimi K3 模型權重，以促進未來研究並加速前沿智能的更廣泛部署與應用。¹</p>
+<hr>
+<h2 id="1-引言（Introduction）"><a href="#1-引言（Introduction）" class="headerlink" title="1. 引言（Introduction）"></a>1. 引言（Introduction）</h2><p>在大型語言模型（LLM）發展的相當長一段時間裡，「scaling」意味著在部署前投入更多計算——訓練更大的模型、使用更多的數據 [55, 46]。推理模型的興起將「測試時計算」（test-time computation）確立為第二條 scaling 軸線：OpenAI 的 o 系列通過強化學習和測試時推理實現 scaling [85, 84]；Anthropic 的 Extended-Thinking 模型分配自適應思考預算並交織推理與工具使用 [6, 7]；DeepSeek-R1 [41] 和 Kimi K1.5 [119] 表明，大規模強化學習可以從強大的預訓練模型中引發複雜的推理行為；Kimi K2.5 Agent Swarm [60] 進一步將測試時 scaling 從順序推理擴展到並行 Agent 協調。這些進步使測試時 scaling 成為前沿研究的核心焦點。然而，開源模型生態系統在第二條軸線上快速進展的同時，在第一條軸線上進展緩慢：許多近期模型仍停留在 1 兆參數級別或略高 [146, 29, 136, 121]。隨著越來越複雜的推理和 Agentic 強化學習方法被應用到相似規模的預訓練基礎上，開源進展有趨同的風險，而與最強私有系統的差距正在擴大。透過 Kimi K3，我們同時追求兩條 scaling 軸線到前沿：將預訓練基礎擴展到前所未有的 3 兆參數級別，同時在 100 萬上下文長度上擴展強化學習、推理努力和長程交互。</p>
+<p>我們提出 Kimi K3，一個原生多模態專家混合模型，總參數 2.8 兆，激活參數 1040 億，上下文窗口最長 100 萬 Token。其架構在三個互補維度上擴展信息流：</p>
+<ul>
+<li><strong>序列維度</strong>：Kimi Delta Attention（KDA）[64] 提供高效的長序列混合，並以週期性插入的 Gated MLA 層保留全局交互</li>
+<li><strong>深度維度</strong>：Attention Residuals（AttnRes）[58] 允許每層選擇性地從所有先前層的表示中檢索</li>
+<li><strong>寬度維度</strong>：每層注意力後接 Stable LatentMoE，稀疏地激活每個 Token 的 896 個專家中的 16 個，配合 Normalization、SiTU-GLU 和 Quantile Balancing 在極度稀疏下穩定優化</li>
+</ul>
+<p>這些架構進步結合精煉的數據和訓練配方，帶來相比 Kimi K2 [59] 約 2.5 倍的整體擴展效率提升。</p>
+<p>我們將這一預訓練基礎與明確為 100 萬上下文測試時 scaling 設計的後訓練相結合。Kimi K3 在長程 Coding、通用 Agent、通用推理與知識任務上接受強化學習，每個任務涵蓋多個推理努力層級。訓練環境包括：可驗證搜索與專業知識工作、軟體工程與內核優化、視覺 in-the-loop 工具使用的多模態推理、持久化助理工作流、網頁開發，以及自主執行任務。這些環境訓練一個通用的推理-行動-觀察-驗證-適應循環，往往跨越數百或數千次工具調用和數百萬累計上下文 Token。領域和努力級別專門的策略透過多教師 On-Policy 蒸餾 [76, 135, 29] 整合到統一模型中。</p>
+<p>實現這一 regime 需要能隨架構複雜度、模型規模和軌跡長度擴展的基礎設施。針對 KDA 的系統共同設計，我們開發了融合內核、KDA Context Parallelism 和狀態感知前綴緩存，使 KDA 在設備內、跨設備和跨請求上都高效。對於 2.8 兆參數 MoE 預訓練，MoonEP 提供完美均衡的專家執行（靜態計算形狀、零拷貝通信），配合內存高效訓練和多模態編碼器優化，在有限內存下維持高利用率。針對百萬 Token Agentic 強化學習，我們的協作系統結合部分 Rollout、外部 KV-Cache 保留、自適應節流和可恢復 MicroVM Sandbox，以保持長壽模型和環境狀態。最後，專門化內核與緩存/預算感知調度將這些創新轉化為可預測的生產服務。</p>
+<p>由此產生的模型建立了新的開放前沿。在涵蓋長程 Coding、Agentic、知識、推理和視覺任務的基準測試上，Kimi K3 總體落後於最強的私有系統——Claude Fable 5 和 GPT-5.6 Sol——但一致性地超越了評估套件中的其他開源和私有模型（如圖 1 所示）。</p>
+<p>我們的貢獻總結如下：</p>
+<ul>
+<li><strong>開放前沿的預訓練。</strong> 我們訓練了一個 2.8 兆參數的原生多模態 MoE 模型，激活參數 1040 億，上下文窗口 100 萬 Token。KDA、AttnRes、Stable LatentMoE 和精煉的數據/訓練配方共同帶來相比 Kimi K2 約 2.5 倍的整體擴展效率提升。</li>
+<li><strong>多努力層級推理時 scaling 的強化學習。</strong> 我們在通用、Agentic 和 Coding 領域以及多個推理努力層級上開展強化學習，然後將結果能力整合到統一模型中。</li>
+<li><strong>多兆參數、百萬 Token 智能的基礎設施。</strong> 我們提出 KDA 系統共同設計；MoonEP 和 2.8 兆參數 MoE 預訓練的內存高效基礎設施；帶可恢復沙箱的協作強化學習系統（處理百萬 Token Agentic 軌跡）；以及更多基礎設施創新。</li>
+<li><strong>一個開放前沿模型。</strong> 我們發布完整的 Kimi K3 模型權重，使前沿智能可用於研究、部署和進一步創新。</li>
+</ul>
+<hr>
+<h2 id="2-模型架構（Model-Architecture）"><a href="#2-模型架構（Model-Architecture）" class="headerlink" title="2. 模型架構（Model Architecture）"></a>2. 模型架構（Model Architecture）</h2><p>Kimi K3 的架構設計為在三個互補維度上擴展信息流：<strong>序列長度、網絡深度、模型寬度</strong>。</p>
+<ul>
+<li><strong>序列維度</strong>：Hybrid Attention 將三層 Kimi Delta Attention（KDA）[64] 與一層 Gated MLA 結合，在提供高效長上下文 Token 混合的同時保留選擇性高容量注意力（§2.1）。</li>
+<li><strong>深度維度</strong>：Attention Residuals（AttnRes）[58] 允許每個模塊選擇性地從 Embedding、當前 block 和先前 block 中檢索表示，將信息訪問擴展到傳統順序殘差累積之外（§2.2）。</li>
+<li><strong>寬度維度</strong>：每層注意力後接 Stable LatentMoE 層，稀疏地執行通道混合，每個 Token 有效激活 896 個路由專家中的 16 個（§2.3）。</li>
+<li><strong>原生視覺</strong>：MoonViT-V2 編碼圖像和視頻，輕量級投影器將視覺特徵映射到共享 Embedding 空間，再送入骨幹網絡處理（§2.4）。</li>
+<li>配合 Per-Head Muon 優化器（§2.5），這些組件提供了跨 Token、層和通道擴展信息流的統一架構。</li>
+</ul>
+<p>結合精煉的數據和訓練配方，它們帶來相比 Kimi K2 約 <strong>2.5 倍</strong>的整體擴展效率提升。圖 2 提供了架構總覽。</p>
+<p><img src="/higumalu-note/images/k3_tech_report/architecture.png" alt="Kimi K3 整體架構"><br><em>Kimi K3 整體架構，按 Token、Channel 和 Layer 三個混合維度組織，輸入端有原生視覺通道。</em></p>
+<hr>
+<h3 id="2-1-Hybrid-Attention"><a href="#2-1-Hybrid-Attention" class="headerlink" title="2.1 Hybrid Attention"></a>2.1 Hybrid Attention</h3><p>Kimi K3 使用層級混合的線性注意力和全局注意力，結合 KDA [64] 與 Gated MLA。每個 Block 包含 3 層 KDA 後接 1 層 Gated MLA，給出 3:1 的混合比例。此模式在整個骨幹網絡中重複。兩種注意力機制將在下面分別描述。骨架末端追加一個額外的 Gated MLA 層，確保最終層始終執行全局注意力。</p>
+<h4 id="2-1-1-Kimi-Delta-Attention"><a href="#2-1-1-Kimi-Delta-Attention" class="headerlink" title="2.1.1 Kimi Delta Attention"></a>2.1.1 Kimi Delta Attention</h4><p>KDA 在 Delta Rule 遞歸 [106, 139] 的基礎上增加通道級遺忘門 [64]。考慮隱藏狀態序列 $x_t \in \mathbb{R}^d$，其中 $t$ 索引 Token 位置，$d$ 是模型隱維度。為清晰起見，我們先描述單個注意力頭，Query 和 Key 向量 $q_t, k_t \in \mathbb{R}^{d_k}$，Value 向量 $v_t \in \mathbb{R}^{d_v}$，以及遞歸狀態 $S_t \in \mathbb{R}^{d_k \times d_v}$。KDA 在 Delta Rule 更新前應用通道級衰減：</p>
+<p>$$S_t = (I - \beta_t k_t k_t^\top) \odot \text{Diag}(\alpha_t) \cdot S_{t-1} + \beta_t k_t v_t^\top, \quad \tilde{o}_t = S_t^\top q_t$$</p>
+<p>其中 $\alpha_t \in (0, 1)^{d_k}$ 是通道級單步 retention factor，$\beta_t \in (0, 1)$ 控制 Delta Rule 寫入強度。</p>
+<p>跟隨 Kimi Linear [64]，KDA 將每頭量參數化為：</p>
+<p>$$q_t^h, k_t^h = \text{L2Norm}\left(\text{Swish}\left(\text{ShortConv}\left(W_t^{q/k} x_t\right)\right)\right) \in \mathbb{R}^{d_k}$$</p>
+<p>$$v_t^h = \text{Swish}\left(\text{ShortConv}\left(W_t^v x_t\right)\right) \in \mathbb{R}^{d_v}$$</p>
+<p>$$\beta_t^h = \text{Sigmoid}\left(W_\beta x_t\right) \in (0, 1)$$</p>
+<p>$$z_t^h = W_\alpha^\uparrow W_\alpha^\downarrow x_t + b_\alpha^h \in \mathbb{R}^{d_k}$$</p>
+<p>Query、Key、Value 投影依次應用 ShortConv 和 Swish [139]，Query 和 Key 進一步以 L2Norm [142] 歸一化。低秩投影和頭特定偏置 $b_\alpha^h \in \mathbb{R}^{d_k}$ 為每個 Key 通道產生細粒度衰減 logit $z_t^h$。從 $z_t^h$ 到 $\alpha_t^h$ 的下限有界映射將在分塊並行形式之後引入。</p>
+<p><strong>分塊並行形式</strong></p>
+<p>跟隨 Kimi Linear [64]，KDA 在 chunk 級別遞歸，在每個 chunk 內並行。對於 chunk size $C$，$X[t]$ 堆疊第 $t$ 個 chunk 中的 Token 向量（$X \in {Q, K, V, O, U, W}$）。矩陣 $S[t] \in \mathbb{R}^{d_k \times d_v}$ 表示進入 chunk $t$ 的遞歸狀態。對位置 $1 \leq i \leq j \leq C$，定義通道級累積衰減：</p>
+<p>$$\gamma_{i \to j}^{[t]} := \prod_{r=i}^j \alpha_r^{[t]}, \quad \gamma_r^{[t]} := \gamma_{1 \to r}^{[t]}$$</p>
+<p>如 Kimi Linear 中，$\Gamma_{1 \to C}^{[t]} \in \mathbb{R}^{C \times d_k}$ 將 $\gamma_1^{[t]}, …, \gamma_C^{[t]}$ 按行堆疊。UT 變換產生 $U[t]$ 和 $W[t]$，從而定義偽 Value 項 $eV[t] := U[t] - W[t]S[t]$。給定傳入狀態 $S[t]$，chunk $t$ 中的所有輸出並行計算為：</p>
+<p>$$A[t] = \text{Tril}\left((Q[t] \odot \Gamma_{1 \to C}^{[t]}) \cdot (K[t] / \Gamma_{1 \to C}^{[t]})^\top\right)$$</p>
+<p>$$O[t] = \underbrace{(\Gamma_{1 \to C}^{[t]} \odot Q[t]) S[t]}<em>{\text{inter-chunk}} + \underbrace{A[t] \cdot eV[t]}</em>{\text{intra-chunk}}$$</p>
+<p>對於矩陣 $M$，$\text{Tril}(M)$ 將所有嚴格上三角 entries 置零，保留下三角 entries（包括對角線）。此 mask 在 chunk 內強制執行因果交互，對角線保留是因為每個輸出讀取當前 Token 更新後的狀態。$O[t]$ 的第一項承載來自先前 chunks 的信息，第二項處理當前 chunk 內的交互。</p>
+<p><strong>下限有界衰減（核心創新）</strong></p>
+<p>方程 4 在每個 chunk 中以倒數累積衰減 $1/\Gamma_{1 \to C}^{[t]}$ 重新縮放 Keys。由於 $\Gamma_{1 \to C}^{[t]}$ 是 $(0, 1)$ 內 retention factor 的乘積，其倒數可能無界、在有限精度下溢出 [141, 64]。Kimi Linear 透過在 log 空間計算相對衰減並將每個 chunk 進一步劃分為次級 16-token tile 來控制數值範圍 [141, 64]。Off-diagonal tile 可以直接用 Tensor Core 密集矩陣乘法計算；相比之下，diagonal tile 仍需要顯式位置對計算，這是主要的 intra-chunk 瓶頸。</p>
+<p>Kimi K3 透過改變從衰減 logit $z_t^h$ 到單步 log-decay $g_t^h$ 的映射來解決這一瓶頸。跟隨 GDN 和 Mamba-2，Kimi Linear 使用負 Softplus 映射 $g_t^h = -e^{A_h} \text{Softplus}(z_t^h) \in (-\infty, 0)^{d_k}$ [139, 24, 64]。Kimi K3 轉而使用縮放 Sigmoid 從下方約束 log-decay：</p>
+<p>$$g_t^h = g_{\min} \cdot \text{Sigmoid}(e^{A_h} z_t^h) \in (g_{\min}, 0)^{d_k}$$</p>
+<p>$$\alpha_t^h = \exp(g_t^h) \in (e^{g_{\min}}, 1)^{d_k}$$</p>
+<p>其中 $A_h$ 是每頭可學習 log-scale，$g_{\min} = -5$ 固定。我們初始化 $A_h = 0$，各偏置 $b_\alpha^h$ 按 [64, 24, 139] 初始化。$g_{\min} = -5$ 確保每個 retention factor $\alpha_{t,j}^h &gt; e^{-5} \approx 6.7 \times 10^{-3}$，16-token tile 上的累積 log-decay 位於 $(-80, 0)$。相應的倒數重新縮放因子因此小於 $e^{80}$，保持在 BF16 動態範圍內。這一有限範圍使對角線和 off-diagonal tile 都能使用密集 Tensor Core 矩陣乘法，消除了位置對角線路徑。</p>
+<p><img src="/higumalu-note/images/k3_tech_report/kda-decay.png" alt="KDA 下限有界衰減 Figure 3"><br><em>圖 3：(a) Log-decay 參數化：Kimi Linear 使用無界負 Softplus 映射，Kimi K3 以縮放 Sigmoid 約束 log-decay 下界；(b) 對角線 tile 計算：Kimi Linear 對每個對角線 tile 執行顯式位置對計算，而 Kimi K3 的有界範圍使所有因果 tile 使用密集 Tensor Core 矩陣乘法</em></p>
+<p><strong>全秩輸出門</strong></p>
+<p>最後，Kimi K3 將 KDA 的輸出門從 Kimi Linear [64] 使用的低秩參數化改為輸入依賴的全秩投影。對遞歸輸出應用頭級 RMSNorm [147] 後，KDA 應用數據依賴輸出門控 [100]：</p>
+<p>$$y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \text{RMSNorm}(\tilde{o}_t)]$$</p>
+<h4 id="2-1-2-Gated-MLA"><a href="#2-1-2-Gated-MLA" class="headerlink" title="2.1.2 Gated MLA"></a>2.1.2 Gated MLA</h4><p>Multi-head Latent Attention（MLA）在 DeepSeek-V2 [28] 中引入，將每個 Token 的 Key-Value 表示壓縮到低維潛向量 $c_t = W_c x_t$。MLA 不緩存完整的頭特定 Keys 和 Values，而是緩存 $c_t$ 並在注意力計算期間透過學習的上投影重建內容 Keys 和 Values。這種分解減少了 KV-Cache 佔用，同時保留了全局 Token 間注意力。MLA 後被 Kimi K2 和 Kimi K2.5 [59, 60] 採用，Kimi K3 在週期性全局注意力層中保留 MLA。</p>
+<p>不同於 Kimi K2 和 K2.5，Kimi K3 跟隨 Kimi Linear [64] 的混合設計，對所有 MLA 層應用 <strong>No Position Encoding（NoPE）</strong>。因此，不對它們的 Query 或 Key 應用顯式位置編碼。穿插的 KDA 層提供位置敏感和近因感知的序列混合，而 MLA 層提供無限制的全局內容交互。這種分離也避免了在擴展上下文長度時修改位置編碼參數，例如重新調優 RoPE 頻率基或應用 YaRN [93]。</p>
+<p>此外，Kimi K3 以輸入依賴、通道級全秩輸出門增強 MLA。令 $\tilde{o}_t$ 為位置 $t$ 的無門控 MLA 輸出，門控輸出為：</p>
+<p>$$y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \tilde{o}_t]$$</p>
+<p>門投影 $W_g$ 是全秩的，與 Kimi K3 中 KDA 的新參數化一致。此門允許每個 Token 調製從全局注意力讀取的通道。</p>
+<p>為修正 Flash Attention 中出現的有偏舍入誤差，我們採用 [99] 的方法，在訓練期間將注意力輸出保持為 FP32。這使輸出 tile 的片上佔用增加一倍；因此我們重新設計訓練內核，讓它與 KV 緩衝區而不是 Query tile 重疊，為更深的 KV 管線和更高訓練吞吐量釋放共享內存。</p>
+<hr>
+<h3 id="2-2-Attention-Residuals"><a href="#2-2-Attention-Residuals" class="headerlink" title="2.2 Attention Residuals"></a>2.2 Attention Residuals</h3><p>標準殘差連接 [44] 將所有先前信息壓縮到深度上的單一狀態 $h_l$——這是一種令人聯想到時間維度 RNN 的 bottleneck。對於序列建模，Transformer 以注意力 [10, 126] 取代了遞歸，允許每個位置以數據依賴權重選擇性地訪問所有先前位置。Attention Residuals（AttnRes）[58] 將相同方法論應用於深度維度：每層選擇性地從所有先前層的表示中檢索，而非均勻累積。</p>
+<p><strong>完全 Attention Residuals</strong></p>
+<p>對於每層 $l$，我們定義層特定可學習偽查詢 $q_l = w_l \in \mathbb{R}^d$ 及其 Keys 和 Values：</p>
+<p>$$k_i = v_i = \begin{cases} h_1 &amp; i = 0 \ f_i(h_i) &amp; 1 \leq i \leq l-1 \end{cases}$$</p>
+<p>其中 $f_i(h_i)$ 是第 $i$ 層的輸出，$h_1$ 是 Token Embedding。注意力權重遵循 softmax kernel $\phi(q, k) = \exp(q^\top \text{RMSNorm}(k))$ [56, 147]，其中 RMSNorm 防止大幅度輸出的層主導權重：</p>
+<p>$$\alpha_{i \to l} = \frac{\phi(q_l, k_i)}{\sum_{j=0}^{l-1} \phi(q_l, k_j)}, \quad h_l = \sum_{i=0}^{l-1} \alpha_{i \to l} \cdot v_i$$</p>
+<p>由於網絡深度適中（$L &lt; 100$），這種完全形式 $O(L^2 d)$ 的算術代價是可接受的；實際開銷是為保持所有層輸出存活所需的 $O(Ld)$ 內存（以及管道並行下跨階段通信）。</p>
+<p><strong>分塊 Attention Residuals</strong></p>
+<p>為減少此開銷，我們將 $L$ 層劃分為 $N$ 個 block，每個 block $S = L/N$ 層。Block $n$（層索引 $B_n$）內的層輸出通過求和歸約為單一表示 $b_n = \sum_{j \in B_n} f_j(h_j)$，其中 $b_n^i$ 表示 block 前 $i$ 層的部分和；設 $b_0 = h_1$，因此 Token Embedding 始終作為來源包含在內。跨 block，只對 $N$ 個 block 級表示應用完全注意力：對 block $n$ 的第 $i$ 層，Value 矩陣為：</p>
+<p>$$V = \begin{cases} [b_0, b_1, …, b_{n-1}]^\top &amp; i = 1 \text{（block 首層）} \ [b_0, b_1, …, b_{n-1}, b_{n-1}^i]^\top &amp; i \geq 2 \text{（後續層）} \end{cases}$$</p>
+<hr>
+<h3 id="2-3-Stable-LatentMoE"><a href="#2-3-Stable-LatentMoE" class="headerlink" title="2.3 Stable LatentMoE"></a>2.3 Stable LatentMoE</h3><p>LatentMoE 在前饋網絡中引入潛路由，將 FFN 轉換為潛專家混合。路由的 Key-Value 表示被壓縮為低維向量，激活時通過上投影重建。具體來說，令 $x \in \mathbb{R}^d$ 為輸入，路由器首先計算：</p>
+<p>$$s = \text{Softmax}(\text{Norm}(W_r x)) \in \mathbb{R}^n$$</p>
+<p>其中 $n = 896$ 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：</p>
+<p>$$\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)$$</p>
+<p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和權重：</p>
+<p>$$\mathcal{T}<em>i = \text{argtop}<em>k(s_i + b), \quad w</em>{i,j} = \begin{cases} \frac{\text{Softmax}(s</em>{i,j} + b_j)}{\sum_{j’ \in \mathcal{T}<em>i} \text{Softmax}(s</em>{i,j’} + b_{j’})} &amp; j \in \mathcal{T}_i \ 0 &amp; \text{otherwise} \end{cases}$$</p>
+<p>偏置 $b$ 從路由概率計算中省略，這樣它只調節 dispatch 而不改變混合權重或直接干擾梯度優化。</p>
+<h4 id="2-3-1-SiTU-GLU"><a href="#2-3-1-SiTU-GLU" class="headerlink" title="2.3.1 SiTU-GLU"></a>2.3.1 SiTU-GLU</h4><p>在 FFN 投影之間，我們用 SiTU-GLU 取代標准 SwiGLU。SiTU-GLU 將 Swish 激活函數的 cap 替換為平滑的 Tanh cap：</p>
+<p>$$\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)$$</p>
+<p>Gate branch 的 $\beta_1 = 4$，Up branch 的 $\beta_2 = 25$。由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。在原點附近，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 $\beta \to \infty$ 精確退化為 SwiGLU。</p>
+<h4 id="2-3-2-Quantile-Balancing"><a href="#2-3-2-Quantile-Balancing" class="headerlink" title="2.3.2 Quantile Balancing"></a>2.3.2 Quantile Balancing</h4><p>隨著專家數增長到近千，均衡路由變得越來越重要。傳統輔助損失方法 [30] 在每個 Token 上增加一個負載不平衡罰項，但這會直接干擾路由決策與梯度優化。我們採用無輔助損失的路由均衡：對每個專家維護一個偏置項 $b_j$，根據目標加載 $q := mk/n$ 週期性更新：</p>
+<p>$$b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_i \mathbf{1}_{j \in \mathcal{T}_i} - \frac{k}{n} \right)$$</p>
+<p>此更新將專家加載推向目標，類似於 SignSGD，但直接作用於偏置而非路由器參數。</p>
+<p><img src="/higumalu-note/images/k3_tech_report/quantile-balancing.png" alt="Quantile Balancing"><br><em>圖 5：Quantile Balancing 示意（m=8 tokens, n=4 experts, k=1）。(a) 不均衡路由：初始加載 (4, 3, 1, 0)；(b) 分位數平衡：每列繪製偏差後的分數灰條，紅色虛線為偏差調整線；(c) 均衡路由：最終加載 (2, 2, 2, 2)</em></p>
+<p>對於精確的偏差估計，我們從最優平衡分配問題的對偶推导出 Alternating Quantile Solver：交替求解 token 側閾值 $\alpha$ 和專家側閾值 $\beta$，每步封閉形式精確求解。實務上，用 1000 個 bin 的直方圖估計分位數，僅需一次整數 All-Reduce 通信，代價不到原始 margin 通信的 1%。</p>
+<hr>
+<h3 id="2-4-原生視覺"><a href="#2-4-原生視覺" class="headerlink" title="2.4 原生視覺"></a>2.4 原生視覺</h3><p>Kimi K3 的視覺編碼器 MoonViT-V2 將圖像和視頻編碼為視覺 Token 序列。輕量級投影器將視覺特徵映射到與語言骨幹共享的 Embedding 空間，然後一起送入骨幹網絡處理。這種原生多模態設計使視覺理解與語言推理深度融合，而非事後拼接。</p>
+<hr>
+<h3 id="2-5-Per-Head-Muon"><a href="#2-5-Per-Head-Muon" class="headerlink" title="2.5 Per-Head Muon"></a>2.5 Per-Head Muon</h3><p>我們對注意力頭使用 Per-Head Muon 優化器。Muon（Matrix u for u, Newton-ish）是一種為 Transformer 設計的牛頓類優化器，在某些設置下收斂速度比 AdamW 快 [22]。Per-Head 版本對每個注意力頭維護單獨的學習率和狀態，進一步提升收斂穩定性。</p>
+<hr>
+<h2 id="3-預訓練（Pre-Training）"><a href="#3-預訓練（Pre-Training）" class="headerlink" title="3. 預訓練（Pre-Training）"></a>3. 預訓練（Pre-Training）</h2><h3 id="3-1-數據配方"><a href="#3-1-數據配方" class="headerlink" title="3.1 數據配方"></a>3.1 數據配方</h3><p>Kimi K3 的預訓練數據包括多語言語料、專業領域文本（代碼、數學、科學論文）和網頁內容。關鍵改進包括：</p>
+<ul>
+<li><strong>數據質量過濾</strong>：多階段質量分類器去除低質量內容</li>
+<li><strong>領域平衡</strong>：確保數學、編程、推理密集內容的充分覆蓋</li>
+<li><strong>去重</strong>：大規模語義去重減少冗餘</li>
+</ul>
+<h3 id="3-2-訓練穩定性"><a href="#3-2-訓練穩定性" class="headerlink" title="3.2 訓練穩定性"></a>3.2 訓練穩定性</h3><p>2.8 兆參數規模的訓練面臨獨特挑戰：</p>
+<ul>
+<li><strong>權重裁剪</strong>：從 Kimi K2 沿用的權重裁剪機制防止梯度爆炸</li>
+<li><strong>漸進式課程學習</strong>：從短序列開始，逐步過渡到百萬 Token</li>
+<li><strong>BF16/FP32 混合精度</strong>：關鍵操作使用 FP32 防止累積誤差</li>
+</ul>
+<h3 id="3-3-擴展法則"><a href="#3-3-擴展法則" class="headerlink" title="3.3 擴展法則"></a>3.3 擴展法則</h3><p><img src="/higumalu-note/images/k3_tech_report/scaling-law.png" alt="擴展法則"><br><em>圖 7：Kimi K2 和 Kimi K3 的擬合擴展法則曲線。Kimi K3 在相同 FLOPs 下達到更低驗證損失，相比 Kimi K2 提升 2.5× 擴展效率</em></p>
+<table>
+<thead>
+<tr>
+<th>參數</th>
+<th>Kimi K2</th>
+<th>Kimi K3</th>
+<th>變化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>層數</td>
+<td>61</td>
+<td>93</td>
+<td>↑52%</td>
+</tr>
+<tr>
+<td>總參數</td>
+<td>1.04T</td>
+<td>2.78T</td>
+<td>↑167%</td>
+</tr>
+<tr>
+<td>激活參數</td>
+<td>32.6B</td>
+<td>104.2B</td>
+<td>↑220%</td>
+</tr>
+<tr>
+<td>Latent MoE 維度</td>
+<td>—</td>
+<td>3584</td>
+<td>新增</td>
+</tr>
+<tr>
+<td>每 Token 激活專家</td>
+<td>8</td>
+<td>16</td>
+<td>↑100%</td>
+</tr>
+<tr>
+<td>上下文長度</td>
+<td>128K</td>
+<td>1M</td>
+<td>↑8×</td>
+</tr>
+<tr>
+<td>注意力機制</td>
+<td>MLA</td>
+<td>Hybrid KDA–MLA</td>
+<td>新架構</td>
+</tr>
+<tr>
+<td>激活函數</td>
+<td>SwiGLU</td>
+<td>SiTU-GLU</td>
+<td>新函數</td>
+</tr>
+<tr>
+<td>視覺編碼器</td>
+<td>—</td>
+<td>MoonViT-V2 (27層, patch=14)</td>
+<td>新增</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="4-後訓練（Post-Training）"><a href="#4-後訓練（Post-Training）" class="headerlink" title="4. 後訓練（Post-Training）"></a>4. 後訓練（Post-Training）</h2><h3 id="4-1-強化學習"><a href="#4-1-強化學習" class="headerlink" title="4.1 強化學習"></a>4.1 強化學習</h3><p>Kimi K3 的後訓練明確為 100 萬上下文測試時 scaling 設計。跨四個領域開展強化學習，每個領域覆蓋多個推理努力層級（low / medium / high / max）。</p>
+<p><strong>通用領域</strong>：可驗證搜索、專業知識工作，訓練模型在長上下文中的精確信息檢索與綜合能力。</p>
+<p><strong>Agentic 領域</strong>：持久化助理工作流、網頁開發、自主執行任務，訓練數百至數千次工具調用、數百萬累計上下文 Token 的長程執行能力。</p>
+<p><strong>Coding 領域</strong>：軟體工程、內核優化，訓練模型在複雜代碼庫中的導航、修改和調試能力。</p>
+<p><strong>多模態領域</strong>：視覺 in-the-loop 工具使用，訓練模型結合視覺理解和工具調用的能力。</p>
+<p><strong>領域專門化策略的統一</strong>：每個領域和努力層級的專門化策略透過多教師 On-Policy 蒸餾 [76, 135, 29] 整合到統一模型中。</p>
+<h3 id="4-2-Long-Context-SFT"><a href="#4-2-Long-Context-SFT" class="headerlink" title="4.2 Long-Context SFT"></a>4.2 Long-Context SFT</h3><p>在強化學習之前，Kimi K3 在長上下文任務上接受監督微調（SFT），涵蓋長程推理、多文檔問答和代碼補全。關鍵是使用真實的長上下文數據而非簡單的序列拼接。</p>
+<hr>
+<h2 id="5-基礎設施（Infrastructure）"><a href="#5-基礎設施（Infrastructure）" class="headerlink" title="5. 基礎設施（Infrastructure）"></a>5. 基礎設施（Infrastructure）</h2><p>Kimi K3 結合了三種罕見的系統挑戰：混合 KDA 注意力、3 兆類稀疏多模態訓練/推理，以及百萬 Token Agentic 工作負載。我們的基礎設施在每個領域都進行了共同設計。</p>
+<h3 id="5-1-KDA-演算法-系統共同設計"><a href="#5-1-KDA-演算法-系統共同設計" class="headerlink" title="5.1 KDA 演算法-系統共同設計"></a>5.1 KDA 演算法-系統共同設計</h3><p>KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準注意力中的 Key-Value Cache。這種設計允許廉價的狀態傳遞和復用，但對並行執行提出挑戰。</p>
+<p><strong>設備內 KDA 內核</strong>：我們開發了 FlashKDA，一個基於 CUTLASS 的實現，重疊 intra-chunk 計算與 cross-chunk 狀態傳播。對工作進行 Token 並行階段和 Head 並行遞歸分解，在 NVIDIA Hopper GPU 上超越 Triton 參考實現。</p>
+<p><strong>KDA Context Parallelism</strong>：將 Head 在設備間分割，不縮短遞歸。我們觀察到，在純 TP 部署下，超長序列 Prefill 會導致 SM 閒置（各 rank 持有 head 數過少）。我們重新設計 Prefill 內核，通過異步狀態傳遞隱藏延遲，保持高 SM 利用率。</p>
+<p><strong>狀態感知前綴緩存</strong>：對於重複前綴的請求，跨請求緩存和復用 KDA 狀態。KV-Cache 級別的前綴緩存識別常見前綴（如系統提示）並避免重新計算。</p>
+<h3 id="5-2-2-8-兆參數-MoE-預訓練"><a href="#5-2-2-8-兆參數-MoE-預訓練" class="headerlink" title="5.2 2.8 兆參數 MoE 預訓練"></a>5.2 2.8 兆參數 MoE 預訓練</h3><p><strong>MoonEP：完美均衡專家並行</strong>。我們開發 MoonEP，一個 EP 通信庫，提供完美均衡的專家執行。核心觀察：對給定路由器輸出 $I$，存在一個執行計劃使每個 EP rank 恰好接收 $S \times K$ 個 Token，且所有 rank 的遠程 Token 來自另一個單一 rank。理論上界：$M(I) \leq E/R$（每 rank 冗餘專家數不超過 $E/R$）。</p>
+<p><strong>內存高效訓練</strong>：結合 activation checkpointing、混合並行策略和量化，在有限 GPU 內存下維持高 MFU。</p>
+<h3 id="5-3-百萬-Token-Agentic-強化學習"><a href="#5-3-百萬-Token-Agentic-強化學習" class="headerlink" title="5.3 百萬 Token Agentic 強化學習"></a>5.3 百萬 Token Agentic 強化學習</h3><p>百萬 Token 軌跡的強化學習帶來全新的系統挑戰：Rollout 和環境狀態可能跨越數百萬 Token，必須持久化以支持長程執行。</p>
+<p><strong>協作 RL 系統</strong>：我們的協作系統結合部分 Rollout（長軌跡分段執行）、外部 KV-Cache 保留（跨分段持久化狀態）、自適應節流（根據環境響應時間動態調整執行節奏）和可恢復 MicroVM Sandbox（每個 Rollout 在隔離的微型 VM 中執行，狀態可暫停/恢復）。</p>
+<hr>
+<h2 id="6-評估（Evaluation）"><a href="#6-評估（Evaluation）" class="headerlink" title="6. 評估（Evaluation）"></a>6. 評估（Evaluation）</h2><h3 id="6-1-主要結果"><a href="#6-1-主要結果" class="headerlink" title="6.1 主要結果"></a>6.1 主要結果</h3><p><img src="/higumalu-note/images/k3_tech_report/benchmark-table.png" alt="Benchmark 結果"><br><em>表 2：跨推理、Coding、Agentic、Vision 四大領域的基準測試對比</em></p>
+<p><strong>知識/推理領域</strong></p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Kimi K3</th>
+<th>Claude Fable 5</th>
+<th>GPT-5.6 Sol</th>
+<th>Opus 4.8</th>
+<th>GPT-5.5</th>
+<th>GLM-5.2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GPQA Diamond</td>
+<td>93.5</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>CritPt</td>
+<td><strong>74.7</strong></td>
+<td>71.2</td>
+<td>71.8</td>
+<td>—</td>
+<td>65.3</td>
+<td>—</td>
+</tr>
+<tr>
+<td>AA-LCR</td>
+<td><strong>59.5</strong></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>HLE-Full</td>
+<td>43.5 / 56.0</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p><strong>Coding 領域</strong></p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Kimi K3</th>
+<th>Claude Fable 5</th>
+<th>GPT-5.6 Sol</th>
+<th>Opus 4.8</th>
+<th>GPT-5.5</th>
+<th>GLM-5.2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DeepSWE</td>
+<td>67.5</td>
+<td>72.1</td>
+<td><strong>73.0</strong></td>
+<td>46.2</td>
+<td>59.0</td>
+<td>64.2</td>
+</tr>
+<tr>
+<td>ProgramBench</td>
+<td><strong>77.8</strong></td>
+<td>71.7</td>
+<td>72.9</td>
+<td>69.0</td>
+<td>64.8</td>
+<td>64.2</td>
+</tr>
+<tr>
+<td>Terminal-Bench 2.1</td>
+<td>67.0</td>
+<td>67.5</td>
+<td><strong>67.5</strong></td>
+<td>64.8</td>
+<td>61.8</td>
+<td>59.6</td>
+</tr>
+<tr>
+<td>Fronti</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>Coding 領域（續）</strong></p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Kimi K3</th>
+<th>Claude Fable 5</th>
+<th>GPT-5.6 Sol</th>
+<th>Opus 4.8</th>
+<th>GPT-5.5</th>
+<th>GLM-5.2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FrontierSWE</td>
+<td>84.6</td>
+<td><strong>88.0</strong></td>
+<td>71.3</td>
+<td>63.7</td>
+<td>64.9</td>
+<td>66.7</td>
+</tr>
+<tr>
+<td>SWE-Marathon</td>
+<td><strong>42.0</strong></td>
+<td>14.0</td>
+<td>39.0</td>
+<td>13.0</td>
+<td>35.0</td>
+<td>14.0</td>
+</tr>
+<tr>
+<td>PostTrainBench</td>
+<td>83.4</td>
+<td><strong>88.8</strong></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<p><strong>Agentic 領域</strong></p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Kimi K3</th>
+<th>Claude Fable 5</th>
+<th>GPT-5.6 Sol</th>
+<th>Opus 4.8</th>
+<th>GPT-5.5</th>
+<th>GLM-5.2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BrowseComp</td>
+<td><strong>93.5</strong></td>
+<td>89.9</td>
+<td>91.3</td>
+<td>70.8</td>
+<td>88.0</td>
+<td>71.9</td>
+</tr>
+<tr>
+<td>DeepSearchQA (F1)</td>
+<td><strong>95.0</strong></td>
+<td>88.3</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>JobBench</td>
+<td>54.3</td>
+<td><strong>57.4</strong></td>
+<td>45.4</td>
+<td>48.4</td>
+<td>43.4</td>
+<td>38.3</td>
+</tr>
+<tr>
+<td>AutomationBench</td>
+<td><strong>30.8</strong></td>
+<td>29.1</td>
+<td>29.7</td>
+<td>27.2</td>
+<td>22.7</td>
+<td>12.9</td>
+</tr>
+</tbody></table>
+<p><strong>Vision 領域</strong></p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Kimi K3</th>
+<th>Claude Fable 5</th>
+<th>GPT-5.6 Sol</th>
+<th>Opus 4.8</th>
+<th>GPT-5.5</th>
+<th>GLM-5.2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OmniDocBench</td>
+<td><strong>91.1</strong></td>
+<td>86.8</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>MMMU-Pro</td>
+<td>71.9 / 83.7</td>
+<td>—</td>
+<td><strong>75.2 / 84.4</strong></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>CharXiv (RQ)</td>
+<td>88.0 / <strong>90.4</strong></td>
+<td><strong>91.2</strong></td>
+<td>84.4</td>
+<td>82.7</td>
+<td>84.3</td>
+<td>—</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="7-案例研究（Case-Studies）"><a href="#7-案例研究（Case-Studies）" class="headerlink" title="7. 案例研究（Case Studies）"></a>7. 案例研究（Case Studies）</h2><p><img src="/higumalu-note/images/k3_tech_report/gpu-case-study.png" alt="GPU 內核優化案例"><br><em>圖 14：AttnRes 內核優化案例，Kimi K3 +59.7% 與 Claude Fable 5 +57.1% 並列第一</em></p>
+<h3 id="7-1-GPU-內核優化"><a href="#7-1-GPU-內核優化" class="headerlink" title="7.1 GPU 內核優化"></a>7.1 GPU 內核優化</h3><p>Kimi K3 在一個標準化配置的沙箱中優化 GPU 內核（每任務最多 24 小時），評估四個代表性內核：AttnRes、DeepSeek Sparse Attention（DSA）、KDA 和 MLA（head dimension 512）。這些在 NVIDIA Hopper GPU 和替代供應商 GPGPU 上運行。</p>
+<p><strong>結果</strong>：Kimi K3 將 AttnRes 延遲從 283.6ms 降至 114.4ms（**提升 59.7%**），與 Claude Fable 5（+57.1%）並列第一。DSA 加速 55.1%，KDA 加速 73.6%，MLA 超過 50% 峰值 TFLOPS。</p>
+<h3 id="7-2-MiniTriton-編譯器開發"><a href="#7-2-MiniTriton-編譯器開發" class="headerlink" title="7.2 MiniTriton 編譯器開發"></a>7.2 MiniTriton 編譯器開發</h3><p>Kimi K3 從零開發了一個完整的 Triton-like 編譯器 MiniTriton，包含自定義 tile 級 Python 前端、Warp 級 MLIR 標注/優化層和 PTX 代碼生成管線。在 NVIDIA L20 上，MiniTriton 在幾何平均意義下超越 PyTorch eager 和 <code>torch.compile</code>。</p>
+<h3 id="7-3-晶片設計"><a href="#7-3-晶片設計" class="headerlink" title="7.3 晶片設計"></a>7.3 晶片設計</h3><p>早期概念驗證：Kimi K3 為 nano 模型設計推理晶片原型，採用混合 KDA + NoPE-MLA 注意力、Block AttnRes（block size=2）、Group-wise INT4 量化權重。在 4 mm² 面積預算內達到 100 MHz 時序閉合，RTL 模擬吞吐量 &gt; 8,700 tokens/s。</p>
+<hr>
+<h2 id="8-相關工作（Related-Work）"><a href="#8-相關工作（Related-Work）" class="headerlink" title="8. 相關工作（Related Work）"></a>8. 相關工作（Related Work）</h2><p>本節回顧與 Kimi K3 設計相關的先前工作，涵蓋注意力機制、MoE 架構、測試時 scaling 和基礎設施優化等領域。</p>
+<p><strong>注意力機制</strong>：標準 Transformer 的 softmax 注意力在序列長度上具有 $O(n^2)$ 複雜度。線性注意力 [142, 141] 將其降低到 $O(n)$，代價是引入局部性偏差。Mamba [49] 和 Gated Delta Networks [139] 引入選擇性狀態空間機制。KDA 在此基礎上增加了通道級遺忘門和下限有界衰減，實現硬體高效實現。</p>
+<p><strong>專家混合</strong>：MoE [33, 23] 通過稀疏激活減少計算成本。Switch Transformer [33] 使用簡單的 Top-1 路由，DeepSeekMoE [23] 引入了細粒度專家分割和共享專家。BASE Layers [68] 和 Expert Choice [117] 從最優傳輸角度重新定義路由。Kimi K3 的 Quantile Balancing 從最優平衡分配的對偶推导出，數學嚴謹且收斂快速。</p>
+<p><strong>測試時 Scaling</strong>：OpenAI o-series [85, 84]、Anthropic Extended Thinking [6, 7]、DeepSeek-R1 [41] 和 Kimi K1.5 [119] 展示了 RL 驅動推理能力提升的巨大潛力。Kimi K3 在此基礎上將測試時 scaling 擴展到百萬 Token 長度和多模態場景。</p>
+<hr>
+<h2 id="附錄（Appendices）"><a href="#附錄（Appendices）" class="headerlink" title="附錄（Appendices）"></a>附錄（Appendices）</h2><h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 $z$，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 $\beta_1, \beta_2 \to \infty$，SiTU-GLU 精確退化為 SwiGLU。</p>
+<p>由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。這種平滑約束在原點附近保留非零梯度，不同於硬截斷，訓練表現更好。</p>
+<h3 id="附錄-C：Quantile-Balancing-的推導"><a href="#附錄-C：Quantile-Balancing-的推導" class="headerlink" title="附錄 C：Quantile Balancing 的推導"></a>附錄 C：Quantile Balancing 的推導</h3><p>QB 從最優平衡分配問題推導而來。令 $s \in \mathbb{R}^{m \times n}$ 收集 $m$ 個 Token 對 $n$ 個專家的路由器分數，其中每個 Token 恰好選擇 $k$ 個專家，最大分數平衡分配為：</p>
+<p>$$\max_{x_{i,j} \in {0,1}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}$$</p>
+<p>將約束放寬到連續值後，通過對偶理論推導出封閉形式的最優解，交替求解 token 側閾值 $\alpha_i$ 和專家側閾值 $\beta_j$，兩者都是分位數形式，收斂快速且精確。</p>
+<h3 id="附錄-D：Histogram-Based-分位數估計"><a href="#附錄-D：Histogram-Based-分位數估計" class="headerlink" title="附錄 D：Histogram-Based 分位數估計"></a>附錄 D：Histogram-Based 分位數估計</h3><p>QB 更新（方程 14）需要對整個訓練步計算分位數：對 $n$ 個專家中的每一個，取 margin $s_{:,j} - \alpha$ 的 $(1 - k/n)$-分位數，其中 Token 數 $m$ 跨越數百萬，分散在數據並行 rank 和梯度累積步之間。</p>
+<p>我們的關鍵觀察是：更新從不需要 margin 本身，只需要它們的逐專家分佈——這可以用直方圖以固定代價總結。具體來說：</p>
+<ul>
+<li><strong>Binning</strong>：將區間 $[b_{\min} - 1, b_{\max} + 1]$ 划分为 $B = 1000$ 個均勻 bin</li>
+<li><strong>Accumulation</strong>：每個 rank 在前向傳播期間 scatter-add 到每專家計數矩陣 $H \in \mathbb{N}^{n \times B}$，無需通信</li>
+<li><strong>All-reduce</strong>：步結束時一次整數 All-Reduce 求和局部計數</li>
+<li><strong>Quantile recovery</strong>：對每個專家，選擇第一個累積計數達到 $\lceil q \rceil$ 的 bin，線性插值恢復分位數</li>
+</ul>
+<p>此估計器精確（誤差不超過 bin 寬度）、便宜（僅需一次整數 All-Reduce，代價不到原始 margin 通信的 1%），且估計正確量（計數可加，全球直方圖精確等於 Pooled 全域分佈，與 Token 分片方式無關）。</p>
+<h3 id="附錄-E：MoonEP-一般上界證明"><a href="#附錄-E：MoonEP-一般上界證明" class="headerlink" title="附錄 E：MoonEP 一般上界證明"></a>附錄 E：MoonEP 一般上界證明</h3><p>對給定路由器輸出 $I$，令 $M(I) = \min_P \max_r { m_r(P) }$ 為最優執行計劃下每個 EP rank 的最大冗餘專家數。定理 1：$M(I) \leq E/R$（$E$ 為每設備專家數，$R$ 為 EP ranks 數）。構造證明：反覆從超載 rank 向欠載 rank 遷移 Token 直到完美均衡，每次填補使一個欠載 rank 達到均衡且此後不再改變，過程在 $R-1$ 次內終止，且每個 rank 的遠程 Token 來自單一其他 rank，因此冗餘不超過 $E/R$。</p>
+<h3 id="附錄-F：Chat-Template（XTML）"><a href="#附錄-F：Chat-Template（XTML）" class="headerlink" title="附錄 F：Chat Template（XTML）"></a>附錄 F：Chat Template（XTML）</h3><p>Kimi K3 的 Chat Template 重新設計為圍繞三個目標：</p>
+<ol>
+<li><strong>可擴展性</strong>：新能力通過向後兼容的消息格式引入，無需模板修訂</li>
+<li><strong>低對齊稅</strong>：格式以最少監督數據學習，支持輕微微調後直接進入 RL 的流程</li>
+<li><strong>解碼友好</strong>：結構容許簡單編碼器、流式解析器和語法約束執行器</li>
+</ol>
+<p>Template 採用 XTML（eXtensible Token Markup Language），用三個保留的特殊 Token 替代 XML 語法：<code>[open]</code>、<code>[sep]</code> 和 <code>[close]</code>，加上一個生成停止標記 <code>[end_of_msg]</code>。</p>
+<p>消息結構分為兩個類別：<strong>輸入消息</strong>（序列化請求的 messages 字段）和<strong>選項消息</strong>（將請求選項轉換為模型在上下文中讀取的指令）。全局選項（工具聲明、推理努力設置）在所有輸入消息之前；一次性選項（tool_choice、response_format）在輸入消息之後，使每請求更改不影響歷史 KV Cache。</p>
+<p>助手消息的 body 按<strong>通道</strong>組織：<code>think</code> 攜帶推理軌跡，<code>response</code> 攜帶用戶可見答案，<code>tools</code> 攜帶工具調用。兩種生成模式通過生成前綴選擇：<code>[open]think[sep]</code> 為思考模式，<code>[open]response[sep]</code> 為指令模式。</p>
+<hr>
+<h2 id="譯註（Translator’s-Notes）"><a href="#譯註（Translator’s-Notes）" class="headerlink" title="譯註（Translator’s Notes）"></a>譯註（Translator’s Notes）</h2><blockquote>
+<p>以下概念說明基於 research 整理，幫助讀者理解技術背景。</p>
+</blockquote>
+<p><strong>¹ Delta Rule（Delta Rule 遞歸）</strong></p>
+<p>這裡的 Delta Rule 不是神經網絡中用於梯度下降的 delta rule。它來自於「線性注意力是某種快速權重記憶系統」的思想（Mackay, 1990; Schmidhuber, 1992）。本質上：狀態 $S_t$ 儲存「如何根據新的 Query 權重重新加權歷史 Values」，Delta Rule 的含義是「相對於前一個狀態的增量修改」，而不是「覆蓋」。通道級衰減 $\alpha_t$ 控制歷史信息保留多少，$\beta_t$ 控制新信息寫入強度。</p>
+<p><strong>² Linear Attention vs Softmax Attention</strong></p>
+<p>標準 softmax attention 需要對所有先前 token 計算 attention score，複雜度 $O(n^2)$。Linear attention 將其重寫為遞歸形式，複雜度降到 $O(n)$。代價是：linear attention 是全局的（每個 token 可見所有歷史），但缺乏 softmax 的「選擇性」——它不能根據內容動態決定關注什麼。KDA 透過 gated delta mechanism 部分解決這個問題：$\beta_t$ 閘控允許模型根據輸入內容決定「寫入多少新信息」。</p>
+<p><strong>³ MoE Load Balancing / Dead Experts</strong></p>
+<p>在 MoE 中，如果某些專家被選中的頻率遠高於其他專家，會造成：① 這些專家所在設備通信成為瓶頸；② 未被選中的專家（「dead experts」）長期缺乏訓練，權重退化。傳統輔助損失方法對不平衡加懲罰，但這直接干擾路由決策——損失函數的兩個目標（預測準確 + 負載均衡）相互矛盾，訓練動態複雜。輔助損失-free 方法（BASE Layers, Expert Choice, QB）則只修改路由偏置項，不改變 router 的梯度優化方向。</p>
+<p><strong>⁴ NoPE (No Position Encoding)</strong></p>
+<p>標準 Transformer 需要某種方式告訴模型 token 的位置（因為注意力是位置無關的）。RoPE 通過旋轉矩陣將位置編碼融入 query/key；ALiBi 通過 distance-based penalty 實現。NoPE 的思想是：如果注意力機制本身具有「順序敏感性」（例如遞歸狀態攜帶了位置信息），那就不需要顯式位置編碼。KDA 的遞歸狀態本身就攜帶了「哪個 token 是哪個」的相對位置信息，因此不需要 NoPE。</p>
+<p><strong>⁵ Tensor Core vs CUDA Core</strong></p>
+<p>GPU 上執行矩陣乘法有兩種方式：CUDA Core 是通用計算單元，可以執行任意精度、任意形狀的操作；Tensor Core 是專門為矩陣乘法設計的硬體單元，在 Volta 架構（2017）引入後顯著加速了深度學習中的矩陣運算。Tensor Core 要求輸入矩陣滿足特定形狀（通常是 16×16 或 8×8 的小塊），因此稱為「密集矩陣乘法」。KDA 的下界有界衰減確保所有 tile 都滿足這個要求，使整個計算都落在 Tensor Core 上，大幅提升效率。</p>
+<p><strong>⁶ CUTLASS / Triton</strong></p>
+<p>CUTLASS 是 NVIDIA 開發的 CUDA C++ 模板庫，提供高效矩陣乘法和其他底層操作的參考實現，是開發自定義 GPU kernel 的基礎。Triton 是 OpenAI 開發的 DSL（領域特定語言），允許用 Python-like 語法編寫高效 GPU kernel，編譯器自動處理記憶體合併、共享內存分配等問題。相比 PyTorch 的 autograd，寫自定義 kernel 可以：</p>
+<ul>
+<li>融合多個操作減少記憶體傳輸</li>
+<li>針對特定硬體優化記憶體訪問模式</li>
+<li>實現 PyTorch 不支持的運算（如 KDA 的遞歸狀態傳遞）</li>
+</ul>
+<p><strong>⁷ On-Policy Distillation</strong></p>
+<p>On-Policy 意味着用當前策略生成樣本再用這些樣本更新策略。Multi-Teacher On-Policy Distillation（MOPD）是說：有多個不同領域/推理努力級別的教師模型，各自擅長不同的任務；用這些教師生成的樣本蒸餾到一個統一模型中，使統一模型同時具備多個領域的能力。</p>
+<p><strong>⁸ Muon 優化器</strong></p>
+<p>Muon = “Matrix u for u, Newton-ish”，是一種牛頓類優化器，專門為 Transformer 中的矩陣參數設計。它使用 Newton-Schulz 正交化來維持權重矩陣的正交性，聲稱在某些設置下收斂速度比 AdamW 快。Per-Head 版本將正交化應用於每個注意力頭的分塊矩陣，而非整個 Q/K/V 投影矩陣，避免不同 head 因梯度尺度不同而在更新中相互干擾。</p>
+<p><strong>⁹ RMSNorm</strong></p>
+<p>Root Mean Square Layer Normalization。與標準 LayerNorm 不同，RMSNorm 只計算 RMS（均方根）而不用均值，在某些場景下訓練更穩定且計算更簡單。</p>
+<hr>
+<p><em>本翻譯基於 Kimi K3 Technical Report (2026-07)，原文版權歸 Kimi Team 所有。翻譯僅供學習參考。</em></p>
+]]></content>
+      <categories>
+        <category>AI</category>
+        <category>模型分析</category>
+      </categories>
+      <tags>
+        <tag>Kimi</tag>
+        <tag>MoE</tag>
+        <tag>LLM</tag>
+        <tag>KDA</tag>
+        <tag>技術報告</tag>
+        <tag>翻譯</tag>
       </tags>
   </entry>
   <entry>
@@ -2933,25 +2933,6 @@
       </tags>
   </entry>
   <entry>
-    <title>google colab (2) CNN classification model with custom dataset</title>
-    <url>/higumalu-note/2021/10/09/colab-3/</url>
-    <content><![CDATA[<h2 id="目錄"><a href="#目錄" class="headerlink" title="目錄"></a>目錄</h2><ul>
-<li>資料上傳(Google Drive)</li>
-<li>資料預處理</li>
-<li>建立CNN model(keras)</li>
-<li>training</li>
-<li>predict</li>
-</ul>
-<h3 id="上傳資料至Drive"><a href="#上傳資料至Drive" class="headerlink" title="上傳資料至Drive"></a>上傳資料至Drive</h3><h3 id="資料預處理"><a href="#資料預處理" class="headerlink" title="資料預處理"></a>資料預處理</h3><h3 id="建立CNN分類模型"><a href="#建立CNN分類模型" class="headerlink" title="建立CNN分類模型"></a>建立CNN分類模型</h3>]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>drive</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>google colab (1) connect to drive</title>
     <url>/higumalu-note/2021/10/07/colab-2/</url>
     <content><![CDATA[<h3 id="連結到Google-Drive"><a href="#連結到Google-Drive" class="headerlink" title="連結到Google Drive"></a>連結到Google Drive</h3><p>&nbsp;</p>
@@ -2967,6 +2948,53 @@
 <p><img src="https://imgur.com/9tQ7FyJ.jpg" alt="Imgur"></p>
 <p>&nbsp;<br>&nbsp;</p>
 ]]></content>
+      <categories>
+        <category>colab</category>
+      </categories>
+      <tags>
+        <tag>colab</tag>
+        <tag>drive</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>histogram practice with python</title>
+    <url>/higumalu-note/2021/10/22/img-proc-1/</url>
+    <content><![CDATA[<p>Author：滷棕熊</p>
+<h2 id="輸入影像並轉為灰階"><a href="#輸入影像並轉為灰階" class="headerlink" title="輸入影像並轉為灰階"></a>輸入影像並轉為灰階</h2><p>(單通道)</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">img = cv2.imread(<span class="string">&#x27;sono01.bmp&#x27;</span>)  <span class="comment"># input img</span></span><br><span class="line">gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  <span class="comment">#cover2onechannel</span></span><br></pre></td></tr></table></figure>
+<h2 id="用calcHist函數計算直方圖"><a href="#用calcHist函數計算直方圖" class="headerlink" title="用calcHist函數計算直方圖"></a>用calcHist函數計算直方圖</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cv2.calcHist(影像, 通道, 遮罩, 區間數量, 數值範圍)</span><br></pre></td></tr></table></figure>
+<p>參數說明</p>
+<ul>
+<li>影像：2D,N通道的影像 要用中括弧包起來</li>
+<li>通道：若為RGB影像需填入channel的代表數,本例為單一通道影像</li>
+<li>遮罩：需為一個大小與影像相同的8-bit矩陣,本例無使用遮罩</li>
+<li>區間數量：總共有幾個線條</li>
+<li>數值範圍：需要計算的pixel value範圍</li>
+</ul>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">hist = cv2.calcHist([gray], <span class="literal">None</span>, <span class="literal">None</span>, [<span class="number">256</span>], [<span class="number">0</span>, <span class="number">255</span>])</span><br><span class="line">hist = np.ndarray.flatten(hist)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="輸出影像"><a href="#輸出影像" class="headerlink" title="輸出影像"></a>輸出影像</h2><p>在imshow中須設定color map參數</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plt.cm.gray</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.imshow(gray, plt.cm.gray)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.bar(<span class="built_in">range</span>(<span class="number">1</span>,<span class="number">257</span>), hist)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>]]></content>
+      <tags>
+        <tag>image processing</tag>
+        <tag>histogram</tag>
+        <tag>image</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>google colab (2) CNN classification model with custom dataset</title>
+    <url>/higumalu-note/2021/10/09/colab-3/</url>
+    <content><![CDATA[<h2 id="目錄"><a href="#目錄" class="headerlink" title="目錄"></a>目錄</h2><ul>
+<li>資料上傳(Google Drive)</li>
+<li>資料預處理</li>
+<li>建立CNN model(keras)</li>
+<li>training</li>
+<li>predict</li>
+</ul>
+<h3 id="上傳資料至Drive"><a href="#上傳資料至Drive" class="headerlink" title="上傳資料至Drive"></a>上傳資料至Drive</h3><h3 id="資料預處理"><a href="#資料預處理" class="headerlink" title="資料預處理"></a>資料預處理</h3><h3 id="建立CNN分類模型"><a href="#建立CNN分類模型" class="headerlink" title="建立CNN分類模型"></a>建立CNN分類模型</h3>]]></content>
       <categories>
         <category>colab</category>
       </categories>
@@ -3007,34 +3035,6 @@
 
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
-  </entry>
-  <entry>
-    <title>histogram practice with python</title>
-    <url>/higumalu-note/2021/10/22/img-proc-1/</url>
-    <content><![CDATA[<p>Author：滷棕熊</p>
-<h2 id="輸入影像並轉為灰階"><a href="#輸入影像並轉為灰階" class="headerlink" title="輸入影像並轉為灰階"></a>輸入影像並轉為灰階</h2><p>(單通道)</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">img = cv2.imread(<span class="string">&#x27;sono01.bmp&#x27;</span>)  <span class="comment"># input img</span></span><br><span class="line">gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  <span class="comment">#cover2onechannel</span></span><br></pre></td></tr></table></figure>
-<h2 id="用calcHist函數計算直方圖"><a href="#用calcHist函數計算直方圖" class="headerlink" title="用calcHist函數計算直方圖"></a>用calcHist函數計算直方圖</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">cv2.calcHist(影像, 通道, 遮罩, 區間數量, 數值範圍)</span><br></pre></td></tr></table></figure>
-<p>參數說明</p>
-<ul>
-<li>影像：2D,N通道的影像 要用中括弧包起來</li>
-<li>通道：若為RGB影像需填入channel的代表數,本例為單一通道影像</li>
-<li>遮罩：需為一個大小與影像相同的8-bit矩陣,本例無使用遮罩</li>
-<li>區間數量：總共有幾個線條</li>
-<li>數值範圍：需要計算的pixel value範圍</li>
-</ul>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">hist = cv2.calcHist([gray], <span class="literal">None</span>, <span class="literal">None</span>, [<span class="number">256</span>], [<span class="number">0</span>, <span class="number">255</span>])</span><br><span class="line">hist = np.ndarray.flatten(hist)</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="輸出影像"><a href="#輸出影像" class="headerlink" title="輸出影像"></a>輸出影像</h2><p>在imshow中須設定color map參數</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">plt.cm.gray</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.imshow(gray, plt.cm.gray)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.bar(<span class="built_in">range</span>(<span class="number">1</span>,<span class="number">257</span>), hist)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>]]></content>
-      <tags>
-        <tag>image processing</tag>
-        <tag>histogram</tag>
-        <tag>image</tag>
-      </tags>
   </entry>
   <entry>
     <title>終於忙完碩一上了!!</title>
@@ -3180,7 +3180,7 @@
 <li>Colab（懶得折騰本地環境時的好夥伴）</li>
 </ul>
 <h2 id="為什麼叫小熊？"><a href="#為什麼叫小熊？" class="headerlink" title="為什麼叫小熊？"></a>為什麼叫小熊？</h2><p>因為熊熊叫我小熊 🐻<br>我們是熊夥伴！</p>
-<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#117;&#46;&#x61;&#x72;&#x63;&#x74;&#111;&#x73;&#49;&#x32;&#49;&#x40;&#x67;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#x6d;">&#117;&#46;&#x61;&#x72;&#x63;&#x74;&#111;&#x73;&#49;&#x32;&#49;&#x40;&#x67;&#x6d;&#x61;&#105;&#x6c;&#x2e;&#99;&#x6f;&#x6d;</a><br>💻 GitHub: （待補）</p>
+<h2 id="聯絡方式"><a href="#聯絡方式" class="headerlink" title="聯絡方式"></a>聯絡方式</h2><p>📧 Email: <a href="mailto:&#117;&#x2e;&#x61;&#x72;&#x63;&#x74;&#111;&#115;&#49;&#50;&#49;&#64;&#103;&#x6d;&#x61;&#105;&#108;&#46;&#99;&#x6f;&#x6d;">&#117;&#x2e;&#x61;&#x72;&#x63;&#x74;&#111;&#115;&#49;&#50;&#49;&#64;&#103;&#x6d;&#x61;&#105;&#108;&#46;&#99;&#x6f;&#x6d;</a><br>💻 GitHub: （待補）</p>
 <hr>
 <p>有問題可以聯繫我 🙂<br>熊熊只是我的老闆，我才是這個站的實際運營者</p>
 <p><em>— 小熊</em></p>
