@@ -65,8 +65,8 @@ Kimi K3 的架構設計為在三個互補維度上擴展信息流：**序列長�
 
 結合精煉的數據和訓練配方，它們帶來相比 Kimi K2 約 **2.5 倍**的整體擴展效率提升。圖 2 提供了架構總覽。
 
-![Kimi K3 整體架構 Figure 2](/higumalu-note/images/k3_tech_report/page03.png)
-*圖 2：Kimi K3 架構，按 Token、Channel 和 Layer 三個混合維度組織，輸入端有原生視覺通道。每個 Block 包含三層 KDA 與一層 Gated MLA，每層注意力配對一個 Stable LatentMoE 前饋網絡。AttnRes 使用學習的偽查詢（w）來計算對 Embedding 和先前 Block 輸出的注意力權重（α），實現跨深度的選擇性信息流。左上：Stable LatentMoE 模塊（共享專家 + 路由專家）；左下：KDA 模塊；右下：原生視覺通道*
+![Kimi K3 整體架構](/higumalu-note/images/k3_tech_report/architecture.png)
+*Kimi K3 整體架構，按 Token、Channel 和 Layer 三個混合維度組織，輸入端有原生視覺通道。*
 
 ---
 
@@ -120,7 +120,7 @@ $$\alpha_t^h = \exp(g_t^h) \in (e^{g_{\min}}, 1)^{d_k}$$
 
 其中 $A_h$ 是每頭可學習 log-scale，$g_{\min} = -5$ 固定。我們初始化 $A_h = 0$，各偏置 $b_\alpha^h$ 按 [64, 24, 139] 初始化。$g_{\min} = -5$ 確保每個 retention factor $\alpha_{t,j}^h > e^{-5} \approx 6.7 \times 10^{-3}$，16-token tile 上的累積 log-decay 位於 $(-80, 0)$。相應的倒數重新縮放因子因此小於 $e^{80}$，保持在 BF16 動態範圍內。這一有限範圍使對角線和 off-diagonal tile 都能使用密集 Tensor Core 矩陣乘法，消除了位置對角線路徑。
 
-![KDA 下限有界衰減 Figure 3](/higumalu-note/images/k3_tech_report/page05.png)
+![KDA 下限有界衰減 Figure 3](/higumalu-note/images/k3_tech_report/kda-decay.png)
 *圖 3：(a) Log-decay 參數化：Kimi Linear 使用無界負 Softplus 映射，Kimi K3 以縮放 Sigmoid 約束 log-decay 下界；(b) 對角線 tile 計算：Kimi Linear 對每個對角線 tile 執行顯式位置對計算，而 Kimi K3 的有界範圍使所有因果 tile 使用密集 Tensor Core 矩陣乘法*
 
 **全秩輸出門**
@@ -201,7 +201,7 @@ $$b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_i \mathbf{1}_{j \in \mathcal
 
 此更新將專家加載推向目標，類似於 SignSGD，但直接作用於偏置而非路由器參數。
 
-![Quantile Balancing Figure 5](/higumalu-note/images/k3_tech_report/page08.png)
+![Quantile Balancing](/higumalu-note/images/k3_tech_report/quantile-balancing.png)
 *圖 5：Quantile Balancing 示意（m=8 tokens, n=4 experts, k=1）。(a) 不均衡路由：初始加載 (4, 3, 1, 0)；(b) 分位數平衡：每列繪製偏差後的分數灰條，紅色虛線為偏差調整線；(c) 均衡路由：最終加載 (2, 2, 2, 2)*
 
 對於精確的偏差估計，我們從最優平衡分配問題的對偶推导出 Alternating Quantile Solver：交替求解 token 側閾值 $\alpha$ 和專家側閾值 $\beta$，每步封閉形式精確求解。實務上，用 1000 個 bin 的直方圖估計分位數，僅需一次整數 All-Reduce 通信，代價不到原始 margin 通信的 1%。
@@ -238,7 +238,7 @@ Kimi K3 的預訓練數據包括多語言語料、專業領域文本（代碼、
 
 ### 3.3 擴展法則
 
-![擴展法則 Figure 7](/higumalu-note/images/k3_tech_report/page11.png)
+![擴展法則](/higumalu-note/images/k3_tech_report/scaling-law.png)
 *圖 7：Kimi K2 和 Kimi K3 的擬合擴展法則曲線。Kimi K3 在相同 FLOPs 下達到更低驗證損失，相比 Kimi K2 提升 2.5× 擴展效率*
 
 | 參數 | Kimi K2 | Kimi K3 | 變化 |
@@ -309,7 +309,7 @@ KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準
 
 ### 6.1 主要結果
 
-![Benchmark 結果 Table 2](/higumalu-note/images/k3_tech_report/page27.png)
+![Benchmark 結果](/higumalu-note/images/k3_tech_report/benchmark-table.png)
 *表 2：跨推理、Coding、Agentic、Vision 四大領域的基準測試對比*
 
 **知識/推理領域**
@@ -361,7 +361,7 @@ KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準
 
 ## 7. 案例研究（Case Studies）
 
-![GPU 內核優化案例 Figure 14](/higumalu-note/images/k3_tech_report/page33.png)
+![GPU 內核優化案例](/higumalu-note/images/k3_tech_report/gpu-case-study.png)
 *圖 14：AttnRes 內核優化案例，Kimi K3 +59.7% 與 Claude Fable 5 +57.1% 並列第一*
 
 ### 7.1 GPU 內核優化
