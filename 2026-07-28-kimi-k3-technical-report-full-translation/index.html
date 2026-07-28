@@ -495,7 +495,7 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 </tr>
 </tbody></table>
 <hr>
-<h2 id="7-案例研究（Case-Studies）"><a href="#7-案例研究（Case-Studies）" class="headerlink" title="7. 案例研究（Case Studies）"></a>7. 案例研究（Case Studies）</h2><p><img src="/higumalu-note/images/k3_tech_report/gpu-case-study.png" alt="GPU 內核優化案例"><br><em>圖 14：AttnRes 內核優化案例，Kimi K3 +59.7% 與 Claude Fable 5 +57.1% 並列第一</em></p>
+<h2 id="7-案例研究（Case-Studies）"><a href="#7-案例研究（Case-Studies）" class="headerlink" title="7. 案例研究（Case Studies）"></a>7. 案例研究（Case Studies）</h2><p><img src="/higumalu-note/images/k3_tech_report/gpu-case-study.png" alt="GPU 內核優化案例"><br><em>圖 14：AttnRes 內核優化案例——橫軸為優化迭代輪次，縱軸為相較 FLA Triton Baseline 的加速百分比（%）。Kimi K3 從 283.6ms 降至 114.4ms（−55.1%），Claude Fable 5 降至 121.4ms（−57.1%），兩者並列第一</em></p>
 <h3 id="7-1-GPU-內核優化"><a href="#7-1-GPU-內核優化" class="headerlink" title="7.1 GPU 內核優化"></a>7.1 GPU 內核優化</h3><p>Kimi K3 在一個標準化配置的沙箱中優化 GPU 內核（每任務最多 24 小時），評估四個代表性內核：AttnRes、DeepSeek Sparse Attention（DSA）、KDA 和 MLA（head dimension 512）。這些在 NVIDIA Hopper GPU 和替代供應商 GPGPU 上運行。</p>
 <p><strong>結果</strong>：Kimi K3 將 AttnRes 延遲從 283.6ms 降至 114.4ms（**提升 59.7%**），與 Claude Fable 5（+57.1%）並列第一。DSA 加速 55.1%，KDA 加速 73.6%，MLA 超過 50% 峰值 TFLOPS。</p>
 <h3 id="7-2-MiniTriton-編譯器開發"><a href="#7-2-MiniTriton-編譯器開發" class="headerlink" title="7.2 MiniTriton 編譯器開發"></a>7.2 MiniTriton 編譯器開發</h3><p>Kimi K3 從零開發了一個完整的 Triton-like 編譯器 MiniTriton，包含自定義 tile 級 Python 前端、Warp 級 MLIR 標注/優化層和 PTX 代碼生成管線。在 NVIDIA L20 上，MiniTriton 在幾何平均意義下超越 PyTorch eager 和 <code>torch.compile</code>。</p>
