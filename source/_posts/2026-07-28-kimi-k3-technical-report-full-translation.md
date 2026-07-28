@@ -362,7 +362,7 @@ KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準
 ## 7. 案例研究（Case Studies）
 
 ![GPU 內核優化案例](/higumalu-note/images/k3_tech_report/gpu-case-study.png)
-*圖 14：AttnRes 內核優化案例，Kimi K3 +59.7% 與 Claude Fable 5 +57.1% 並列第一*
+*圖 14：AttnRes 內核優化案例——橫軸為優化迭代輪次，縱軸為相較 FLA Triton Baseline 的加速百分比（%）。Kimi K3 從 283.6ms 降至 114.4ms（−55.1%），Claude Fable 5 降至 121.4ms（−57.1%），兩者並列第一*
 
 ### 7.1 GPU 內核優化
 
