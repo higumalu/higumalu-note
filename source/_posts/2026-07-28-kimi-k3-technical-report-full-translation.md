@@ -644,7 +644,7 @@ Artificial Analysis 評估了 Kimi K3 [8]。Kimi K3 達到 Intelligence Index v4
 
 超越評分，我們透過跨四個涵蓋 coding 和 agentic 任務的套件比較 score 與 per-task cost 來檢驗推理性價比：Kimi Code Bench 2.0、BrowseComp、GDPval-AA v2 和 AA-Briefcase。
 
-在 Kimi Code Bench 2.0 上，Kimi K3 以 Claude Fable 5 38% 的成本落後 4.0 分；在 high effort 下已可匹配 Claude Opus 4.8 max-effort 分數，成本約為三分之一。在 BrowseComp 上，Kimi K3 以 91.2% 最高分達成每任務 $2.03——是 GPT-5.6 Sol（90.4%）的一半成本，比 Claude 模型在其 max effort 便宜一個數量級。在 GDPval-AA v2 上，Kimi K3 以低 13% 的成本與 GPT-5.6 Sol 相差不到 50 Elo，比 Claude Fable 5 便宜 2.6 倍。在 AA-Briefcase 上，Kimi K3 提供僅低於 Claude Fable 5 的分數，成本約為後者的一半。
+在 Kimi Code Bench 2.0 上，Kimi K3 以 Claude Fable 5 38% 的成本落後 4.0 分；在 high effort 下已可匹配 Claude Opus 4.8 max-effort 分數，成本約為三分之一。在 BrowseComp 上，Kimi K3 以 91.2% 最高分達成每任務約 2.03 美元——是 GPT-5.6 Sol（90.4%）的一半成本，比 Claude 模型在其 max effort 便宜一個數量級。在 GDPval-AA v2 上，Kimi K3 以低 13% 的成本與 GPT-5.6 Sol 相差不到 50 Elo，比 Claude Fable 5 便宜 2.6 倍。在 AA-Briefcase 上，Kimi K3 提供僅低於 Claude Fable 5 的分數，成本約為後者的一半。
 
 總體而言，Kimi K3 在所有四個套件中處於或接近性價比前沿，以 Claude Fable 5 成本的一小部分提供接近頂級的分數。
 
