@@ -148,9 +148,9 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p>$$s = \text{Softmax}(\text{Norm}(W_r x)) \in \mathbb{R}^n$$</p>
 <p>其中 $n = 896$ 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：</p>
 <p>$$\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)$$</p>
-<p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和權重：</p>
-<p>$$\mathcal{T}<em>i = \text{argtop}<em>k(s_i + b), \quad w</em>{i,j} = \begin{cases} \frac{\text{Softmax}(s</em>{i,j} + b_j)}{\sum_{j’ \in \mathcal{T}<em>i} \text{Softmax}(s</em>{i,j’} + b_{j’})} &amp; j \in \mathcal{T}_i \ 0 &amp; \text{otherwise} \end{cases}$$</p>
-<p>偏置 $b$ 從路由概率計算中省略，這樣它只調節 dispatch 而不改變混合權重或直接干擾梯度優化。</p>
+<p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和路由權重：</p>
+<p>$$s_i = \text{Sigmoid}(W_r x_i), \quad \mathcal{T}<em>i = \text{argtop}<em>k(s_i + b), \quad p</em>{i,j} = \begin{cases} \dfrac{s</em>{i,j}}{\sum_{r \in \mathcal{T}<em>i} s</em>{i,r}} &amp; j \in \mathcal{T}_i \ 0 &amp; \text{otherwise} \end{cases}$$</p>
+<p>偏置 $b$ 從路由概率 $p_{i,j}$ 計算中省略，這樣它只調節 dispatch（Top-k 選了哪些專家）而不改變混合權重或直接干擾路由器的梯度優化。</p>
 <h4 id="2-3-1-SiTU-GLU"><a href="#2-3-1-SiTU-GLU" class="headerlink" title="2.3.1 SiTU-GLU"></a>2.3.1 SiTU-GLU</h4><p>在 FFN 投影之間，我們用 SiTU-GLU 取代標准 SwiGLU。SiTU-GLU 將 Swish 激活函數的 cap 替換為平滑的 Tanh cap：</p>
 <p>$$\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)$$</p>
 <p>Gate branch 的 $\beta_1 = 4$，Up branch 的 $\beta_2 = 25$。由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。在原點附近，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 $\beta \to \infty$ 精確退化為 SwiGLU。</p>
