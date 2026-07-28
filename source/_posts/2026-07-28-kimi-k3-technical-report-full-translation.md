@@ -5,6 +5,7 @@ updated: 2026-07-28 16:00:00
 categories: [AI, 模型分析]
 tags: [Kimi, MoE, LLM, KDA, 技術報告, 翻譯]
 description: Kimi K3 官方技術報告全文翻譯，圖文並茂，配有譯註說明核心概念。
+mathjax: true
 ---
 
 > **前言：** 本文的翻譯盡量貼近原文表述，並在必要處加入譯註說明背景概念。
