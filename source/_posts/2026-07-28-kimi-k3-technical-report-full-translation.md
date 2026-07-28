@@ -476,7 +476,15 @@ On-Policy 意味着用當前策略生成樣本再用這些樣本更新策略。M
 
 **⁸ Muon 優化器**
 
-Muon = "Matrix u for u, Newton-ish"，是一種牛頓類優化器，專門為 Transformer 中的矩陣參數設計。它使用 Newton-Schulz 正交化來維持權重矩陣的正交性，聲稱在某些設置下收斂速度比 AdamW 快。Per-Head 版本將正交化應用於每個注意力頭的分塊矩陣，而非整個 Q/K/V 投影矩陣，避免不同 head 因梯度尺度不同而在更新中相互干擾。
+Muon，全稱 **MomentUm Orthogonalized by Newton-Schulz**，由 Keller Jordan 在 2024 年提出。核心思想：
+
+1. 先用 SGD-Momentum 生成梯度更新 $G$
+2. 對 $G$ 應用 **Newton-Schulz 迭代**（矩陣正交化後處理步驟），使更新矩陣趨近正交
+3. 正交化後的梯度應用於參數
+
+為什麼要正交化？因為非正交梯度更新會導致梯度方向之間的相互干涉，類似於病態條件數問題。Newton-Schulz 迭代是一種收斂快速的矩陣正交化方法（5 步迭代），使更新方向相互正交，改善收斂穩定性。
+
+**Per-Head Muon** 將正交化應用於每個注意力頭的分塊矩陣，而非整個 Q/K/V 投影矩陣。原始 Muon 對整個矩陣做正交化，大梯度/大動量的頭會主導更新方向，小尺度的頭得到不足的歸一化更新；Per-Head 版本讓每個頭獨立正交化，學習動態更均衡。
 
 **⁹ RMSNorm**
 
