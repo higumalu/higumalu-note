@@ -1,14 +1,11 @@
-<% if (theme.mathjax){ %>
-<script>
+<% if (theme.mathjax){ %><script>
 window.MathJax = {
   tex: {
-    inlineMath: [['$', '$'], ['\\(', '\\)']],
-    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    inlineMath: [['$', '$'], ['<%', '%>']],
+    displayMath: [['$$', '$$']],
     processEscapes: true
   },
-  options: {
-    enableMenu: false
-  },
+  options: { enableMenu: false },
   startup: {
     ready: function() {
       MathJax.startup.defaultReady();
@@ -19,5 +16,5 @@ window.MathJax = {
   }
 };
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+<script src="lib/mathjax/tex-mml-chtml.txt"></script>
 <% } %>
