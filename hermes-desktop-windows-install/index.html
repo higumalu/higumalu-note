@@ -66,9 +66,8 @@
 </ol>
 <p>懶得動滑鼠？用 PowerShell 一行搞定（實驗性）：</p>
 <figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">iex</span> (<span class="built_in">irm</span> https://hermes<span class="literal">-agent</span>.nousresearch.com/install.ps1)</span><br></pre></td></tr></table></figure>
-
 <hr>
-<h2 id="Hermes-Desktop-是什麼？"><a href="#Hermes-Desktop-是什麼？" class="headerlink" title="Hermes Desktop 是什麼？"></a>Hermes Desktop 是什麼？</h2><p>Hermes Desktop 是 <a target="_blank" rel="noopener" href="https://nousresearch.com/">Nous Research</a> 官方推出的桌面客戶端，讓你不需要碰指令列，就能用上 Hermes Agent 的全部能力。</p>
+<h2 id="Hermes-Desktop-是什麼？"><a href="#Hermes-Desktop-是什麼？" class="headerlink" title="Hermes Desktop 是什麼？"></a>Hermes Desktop 是什麼？</h2><p>Hermes Desktop 是 <a target="_blank" rel="noopener" href="https://nousresearch.com">Nous Research</a> 官方推出的桌面客戶端，讓你不需要碰指令列，就能用上 Hermes Agent 的全部能力。</p>
 <p><strong>它不是另一套聊天機器人</strong> — 它就是你之前在終端機用 CLI 跑的 Hermes Agent，只是包了一層漂亮的 GUI 外殼。兩者共用同一套設定、記憶、技能、對話紀錄，隨時可以切換。</p>
 <h3 id="核心功能亮點"><a href="#核心功能亮點" class="headerlink" title="核心功能亮點"></a>核心功能亮點</h3><ul>
 <li><strong>即時串流對話</strong>：工具呼叫（查網頁、搜尋資料、操作檔案）全部即時顯示進度</li>
@@ -104,13 +103,12 @@
 <h3 id="選項二：從原始碼編譯（進階玩家）"><a href="#選項二：從原始碼編譯（進階玩家）" class="headerlink" title="選項二：從原始碼編譯（進階玩家）"></a>選項二：從原始碼編譯（進階玩家）</h3><p>如果你想用最新的尚未發布功能，或者想要控制編譯過程，可以從 source 編譯。</p>
 <p><strong>事前準備：</strong></p>
 <ul>
-<li>Volta（Node.js 版本管理器）：<a target="_blank" rel="noopener" href="https://volta.sh/">volta.sh</a></li>
+<li>Volta（Node.js 版本管理器）：<a target="_blank" rel="noopener" href="https://volta.sh">volta.sh</a></li>
 <li>Git</li>
 <li>約 5–10 GB 磁碟空間</li>
 </ul>
 <p><strong>編譯步驟：</strong></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1. 安裝 Volta（尚未安裝的話）</span></span><br><span class="line">winget install Volta</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 導向 Desktop 原始碼目錄</span></span><br><span class="line"><span class="built_in">cd</span> <span class="string">&quot;C:\Users\&lt;你的使用者名稱&gt;\AppData\Local\hermes\hermes-agent\apps\desktop&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在 package.json 加入 Volta 節點版本綁定</span></span><br><span class="line"><span class="comment">#    （編輯 package.json，加入以下內容到根層級）</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;volta&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;node&quot;</span>: <span class="string">&quot;22.22.3&quot;</span>,</span><br><span class="line">    <span class="string">&quot;npm&quot;</span>: <span class="string">&quot;10.9.0&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 安裝 Windows 原生 binding（編譯所需）</span></span><br><span class="line">npm install @rolldown/binding-win32-x64-msvc</span><br><span class="line">npm install @tailwindcss/oxide-win32-x64-msvc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 安裝專案依賴</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 建置 Electron 介面</span></span><br><span class="line">npm run build</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 打包成 Windows 安裝檔</span></span><br><span class="line">npm run dist:win</span><br></pre></td></tr></table></figure>
-
 <p>編譯完成後，輸出檔案在 <code>apps/desktop/release/</code> 目錄：</p>
 <ul>
 <li><code>Hermes-X.X.X-win-x64.exe</code> — NSIS 安裝程式（推薦）</li>
@@ -122,19 +120,16 @@
 <p><strong>適用情境：</strong> 追求最大穩定性、避免踩坑的用戶</p>
 <h4 id="步驟-1：啟用-WSL2"><a href="#步驟-1：啟用-WSL2" class="headerlink" title="步驟 1：啟用 WSL2"></a>步驟 1：啟用 WSL2</h4><p>以<strong>系統管理員身份</strong>開啟 PowerShell，執行：</p>
 <figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl -<span class="literal">-install</span></span><br></pre></td></tr></table></figure>
-
 <p>安裝完成後<strong>重開機</strong>，WSL 會引導你設定 Ubuntu 使用者名稱和密碼。</p>
 <h4 id="步驟-2：安裝-Hermes-Agent"><a href="#步驟-2：安裝-Hermes-Agent" class="headerlink" title="步驟 2：安裝 Hermes Agent"></a>步驟 2：安裝 Hermes Agent</h4><p>在 Ubuntu（WLS2）終端機內執行官方安裝腳本：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash</span><br></pre></td></tr></table></figure>
-
 <p>腳本會自動幫你安裝所有東西（uv、Python 3.11、Node.js、ripgrep、ffmpeg 等），<strong>完全不需要 sudo</strong>，也不需要預先安裝任何軟體。</p>
 <h4 id="步驟-3：啟動並設定"><a href="#步驟-3：啟動並設定" class="headerlink" title="步驟 3：啟動並設定"></a>步驟 3：啟動並設定</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc      <span class="comment"># 載入環境</span></span><br><span class="line">hermes                <span class="comment"># 啟動互動式 CLI</span></span><br></pre></td></tr></table></figure>
-
 <h4 id="步驟-4：順帶安裝桌面-GUI（非必須）"><a href="#步驟-4：順帶安裝桌面-GUI（非必須）" class="headerlink" title="步驟 4：順帶安裝桌面 GUI（非必須）"></a>步驟 4：順帶安裝桌面 GUI（非必須）</h4><p>CLI 安裝完成後，若想要桌面版 GUI，可在 WSL2 內執行：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes desktop</span><br></pre></td></tr></table></figure>
-
 <hr>
 <h2 id="安裝後的初始設定"><a href="#安裝後的初始設定" class="headerlink" title="安裝後的初始設定"></a>安裝後的初始設定</h2><h3 id="設定-LLM-API-Key"><a href="#設定-LLM-API-Key" class="headerlink" title="設定 LLM API Key"></a>設定 LLM API Key</h3><p>Hermes Desktop 安裝完後，需要告訴它要用哪個 AI 模型。支援的 provider：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -143,42 +138,44 @@
 <th>適合族群</th>
 </tr>
 </thead>
-<tbody><tr>
-<td><a target="_blank" rel="noopener" href="https://portal.nousresearch.com/">Nous Portal</a></td>
+<tbody>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://portal.nousresearch.com">Nous Portal</a></td>
 <td>300+ 模型，整合最好</td>
 <td>想要完整功能的人</td>
 </tr>
 <tr>
-<td><a target="_blank" rel="noopener" href="https://console.anthropic.com/">Anthropic Claude</a></td>
+<td><a target="_blank" rel="noopener" href="https://console.anthropic.com">Anthropic Claude</a></td>
 <td>工具呼叫最準確</td>
 <td>研究、分析用途</td>
 </tr>
 <tr>
-<td><a target="_blank" rel="noopener" href="https://platform.openai.com/">OpenAI</a></td>
+<td><a target="_blank" rel="noopener" href="https://platform.openai.com">OpenAI</a></td>
 <td>生態成熟</td>
 <td>習慣 OpenAI 生態的人</td>
 </tr>
 <tr>
-<td><a target="_blank" rel="noopener" href="https://ollama.com/">Ollama</a>（本地）</td>
+<td><a target="_blank" rel="noopener" href="https://ollama.com">Ollama</a>（本地）</td>
 <td>完全免費、離線可用</td>
 <td>注重隱私的人</td>
 </tr>
 <tr>
-<td><a target="_blank" rel="noopener" href="https://platform.deepseek.com/">DeepSeek</a></td>
+<td><a target="_blank" rel="noopener" href="https://platform.deepseek.com">DeepSeek</a></td>
 <td>成本低</td>
 <td>成本敏感型用戶</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>設定 API Key 的方式（CLI 模式）：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hermes config <span class="built_in">set</span> ANTHROPIC_API_KEY sk-ant-xxxxx</span><br><span class="line">hermes config <span class="built_in">set</span> model anthropic/claude-sonnet-4</span><br></pre></td></tr></table></figure>
-
 <p>在桌面版 GUI 內則是去 <strong>Settings → Providers</strong> 填入即可。</p>
 <h3 id="驗證安裝是否成功"><a href="#驗證安裝是否成功" class="headerlink" title="驗證安裝是否成功"></a>驗證安裝是否成功</h3><p>在 CLI 模式輸入：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
-
 <p>這會檢查所有依賴是否正確安裝、API Key 是否有效，出現 ✅ 就代表一切正常。</p>
 <hr>
 <h2 id="YouTube-影片資源"><a href="#YouTube-影片資源" class="headerlink" title="YouTube 影片資源"></a>YouTube 影片資源</h2><p>以下是社群中品質較好的 Hermes Agent 安裝教學影片，涵蓋不同切入點：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -188,7 +185,8 @@
 <th>連結</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Hermes Agent 完整安裝指南</td>
 <td>英文</td>
 <td>涵蓋 Windows WSL2、macOS、API 設定</td>
@@ -206,7 +204,9 @@
 <td>OpenClaw Launch 整理的疑難排解樹</td>
 <td><a target="_blank" rel="noopener" href="https://openclawlaunch.com/guides/hermes-agent-windows">openclawlaunch.com</a></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <blockquote>
 <p>🔍 想找更多？去 YouTube 搜尋 <code>Hermes Agent install</code> 或 <code>Hermes Agent Windows WSL2</code>，新影片每週都有。</p>
 </blockquote>
@@ -223,16 +223,18 @@
 <li>執行 <code>hermes doctor</code> 看診斷輸出</li>
 </ol>
 <hr>
-<h2 id="官方資源整理"><a href="#官方資源整理" class="headerlink" title="官方資源整理"></a>官方資源整理</h2><table>
+<h2 id="官方資源整理"><a href="#官方資源整理" class="headerlink" title="官方資源整理"></a>官方資源整理</h2><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>資源</th>
 <th>連結</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>官方網站</td>
-<td><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com/">hermes-agent.nousresearch.com</a></td>
+<td><a target="_blank" rel="noopener" href="https://hermes-agent.nousresearch.com">hermes-agent.nousresearch.com</a></td>
 </tr>
 <tr>
 <td>官方桌面下載</td>
@@ -256,9 +258,11 @@
 </tr>
 <tr>
 <td>Skills Hub</td>
-<td><a target="_blank" rel="noopener" href="https://agentskills.io/">agentskills.io</a></td>
+<td><a target="_blank" rel="noopener" href="https://agentskills.io">agentskills.io</a></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <hr>
 <h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p><strong>Windows 用戶的最好時機到了。</strong> 2026 年 Hermes v0.16.0 正式推出 <code>.exe</code> 安裝程式，不需要 WSL2、不需要指令列技術，60 秒下載、3 分鐘設定就能開始用。</p>
 <p>如果你是：</p>

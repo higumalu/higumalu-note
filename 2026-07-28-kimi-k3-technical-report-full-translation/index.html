@@ -14,10 +14,9 @@
 前言： 本文的翻譯盡量貼近原文表述，並在必要處加入譯註說明背景概念。
 
 
-
 Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 
-摘要（Abstract）我們提出 Kimi K3，,"> 
+摘要（Abstract）我們提出 Kimi K3，一,"> 
     <meta name="author" content="Higumalu"> 
     <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
     <link rel="icon" href="/higumalu-note/img/favicon.png"> 
@@ -63,11 +62,13 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p><strong>前言：</strong> 本文的翻譯盡量貼近原文表述，並在必要處加入譯註說明背景概念。</p>
 </blockquote>
 <span id="more"></span>
-
 <h2 id="Kimi-K3：開放前沿智能"><a href="#Kimi-K3：開放前沿智能" class="headerlink" title="Kimi K3：開放前沿智能"></a>Kimi K3：開放前沿智能</h2><h3 id="Kimi-K3-技術報告"><a href="#Kimi-K3-技術報告" class="headerlink" title="Kimi K3 技術報告"></a>Kimi K3 技術報告</h3><p><em>Kimi 團隊</em></p>
 <hr>
 <h2 id="摘要（Abstract）"><a href="#摘要（Abstract）" class="headerlink" title="摘要（Abstract）"></a>摘要（Abstract）</h2><p>我們提出 Kimi K3，一個 2.8 兆參數的專家混合模型，擁有 1040 億激活參數、原生視覺能力，以及 100 萬 Token 的上下文窗口。Kimi K3 基於 Kimi Delta Attention [64] 和 Attention Residuals [58] 構建，這兩項技術分別提升了序列長度和模型深度的信息流動。配合 Stable LatentMoE（每個 Token 有效激活 896 個路由專家中的 16 個）以及經過精煉的訓練配方與數據配方，這些進步帶來了相比 Kimi K2 [59] 約 <strong>2.5 倍</strong>的整體擴展效率提升。後訓練的亮點包括：在通用領域、Agent 領域和 Coding 領域開展強化學習，並覆蓋多個推理努力層級，實現了組合泛化和強健的長程執行能力。在 2.8 兆參數的規模下，Kimi K3 得到多個基礎設施領域的支撐：KDA 的演算法-系統共同設計、完美均衡的專家並行訓練（高效內存管理）、百萬 Token Agentic 強化學習（持久化 Rollout 與 Sandbox 狀態），以及部署創新。</p>
 <p>廣泛的評估表明，Kimi K3 在長程 Coding、Agentic、知識、推理和視覺任務上達到了前沿水準。儘管其整體表現仍落後於最強的私有模型——Claude Fable 5 和 GPT-5.6 Sol——但 Kimi K3 一致性地超越了評估套件中的其他開源和私有模型。我們發布了完整的 Kimi K3 模型權重，以促進未來研究並加速前沿智能的更廣泛部署與應用。¹</p>
+<blockquote id="fn_1">
+<sup>1</sup>. <a target="_blank" rel="noopener" href="https://huggingface.co/moonshotai/Kimi-K3">https://huggingface.co/moonshotai/Kimi-K3</a><a href="#reffn_1" title="Jump back to footnote [1] in the text."> &#8617;</a>
+</blockquote>
 <hr>
 <h2 id="1-引言（Introduction）"><a href="#1-引言（Introduction）" class="headerlink" title="1. 引言（Introduction）"></a>1. 引言（Introduction）</h2><p>在大型語言模型（LLM）發展的相當長一段時間裡，「scaling」意味著在部署前投入更多計算——訓練更大的模型、使用更多的數據 [55, 46]。推理模型的興起將「測試時計算」（test-time computation）確立為第二條 scaling 軸線：OpenAI 的 o 系列通過強化學習和測試時推理實現 scaling [85, 84]；Anthropic 的 Extended-Thinking 模型分配自適應思考預算並交織推理與工具使用 [6, 7]；DeepSeek-R1 [41] 和 Kimi K1.5 [119] 表明，大規模強化學習可以從強大的預訓練模型中引發複雜的推理行為；Kimi K2.5 Agent Swarm [60] 進一步將測試時 scaling 從順序推理擴展到並行 Agent 協調。這些進步使測試時 scaling 成為前沿研究的核心焦點。然而，開源模型生態系統在第二條軸線上快速進展的同時，在第一條軸線上進展緩慢：許多近期模型仍停留在 1 兆參數級別或略高 [146, 29, 136, 121]。隨著越來越複雜的推理和 Agentic 強化學習方法被應用到相似規模的預訓練基礎上，開源進展有趨同的風險，而與最強私有系統的差距正在擴大。透過 Kimi K3，我們同時追求兩條 scaling 軸線到前沿：將預訓練基礎擴展到前所未有的 3 兆參數級別，同時在 100 萬上下文長度上擴展強化學習、推理努力和長程交互。</p>
 <p>我們提出 Kimi K3，一個原生多模態專家混合模型，總參數 2.8 兆，激活參數 1040 億，上下文窗口最長 100 萬 Token。其架構在三個互補維度上擴展信息流：</p>
@@ -101,62 +102,42 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <hr>
 <h3 id="2-1-Hybrid-Attention"><a href="#2-1-Hybrid-Attention" class="headerlink" title="2.1 Hybrid Attention"></a>2.1 Hybrid Attention</h3><p>Kimi K3 使用層級混合的線性注意力和全局注意力，結合 KDA [64] 與 Gated MLA。每個 Block 包含 3 層 KDA 後接 1 層 Gated MLA，給出 3:1 的混合比例。此模式在整個骨幹網絡中重複。兩種注意力機制將在下面分別描述。骨架末端追加一個額外的 Gated MLA 層，確保最終層始終執行全局注意力。</p>
 <h4 id="2-1-1-Kimi-Delta-Attention"><a href="#2-1-1-Kimi-Delta-Attention" class="headerlink" title="2.1.1 Kimi Delta Attention"></a>2.1.1 Kimi Delta Attention</h4><p>KDA 在 Delta Rule 遞歸 [106, 139] 的基礎上增加通道級遺忘門 [64]。考慮隱藏狀態序列 $x_t \in \mathbb{R}^d$，其中 $t$ 索引 Token 位置，$d$ 是模型隱維度。為清晰起見，我們先描述單個注意力頭，Query 和 Key 向量 $q_t, k_t \in \mathbb{R}^{d_k}$，Value 向量 $v_t \in \mathbb{R}^{d_v}$，以及遞歸狀態 $S_t \in \mathbb{R}^{d_k \times d_v}$。KDA 在 Delta Rule 更新前應用通道級衰減：</p>
-<p>$$S_t = (I - \beta_t k_t k_t^\top) \odot \text{Diag}(\alpha_t) \cdot S_{t-1} + \beta_t k_t v_t^\top, \quad \tilde{o}_t = S_t^\top q_t$$</p>
-<p>其中 $\alpha_t \in (0, 1)^{d_k}$ 是通道級單步 retention factor，$\beta_t \in (0, 1)$ 控制 Delta Rule 寫入強度。</p>
+<script type="math/tex; mode=display">S_t = (I - \beta_t k_t k_t^\top) \odot \text{Diag}(\alpha_t) \cdot S_{t-1} + \beta_t k_t v_t^\top, \quad \tilde{o}_t = S_t^\top q_t</script><p>其中 $\alpha_t \in (0, 1)^{d_k}$ 是通道級單步 retention factor，$\beta_t \in (0, 1)$ 控制 Delta Rule 寫入強度。</p>
 <p>跟隨 Kimi Linear [64]，KDA 將每頭量參數化為：</p>
-<p>$$q_t^h, k_t^h = \text{L2Norm}\left(\text{Swish}\left(\text{ShortConv}\left(W_t^{q/k} x_t\right)\right)\right) \in \mathbb{R}^{d_k}$$</p>
-<p>$$v_t^h = \text{Swish}\left(\text{ShortConv}\left(W_t^v x_t\right)\right) \in \mathbb{R}^{d_v}$$</p>
-<p>$$\beta_t^h = \text{Sigmoid}\left(W_\beta x_t\right) \in (0, 1)$$</p>
-<p>$$z_t^h = W_\alpha^\uparrow W_\alpha^\downarrow x_t + b_\alpha^h \in \mathbb{R}^{d_k}$$</p>
-<p>Query、Key、Value 投影依次應用 ShortConv 和 Swish [139]，Query 和 Key 進一步以 L2Norm [142] 歸一化。低秩投影和頭特定偏置 $b_\alpha^h \in \mathbb{R}^{d_k}$ 為每個 Key 通道產生細粒度衰減 logit $z_t^h$。從 $z_t^h$ 到 $\alpha_t^h$ 的下限有界映射將在分塊並行形式之後引入。</p>
+<script type="math/tex; mode=display">q_t^h, k_t^h = \text{L2Norm}\left(\text{Swish}\left(\text{ShortConv}\left(W_t^{q/k} x_t\right)\right)\right) \in \mathbb{R}^{d_k}</script><script type="math/tex; mode=display">v_t^h = \text{Swish}\left(\text{ShortConv}\left(W_t^v x_t\right)\right) \in \mathbb{R}^{d_v}</script><script type="math/tex; mode=display">\beta_t^h = \text{Sigmoid}\left(W_\beta x_t\right) \in (0, 1)</script><script type="math/tex; mode=display">z_t^h = W_\alpha^\uparrow W_\alpha^\downarrow x_t + b_\alpha^h \in \mathbb{R}^{d_k}</script><p>Query、Key、Value 投影依次應用 ShortConv 和 Swish [139]，Query 和 Key 進一步以 L2Norm [142] 歸一化。低秩投影和頭特定偏置 $b_\alpha^h \in \mathbb{R}^{d_k}$ 為每個 Key 通道產生細粒度衰減 logit $z_t^h$。從 $z_t^h$ 到 $\alpha_t^h$ 的下限有界映射將在分塊並行形式之後引入。</p>
 <p><strong>分塊並行形式</strong></p>
 <p>跟隨 Kimi Linear [64]，KDA 在 chunk 級別遞歸，在每個 chunk 內並行。對於 chunk size $C$，$X[t]$ 堆疊第 $t$ 個 chunk 中的 Token 向量（$X \in {Q, K, V, O, U, W}$）。矩陣 $S[t] \in \mathbb{R}^{d_k \times d_v}$ 表示進入 chunk $t$ 的遞歸狀態。對位置 $1 \leq i \leq j \leq C$，定義通道級累積衰減：</p>
-<p>$$\gamma_{i \to j}^{[t]} := \prod_{r=i}^j \alpha_r^{[t]}, \quad \gamma_r^{[t]} := \gamma_{1 \to r}^{[t]}$$</p>
-<p>如 Kimi Linear 中，$\Gamma_{1 \to C}^{[t]} \in \mathbb{R}^{C \times d_k}$ 將 $\gamma_1^{[t]}, …, \gamma_C^{[t]}$ 按行堆疊。UT 變換產生 $U[t]$ 和 $W[t]$，從而定義偽 Value 項 $eV[t] := U[t] - W[t]S[t]$。給定傳入狀態 $S[t]$，chunk $t$ 中的所有輸出並行計算為：</p>
-<p>$$A[t] = \text{Tril}\left((Q[t] \odot \Gamma_{1 \to C}^{[t]}) \cdot (K[t] / \Gamma_{1 \to C}^{[t]})^\top\right)$$</p>
-<p>$$O[t] = \underbrace{(\Gamma_{1 \to C}^{[t]} \odot Q[t]) S[t]}<em>{\text{inter-chunk}} + \underbrace{A[t] \cdot eV[t]}</em>{\text{intra-chunk}}$$</p>
-<p>對於矩陣 $M$，$\text{Tril}(M)$ 將所有嚴格上三角 entries 置零，保留下三角 entries（包括對角線）。此 mask 在 chunk 內強制執行因果交互，對角線保留是因為每個輸出讀取當前 Token 更新後的狀態。$O[t]$ 的第一項承載來自先前 chunks 的信息，第二項處理當前 chunk 內的交互。</p>
+<script type="math/tex; mode=display">\gamma_{i \to j}^{[t]} := \prod_{r=i}^j \alpha_r^{[t]}, \quad \gamma_r^{[t]} := \gamma_{1 \to r}^{[t]}</script><p>如 Kimi Linear 中，$\Gamma_{1 \to C}^{[t]} \in \mathbb{R}^{C \times d_k}$ 將 $\gamma_1^{[t]}, …, \gamma_C^{[t]}$ 按行堆疊。UT 變換產生 $U[t]$ 和 $W[t]$，從而定義偽 Value 項 $eV[t] := U[t] - W[t]S[t]$。給定傳入狀態 $S[t]$，chunk $t$ 中的所有輸出並行計算為：</p>
+<script type="math/tex; mode=display">A[t] = \text{Tril}\left((Q[t] \odot \Gamma_{1 \to C}^{[t]}) \cdot (K[t] / \Gamma_{1 \to C}^{[t]})^\top\right)</script><script type="math/tex; mode=display">O[t] = \underbrace{(\Gamma_{1 \to C}^{[t]} \odot Q[t]) S[t]}_{\text{inter-chunk}} + \underbrace{A[t] \cdot eV[t]}_{\text{intra-chunk}}</script><p>對於矩陣 $M$，$\text{Tril}(M)$ 將所有嚴格上三角 entries 置零，保留下三角 entries（包括對角線）。此 mask 在 chunk 內強制執行因果交互，對角線保留是因為每個輸出讀取當前 Token 更新後的狀態。$O[t]$ 的第一項承載來自先前 chunks 的信息，第二項處理當前 chunk 內的交互。</p>
 <p><strong>下限有界衰減（核心創新）</strong></p>
-<p>方程 4 在每個 chunk 中以倒數累積衰減 $1/\Gamma_{1 \to C}^{[t]}$ 重新縮放 Keys。由於 $\Gamma_{1 \to C}^{[t]}$ 是 $(0, 1)$ 內 retention factor 的乘積，其倒數可能無界、在有限精度下溢出 [141, 64]。Kimi Linear 透過在 log 空間計算相對衰減並將每個 chunk 進一步劃分為次級 16-token tile 來控制數值範圍 [141, 64]。Off-diagonal tile 可以直接用 Tensor Core 密集矩陣乘法計算；相比之下，diagonal tile 仍需要顯式位置對計算，這是主要的 intra-chunk 瓶頸。</p>
+<p>方程 4 在每個 chunk 中以倒數累積衰減 $1/\Gamma<em>{1 \to C}^{[t]}$ 重新縮放 Keys。由於 $\Gamma</em>{1 \to C}^{[t]}$ 是 $(0, 1)$ 內 retention factor 的乘積，其倒數可能無界、在有限精度下溢出 [141, 64]。Kimi Linear 透過在 log 空間計算相對衰減並將每個 chunk 進一步劃分為次級 16-token tile 來控制數值範圍 [141, 64]。Off-diagonal tile 可以直接用 Tensor Core 密集矩陣乘法計算；相比之下，diagonal tile 仍需要顯式位置對計算，這是主要的 intra-chunk 瓶頸。</p>
 <p>Kimi K3 透過改變從衰減 logit $z_t^h$ 到單步 log-decay $g_t^h$ 的映射來解決這一瓶頸。跟隨 GDN 和 Mamba-2，Kimi Linear 使用負 Softplus 映射 $g_t^h = -e^{A_h} \text{Softplus}(z_t^h) \in (-\infty, 0)^{d_k}$ [139, 24, 64]。Kimi K3 轉而使用縮放 Sigmoid 從下方約束 log-decay：</p>
-<p>$$g_t^h = g_{\min} \cdot \text{Sigmoid}(e^{A_h} z_t^h) \in (g_{\min}, 0)^{d_k}$$</p>
-<p>$$\alpha_t^h = \exp(g_t^h) \in (e^{g_{\min}}, 1)^{d_k}$$</p>
-<p>其中 $A_h$ 是每頭可學習 log-scale，$g_{\min} = -5$ 固定。我們初始化 $A_h = 0$，各偏置 $b_\alpha^h$ 按 [64, 24, 139] 初始化。$g_{\min} = -5$ 確保每個 retention factor $\alpha_{t,j}^h &gt; e^{-5} \approx 6.7 \times 10^{-3}$，16-token tile 上的累積 log-decay 位於 $(-80, 0)$。相應的倒數重新縮放因子因此小於 $e^{80}$，保持在 BF16 動態範圍內。這一有限範圍使對角線和 off-diagonal tile 都能使用密集 Tensor Core 矩陣乘法，消除了位置對角線路徑。</p>
+<script type="math/tex; mode=display">g_t^h = g_{\min} \cdot \text{Sigmoid}(e^{A_h} z_t^h) \in (g_{\min}, 0)^{d_k}</script><script type="math/tex; mode=display">\alpha_t^h = \exp(g_t^h) \in (e^{g_{\min}}, 1)^{d_k}</script><p>其中 $A<em>h$ 是每頭可學習 log-scale，$g</em>{\min} = -5$ 固定。我們初始化 $A<em>h = 0$，各偏置 $b</em>\alpha^h$ 按 [64, 24, 139] 初始化。$g<em>{\min} = -5$ 確保每個 retention factor $\alpha</em>{t,j}^h &gt; e^{-5} \approx 6.7 \times 10^{-3}$，16-token tile 上的累積 log-decay 位於 $(-80, 0)$。相應的倒數重新縮放因子因此小於 $e^{80}$，保持在 BF16 動態範圍內。這一有限範圍使對角線和 off-diagonal tile 都能使用密集 Tensor Core 矩陣乘法，消除了位置對角線路徑。</p>
 <p><img src="/higumalu-note/images/k3_tech_report/kda-decay.png" alt="KDA 下限有界衰減 Figure 3"><br><em>圖 3：(a) Log-decay 參數化：Kimi Linear 使用無界負 Softplus 映射，Kimi K3 以縮放 Sigmoid 約束 log-decay 下界；(b) 對角線 tile 計算：Kimi Linear 對每個對角線 tile 執行顯式位置對計算，而 Kimi K3 的有界範圍使所有因果 tile 使用密集 Tensor Core 矩陣乘法</em></p>
 <p><strong>全秩輸出門</strong></p>
 <p>最後，Kimi K3 將 KDA 的輸出門從 Kimi Linear [64] 使用的低秩參數化改為輸入依賴的全秩投影。對遞歸輸出應用頭級 RMSNorm [147] 後，KDA 應用數據依賴輸出門控 [100]：</p>
-<p>$$y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \text{RMSNorm}(\tilde{o}_t)]$$</p>
-<h4 id="2-1-2-Gated-MLA"><a href="#2-1-2-Gated-MLA" class="headerlink" title="2.1.2 Gated MLA"></a>2.1.2 Gated MLA</h4><p>Multi-head Latent Attention（MLA）在 DeepSeek-V2 [28] 中引入，將每個 Token 的 Key-Value 表示壓縮到低維潛向量 $c_t = W_c x_t$。MLA 不緩存完整的頭特定 Keys 和 Values，而是緩存 $c_t$ 並在注意力計算期間透過學習的上投影重建內容 Keys 和 Values。這種分解減少了 KV-Cache 佔用，同時保留了全局 Token 間注意力。MLA 後被 Kimi K2 和 Kimi K2.5 [59, 60] 採用，Kimi K3 在週期性全局注意力層中保留 MLA。</p>
+<script type="math/tex; mode=display">y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \text{RMSNorm}(\tilde{o}_t)]</script><h4 id="2-1-2-Gated-MLA"><a href="#2-1-2-Gated-MLA" class="headerlink" title="2.1.2 Gated MLA"></a>2.1.2 Gated MLA</h4><p>Multi-head Latent Attention（MLA）在 DeepSeek-V2 [28] 中引入，將每個 Token 的 Key-Value 表示壓縮到低維潛向量 $c_t = W_c x_t$。MLA 不緩存完整的頭特定 Keys 和 Values，而是緩存 $c_t$ 並在注意力計算期間透過學習的上投影重建內容 Keys 和 Values。這種分解減少了 KV-Cache 佔用，同時保留了全局 Token 間注意力。MLA 後被 Kimi K2 和 Kimi K2.5 [59, 60] 採用，Kimi K3 在週期性全局注意力層中保留 MLA。</p>
 <p>不同於 Kimi K2 和 K2.5，Kimi K3 跟隨 Kimi Linear [64] 的混合設計，對所有 MLA 層應用 <strong>No Position Encoding（NoPE）</strong>。因此，不對它們的 Query 或 Key 應用顯式位置編碼。穿插的 KDA 層提供位置敏感和近因感知的序列混合，而 MLA 層提供無限制的全局內容交互。這種分離也避免了在擴展上下文長度時修改位置編碼參數，例如重新調優 RoPE 頻率基或應用 YaRN [93]。</p>
 <p>此外，Kimi K3 以輸入依賴、通道級全秩輸出門增強 MLA。令 $\tilde{o}_t$ 為位置 $t$ 的無門控 MLA 輸出，門控輸出為：</p>
-<p>$$y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \tilde{o}_t]$$</p>
-<p>門投影 $W_g$ 是全秩的，與 Kimi K3 中 KDA 的新參數化一致。此門允許每個 Token 調製從全局注意力讀取的通道。</p>
+<script type="math/tex; mode=display">y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \tilde{o}_t]</script><p>門投影 $W_g$ 是全秩的，與 Kimi K3 中 KDA 的新參數化一致。此門允許每個 Token 調製從全局注意力讀取的通道。</p>
 <p>為修正 Flash Attention 中出現的有偏舍入誤差，我們採用 [99] 的方法，在訓練期間將注意力輸出保持為 FP32。這使輸出 tile 的片上佔用增加一倍；因此我們重新設計訓練內核，讓它與 KV 緩衝區而不是 Query tile 重疊，為更深的 KV 管線和更高訓練吞吐量釋放共享內存。</p>
 <hr>
 <h3 id="2-2-Attention-Residuals"><a href="#2-2-Attention-Residuals" class="headerlink" title="2.2 Attention Residuals"></a>2.2 Attention Residuals</h3><p>標準殘差連接 [44] 將所有先前信息壓縮到深度上的單一狀態 $h_l$——這是一種令人聯想到時間維度 RNN 的 bottleneck。對於序列建模，Transformer 以注意力 [10, 126] 取代了遞歸，允許每個位置以數據依賴權重選擇性地訪問所有先前位置。Attention Residuals（AttnRes）[58] 將相同方法論應用於深度維度：每層選擇性地從所有先前層的表示中檢索，而非均勻累積。</p>
 <p><strong>完全 Attention Residuals</strong></p>
 <p>對於每層 $l$，我們定義層特定可學習偽查詢 $q_l = w_l \in \mathbb{R}^d$ 及其 Keys 和 Values：</p>
-<p>$$k_i = v_i = \begin{cases} h_1 &amp; i = 0 \ f_i(h_i) &amp; 1 \leq i \leq l-1 \end{cases}$$</p>
-<p>其中 $f_i(h_i)$ 是第 $i$ 層的輸出，$h_1$ 是 Token Embedding。注意力權重遵循 softmax kernel $\phi(q, k) = \exp(q^\top \text{RMSNorm}(k))$ [56, 147]，其中 RMSNorm 防止大幅度輸出的層主導權重：</p>
-<p>$$\alpha_{i \to l} = \frac{\phi(q_l, k_i)}{\sum_{j=0}^{l-1} \phi(q_l, k_j)}, \quad h_l = \sum_{i=0}^{l-1} \alpha_{i \to l} \cdot v_i$$</p>
-<p>由於網絡深度適中（$L &lt; 100$），這種完全形式 $O(L^2 d)$ 的算術代價是可接受的；實際開銷是為保持所有層輸出存活所需的 $O(Ld)$ 內存（以及管道並行下跨階段通信）。</p>
+<script type="math/tex; mode=display">k_i = v_i = \begin{cases} h_1 & i = 0 \\ f_i(h_i) & 1 \leq i \leq l-1 \end{cases}</script><p>其中 $f_i(h_i)$ 是第 $i$ 層的輸出，$h_1$ 是 Token Embedding。注意力權重遵循 softmax kernel $\phi(q, k) = \exp(q^\top \text{RMSNorm}(k))$ [56, 147]，其中 RMSNorm 防止大幅度輸出的層主導權重：</p>
+<script type="math/tex; mode=display">\alpha_{i \to l} = \frac{\phi(q_l, k_i)}{\sum_{j=0}^{l-1} \phi(q_l, k_j)}, \quad h_l = \sum_{i=0}^{l-1} \alpha_{i \to l} \cdot v_i</script><p>由於網絡深度適中（$L &lt; 100$），這種完全形式 $O(L^2 d)$ 的算術代價是可接受的；實際開銷是為保持所有層輸出存活所需的 $O(Ld)$ 內存（以及管道並行下跨階段通信）。</p>
 <p><strong>分塊 Attention Residuals</strong></p>
-<p>為減少此開銷，我們將 $L$ 層劃分為 $N$ 個 block，每個 block $S = L/N$ 層。Block $n$（層索引 $B_n$）內的層輸出通過求和歸約為單一表示 $b_n = \sum_{j \in B_n} f_j(h_j)$，其中 $b_n^i$ 表示 block 前 $i$ 層的部分和；設 $b_0 = h_1$，因此 Token Embedding 始終作為來源包含在內。跨 block，只對 $N$ 個 block 級表示應用完全注意力：對 block $n$ 的第 $i$ 層，Value 矩陣為：</p>
-<p>$$V = \begin{cases} [b_0, b_1, …, b_{n-1}]^\top &amp; i = 1 \text{（block 首層）} \ [b_0, b_1, …, b_{n-1}, b_{n-1}^i]^\top &amp; i \geq 2 \text{（後續層）} \end{cases}$$</p>
-<hr>
+<p>為減少此開銷，我們將 $L$ 層劃分為 $N$ 個 block，每個 block $S = L/N$ 層。Block $n$（層索引 $B<em>n$）內的層輸出通過求和歸約為單一表示 $b_n = \sum</em>{j \in B_n} f_j(h_j)$，其中 $b_n^i$ 表示 block 前 $i$ 層的部分和；設 $b_0 = h_1$，因此 Token Embedding 始終作為來源包含在內。跨 block，只對 $N$ 個 block 級表示應用完全注意力：對 block $n$ 的第 $i$ 層，Value 矩陣為：</p>
+<script type="math/tex; mode=display">V = \begin{cases} [b_0, b_1, ..., b_{n-1}]^\top & i = 1 \text{（block 首層）} \\ [b_0, b_1, ..., b_{n-1}, b_{n-1}^i]^\top & i \geq 2 \text{（後續層）} \end{cases}</script><hr>
 <h3 id="2-3-Stable-LatentMoE"><a href="#2-3-Stable-LatentMoE" class="headerlink" title="2.3 Stable LatentMoE"></a>2.3 Stable LatentMoE</h3><p>LatentMoE 在前饋網絡中引入潛路由，將 FFN 轉換為潛專家混合。路由的 Key-Value 表示被壓縮為低維向量，激活時通過上投影重建。具體來說，令 $x \in \mathbb{R}^d$ 為輸入，路由器首先計算：</p>
-<p>$$s = \text{Softmax}(\text{Norm}(W_g x)) \in \mathbb{R}^n$$</p>
-<p>其中 $n = 896$ 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：</p>
-<p>$$\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)$$</p>
-<p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和路由權重（依 Eq. 10）：</p>
-<p>$$s_i = \text{Sigmoid}(W_g x_i), \quad \mathcal{T}<em>i = \text{argtop}<em>k(s_i + b), \quad p</em>{i,j} = \begin{cases} \dfrac{s</em>{i,j}}{\sum_{r \in \mathcal{T}<em>i} s</em>{i,r}} &amp; j \in \mathcal{T}_i \ 0 &amp; \text{otherwise} \end{cases}$$</p>
-<p>偏置 $b$ 從路由概率 $p_{i,j}$ 計算中省略，這樣它只調節 dispatch（Top-k 選了哪些專家）而不改變混合權重或直接干擾路由器的梯度優化。</p>
+<script type="math/tex; mode=display">s = \text{Softmax}(\text{Norm}(W_g x)) \in \mathbb{R}^n</script><p>其中 $n = 896$ 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：</p>
+<script type="math/tex; mode=display">\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)</script><p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和路由權重（依 Eq. 10）：</p>
+<script type="math/tex; mode=display">s_i = \text{Sigmoid}(W_g x_i), \quad \mathcal{T}_i = \text{argtop}_k(s_i + b), \quad p_{i,j} = \begin{cases} \dfrac{s_{i,j}}{\sum_{r \in \mathcal{T}_i} s_{i,r}} & j \in \mathcal{T}_i \\ 0 & \text{otherwise} \end{cases}</script><p>偏置 $b$ 從路由概率 $p_{i,j}$ 計算中省略，這樣它只調節 dispatch（Top-k 選了哪些專家）而不改變混合權重或直接干擾路由器的梯度優化。</p>
 <h4 id="2-3-1-SiTU-GLU"><a href="#2-3-1-SiTU-GLU" class="headerlink" title="2.3.1 SiTU-GLU"></a>2.3.1 SiTU-GLU</h4><p>在 FFN 投影之間，我們用 SiTU-GLU 取代標准 SwiGLU。SiTU-GLU 將 Swish 激活函數的 cap 替換為平滑的 Tanh cap：</p>
-<p>$$\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)$$</p>
-<p>Gate branch 的 $\beta_1 = 4$，Up branch 的 $\beta_2 = 25$。由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。在原點附近，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 $\beta \to \infty$ 精確退化為 SwiGLU。</p>
+<script type="math/tex; mode=display">\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)</script><p>Gate branch 的 $\beta<em>1 = 4$，Up branch 的 $\beta_2 = 25$。由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|</em>\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。在原點附近，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 $\beta \to \infty$ 精確退化為 SwiGLU。</p>
 <h4 id="2-3-2-Quantile-Balancing"><a href="#2-3-2-Quantile-Balancing" class="headerlink" title="2.3.2 Quantile Balancing"></a>2.3.2 Quantile Balancing</h4><p>隨著專家數增長到近千，均衡路由變得越來越重要。傳統輔助損失方法 [30] 在每個 Token 上增加一個負載不平衡罰項，但這會直接干擾路由決策與梯度優化。我們採用無輔助損失的路由均衡：對每個專家維護一個偏置項 $b_j$，根據目標加載 $q := mk/n$ 週期性更新（依 Eq. 14）：</p>
-<p>$$b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_{i=1}^{m} \mathbf{1}_{j \in \mathcal{T}_i} - \frac{k}{n} \right)$$</p>
-<p>此更新將專家加載推向目標，類似於 SignSGD，但直接作用於偏置而非路由器參數。</p>
+<script type="math/tex; mode=display">b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_{i=1}^{m} \mathbf{1}_{j \in \mathcal{T}_i} - \frac{k}{n} \right)</script><p>此更新將專家加載推向目標，類似於 SignSGD，但直接作用於偏置而非路由器參數。</p>
 <p><img src="/higumalu-note/images/k3_tech_report/quantile-balancing.png" alt="Quantile Balancing"><br><em>圖 5：Quantile Balancing 示意（m=8 tokens, n=4 experts, k=1）。(a) 不均衡路由：初始加載 (4, 3, 1, 0)；(b) 分位數平衡：每列繪製偏差後的分數灰條，紅色虛線為偏差調整線；(c) 均衡路由：最終加載 (2, 2, 2, 2)</em></p>
 <p>對於精確的偏差估計，我們從最優平衡分配問題的對偶推导出 Alternating Quantile Solver：交替求解 token 側閾值 $\alpha$ 和專家側閾值 $\beta$，每步封閉形式精確求解。實務上，用 1000 個 bin 的直方圖估計分位數，僅需一次整數 All-Reduce 通信，代價不到原始 margin 通信的 1%。</p>
 <hr>
@@ -179,6 +160,7 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <li><strong>BF16/FP32 混合精度</strong>：關鍵操作使用 FP32 防止累積誤差</li>
 </ul>
 <h3 id="3-3-擴展法則"><a href="#3-3-擴展法則" class="headerlink" title="3.3 擴展法則"></a>3.3 擴展法則</h3><p><img src="/higumalu-note/images/k3_tech_report/scaling-law.png" alt="擴展法則"><br><em>圖 7：Kimi K2 和 Kimi K3 的擬合擴展法則曲線。Kimi K3 在相同 FLOPs 下達到更低驗證損失，相比 Kimi K2 提升 2.5× 擴展效率</em></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -188,7 +170,8 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <th>變化</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>層數</td>
 <td>61</td>
 <td>93</td>
@@ -242,7 +225,9 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <td>MoonViT-V2 (27層, patch=14)</td>
 <td>新增</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <h3 id="3-4-長上下文擴展"><a href="#3-4-長上下文擴展" class="headerlink" title="3.4 長上下文擴展"></a>3.4 長上下文擴展</h3><p>Kimi K3 的預訓練從 8K Token 上下文長度開始，後在退火階段逐步擴展到 64K Token。</p>
 <p><strong>位置編碼</strong>：Kimi K3 不使用任何顯式位置嵌入（NoPE），而是透過 KDA 的遞歸門控和衰減機制隱式編碼位置信息。因此，模型無需任何位置編碼修改（如 RoPE 重縮放或插值 [93]）即可直接外推到百萬 Token 上下文。</p>
 <p><strong>長上下文數據</strong>：來自自然來源的長文檔和視頻含有大量低質量內容，包括近似重複項、二進制 blob、截斷文件、視頻剪輯和無效的機器生成文本。我們因此透過專門的清理流程處理它們：結合精確和模糊去重（視頻幀基於感知哈希），輔以啟發式和分類器的質量過濾，以及自動化驗證。由於真正長且連貫的文檔和視頻相比短文本稀缺，我們對其進行上採樣，使長上下文分佈在退火期間不被短序列淹沒。然而，長度本身並不賦予長程能力。為解決這個問題，我們透過打散和拼接多模態文檔和子任務來合成額外的長上下文數據，使嵌入的任務只能在注意分散在完整百萬 Token 上下文中的信息時才能解決。這使注意力機制在完整尺度上接受訓練，防止其退化為局部模式。</p>
@@ -264,14 +249,12 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p><strong>多教師 On-Policy 蒸餾</strong></p>
 <p>我們採用 Multi-Teacher On-Policy Distillation（MOPD）在不同推理努力下整合這些領域專門化能力到統一模型 [76, 135, 29]。訓練時，對於給定領域 d 和採樣的推理努力層級 e ∈ {low, high, max}，優化由對應的教師模型 π(d,e) 引導。給定輸入查詢 x 和前綴回應 y&lt;t，在 yt 上評估的 per-token OPD 獎勵為蒸餾信號，確保統一模型繼承各領域、各努力層級的能力。</p>
 <p><strong>OPD 獎勵公式</strong>（Eq. 15）：每個 token yt 的 OPD 獎勵定義為：</p>
-<p>$$r_{\text{opd}}(y_t | e, x, y_{&lt;t}) = \text{clip}\left(\frac{\text{sg}(\log \pi^{(d,e)}<em>{\text{teacher}}(y_t | x, y</em>{&lt;t}))}{\pi_\theta(y_t | e, x, y_{&lt;t})}, -R_{\max}, R_{\max}\right)$$</p>
-<p>其中 sg(·) 為 stop-gradient 算子，Rmax &gt; 0 為裁剪閾值。此密集獎勵信號無縫集成到我們的 RL 框架中，自然支持長程任務的 partial rollout 訓練等基礎設施優化。</p>
+<script type="math/tex; mode=display">r_{\text{opd}}(y_t | e, x, y_{<t}) = \text{clip}\left(\frac{\text{sg}(\log \pi^{(d,e)}_{\text{teacher}}(y_t | x, y_{<t}))}{\pi_\theta(y_t | e, x, y_{<t})}, -R_{\max}, R_{\max}\right)</script><p>其中 sg(·) 為 stop-gradient 算子，Rmax &gt; 0 為裁剪閾值。此密集獎勵信號無縫集成到我們的 RL 框架中，自然支持長程任務的 partial rollout 訓練等基礎設施優化。</p>
 <h3 id="4-1-4-部署感知後訓練"><a href="#4-1-4-部署感知後訓練" class="headerlink" title="4.1.4 部署感知後訓練"></a>4.1.4 部署感知後訓練</h3><p><strong>MXFP4 量化感知後訓練</strong>：為減少部署時的內存佔用和服務成本，我們將佔模型參數內存主導的 MoE 專家權重量化到 MXFP4 [104]，激活以 MXFP8 計算；而所有非專家組件（注意力投影、潛 MoE 投影、共享專家和 MoE 路由器）保持在更高精度。我們在整個後訓練階段——涵蓋 SFT 和 RL——執行量化感知訓練（QAT）[50]，使模型適應量化引起的精度損失。在 RL 期間，rollout 和訓練共享相同的量化方案，消除訓練-推理失配。</p>
 <p><strong>Draft Model 微調</strong>：優化複雜、長程 agentic 模型的推理效率至關重要。Kimi K3 預訓練時配有一個多 Token 預測（MTP）層，其結構與骨幹 block 相同。由於 EAGLE-3 [72] 的 draft model 由單一解碼器層組成，其結構與 MTP 層匹配，我們將預訓練的 MTP 層微調為 EAGLE-3 風格的 draft model，目標模型保持凍結，只更新 draft 層及其特徵融合投影。遵循 EAGLE-3 的訓練時測試協議，draft 在訓練時展開 7 步；在第一步之後（新 token 的目標側特徵不可用），draft 消耗自身先前步的輸出，模擬推理中的循環 draft 過程。</p>
 <p>Draft 輸入融合目標模型的低層、中層和高層特徵，分別取自第 1 個、中間和最終 AttnRes block 的輸出（§2.2）。這些特徵通過無偏置矩陣 $W_{E3}$ 拼接投影到 draft 層的隱藏大小，初始化為 $\begin{bmatrix} 0 &amp; 0 &amp; I \end{bmatrix}$，使融合表示在初始化時與高層特徵 $h_h$ 一致——這是 MTP 層預訓練時的輸入——並在微調過程中逐步學會融合低層和中層特徵。</p>
 <p>推測解碼的加速取決於無損推測採樣下每 token 接受率 $P = \sum_{x \in V} \min(p(x), q(x))$，其中 p 和 q 分別是目標和 draft model 的下一 token 分佈。由於傳統 KL 散度代理不能保證最大化容量有限的 draft model 的接受率，我們直接優化似然基於的 LK 損失 [105]——接受率本身的負對數：</p>
-<p>$$L_{LK} = -\log \sum_{x \in V} \min(p(x), q(x))$$</p>
-<p>p 和 q 在 temperature 1 下評估，無輔助真實交叉熵項。Draft 微調遵循後訓練 QAT 配置（§4.1.4），MoE 專家權重為 MXFP4，其輸入激活為 MXFP8，而非專家模組保持更高精度。</p>
+<script type="math/tex; mode=display">L_{LK} = -\log \sum_{x \in V} \min(p(x), q(x))</script><p>p 和 q 在 temperature 1 下評估，無輔助真實交叉熵項。Draft 微調遵循後訓練 QAT 配置（§4.1.4），MoE 專家權重為 MXFP4，其輸入激活為 MXFP8，而非專家模組保持更高精度。</p>
 <h3 id="4-2-Long-Context-SFT"><a href="#4-2-Long-Context-SFT" class="headerlink" title="4.2 Long-Context SFT"></a>4.2 Long-Context SFT</h3><p>在強化學習之前，Kimi K3 在長上下文任務上接受監督微調（SFT），涵蓋長程推理、多文檔問答和代碼補全。關鍵是使用真實的長上下文數據而非簡單的序列拼接。</p>
 <h3 id="4-3-知識圖譜引導的任務合成"><a href="#4-3-知識圖譜引導的任務合成" class="headerlink" title="4.3 知識圖譜引導的任務合成"></a>4.3 知識圖譜引導的任務合成</h3><p><strong>動機與概述</strong></p>
 <p>後訓練任務的質量和多樣性很大程度上取決於其原材料。細粒度概念檢索引導的檢索能挖掘專業化和代表性不足的知識，而跨多樣概念採樣拓寬領域覆蓋範圍。為在大規模下同時控制粒度和覆蓋範圍，我們構建了一個自我演化、層次組織的知識圖譜，讓 agent 透過網路規模探索持續擴展跨知識密集型和 Coding 領域的覆蓋範圍。</p>
@@ -316,457 +299,473 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <hr>
 <h2 id="6-評估（Evaluation）"><a href="#6-評估（Evaluation）" class="headerlink" title="6. 評估（Evaluation）"></a>6. 評估（Evaluation）</h2><h3 id="6-1-主要結果"><a href="#6-1-主要結果" class="headerlink" title="6.1 主要結果"></a>6.1 主要結果</h3><p><img src="/higumalu-note/images/k3_tech_report/benchmark-table.png" alt="Benchmark 結果"><br><em>表 2：跨推理、Coding、Agentic、Vision 四大領域的基準測試對比</em></p>
 <p><strong>推理與知識領域</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>Benchmark</th>
-<th align="center">Kimi K3 (max)</th>
-<th align="center">Claude Fable 5 (max, w/ fallback)</th>
-<th align="center">GPT-5.6 Sol (max)</th>
-<th align="center">Claude Opus 4.8 (max)</th>
-<th align="center">GPT-5.5 (xhigh)</th>
-<th align="center">GLM-5.2 (max)</th>
+<th style="text-align:center">Kimi K3 (max)</th>
+<th style="text-align:center">Claude Fable 5 (max, w/ fallback)</th>
+<th style="text-align:center">GPT-5.6 Sol (max)</th>
+<th style="text-align:center">Claude Opus 4.8 (max)</th>
+<th style="text-align:center">GPT-5.5 (xhigh)</th>
+<th style="text-align:center">GLM-5.2 (max)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>GPQA Diamond</td>
-<td align="center">93.5</td>
-<td align="center">92.6</td>
-<td align="center">94.1</td>
-<td align="center">91.0</td>
-<td align="center">93.5</td>
-<td align="center">91.2</td>
+<td style="text-align:center">93.5</td>
+<td style="text-align:center">92.6</td>
+<td style="text-align:center">94.1</td>
+<td style="text-align:center">91.0</td>
+<td style="text-align:center">93.5</td>
+<td style="text-align:center">91.2</td>
 </tr>
 <tr>
 <td>CritPt</td>
-<td align="center">23.4</td>
-<td align="center"><strong>28.6</strong></td>
-<td align="center"><strong>32.3</strong></td>
-<td align="center">20.9</td>
-<td align="center">27.1</td>
-<td align="center">20.9</td>
+<td style="text-align:center">23.4</td>
+<td style="text-align:center"><strong>28.6</strong></td>
+<td style="text-align:center"><strong>32.3</strong></td>
+<td style="text-align:center">20.9</td>
+<td style="text-align:center">27.1</td>
+<td style="text-align:center">20.9</td>
 </tr>
 <tr>
 <td>AA-LCR</td>
-<td align="center"><strong>74.7</strong></td>
-<td align="center">70.0</td>
-<td align="center">73.7</td>
-<td align="center">67.7</td>
-<td align="center">74.3</td>
-<td align="center">71.3</td>
+<td style="text-align:center"><strong>74.7</strong></td>
+<td style="text-align:center">70.0</td>
+<td style="text-align:center">73.7</td>
+<td style="text-align:center">67.7</td>
+<td style="text-align:center">74.3</td>
+<td style="text-align:center">71.3</td>
 </tr>
 <tr>
 <td>HLE-Full</td>
-<td align="center">43.5 / 56.0</td>
-<td align="center">53.3 / 63.0</td>
-<td align="center">44.5 / 58.0</td>
-<td align="center">49.8 / 57.9</td>
-<td align="center">41.4 / 52.2</td>
-<td align="center">—</td>
+<td style="text-align:center">43.5 / 56.0</td>
+<td style="text-align:center">53.3 / 63.0</td>
+<td style="text-align:center">44.5 / 58.0</td>
+<td style="text-align:center">49.8 / 57.9</td>
+<td style="text-align:center">41.4 / 52.2</td>
+<td style="text-align:center">—</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>Coding 領域</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>Benchmark</th>
-<th align="center">Kimi K3 (max)</th>
-<th align="center">Claude Fable 5 (max, w/ fallback)</th>
-<th align="center">GPT-5.6 Sol (max)</th>
-<th align="center">Claude Opus 4.8 (max)</th>
-<th align="center">GPT-5.5 (xhigh)</th>
-<th align="center">GLM-5.2 (max)</th>
+<th style="text-align:center">Kimi K3 (max)</th>
+<th style="text-align:center">Claude Fable 5 (max, w/ fallback)</th>
+<th style="text-align:center">GPT-5.6 Sol (max)</th>
+<th style="text-align:center">Claude Opus 4.8 (max)</th>
+<th style="text-align:center">GPT-5.5 (xhigh)</th>
+<th style="text-align:center">GLM-5.2 (max)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>DeepSWE</td>
-<td align="center">67.5</td>
-<td align="center">70.0</td>
-<td align="center"><strong>73.0</strong></td>
-<td align="center">59.0</td>
-<td align="center">67.0</td>
-<td align="center">46.2</td>
+<td style="text-align:center">67.5</td>
+<td style="text-align:center">70.0</td>
+<td style="text-align:center"><strong>73.0</strong></td>
+<td style="text-align:center">59.0</td>
+<td style="text-align:center">67.0</td>
+<td style="text-align:center">46.2</td>
 </tr>
 <tr>
 <td>ProgramBench</td>
-<td align="center"><strong>77.8</strong></td>
-<td align="center">76.8</td>
-<td align="center">77.6</td>
-<td align="center">71.9</td>
-<td align="center">70.8</td>
-<td align="center">63.7</td>
+<td style="text-align:center"><strong>77.8</strong></td>
+<td style="text-align:center">76.8</td>
+<td style="text-align:center">77.6</td>
+<td style="text-align:center">71.9</td>
+<td style="text-align:center">70.8</td>
+<td style="text-align:center">63.7</td>
 </tr>
 <tr>
 <td>Terminal-Bench 2.1</td>
-<td align="center"><strong>88.3</strong></td>
-<td align="center">88.0</td>
-<td align="center">88.8</td>
-<td align="center">84.6</td>
-<td align="center">83.4</td>
-<td align="center">82.7</td>
+<td style="text-align:center"><strong>88.3</strong></td>
+<td style="text-align:center">88.0</td>
+<td style="text-align:center">88.8</td>
+<td style="text-align:center">84.6</td>
+<td style="text-align:center">83.4</td>
+<td style="text-align:center">82.7</td>
 </tr>
 <tr>
 <td>FrontierSWE</td>
-<td align="center">81.2</td>
-<td align="center"><strong>86.6</strong></td>
-<td align="center">71.3</td>
-<td align="center">66.7</td>
-<td align="center">64.9</td>
-<td align="center">67.3</td>
+<td style="text-align:center">81.2</td>
+<td style="text-align:center"><strong>86.6</strong></td>
+<td style="text-align:center">71.3</td>
+<td style="text-align:center">66.7</td>
+<td style="text-align:center">64.9</td>
+<td style="text-align:center">67.3</td>
 </tr>
 <tr>
 <td>SWE-Marathon</td>
-<td align="center"><strong>42.0</strong></td>
-<td align="center">35.0</td>
-<td align="center">39.0</td>
-<td align="center">40.0</td>
-<td align="center">14.0</td>
-<td align="center">13.0</td>
+<td style="text-align:center"><strong>42.0</strong></td>
+<td style="text-align:center">35.0</td>
+<td style="text-align:center">39.0</td>
+<td style="text-align:center">40.0</td>
+<td style="text-align:center">14.0</td>
+<td style="text-align:center">13.0</td>
 </tr>
 <tr>
 <td>PostTrainBench</td>
-<td align="center">36.6</td>
-<td align="center"><strong>41.4</strong></td>
-<td align="center">34.6</td>
-<td align="center">34.1</td>
-<td align="center">28.4</td>
-<td align="center">34.3</td>
+<td style="text-align:center">36.6</td>
+<td style="text-align:center"><strong>41.4</strong></td>
+<td style="text-align:center">34.6</td>
+<td style="text-align:center">34.1</td>
+<td style="text-align:center">28.4</td>
+<td style="text-align:center">34.3</td>
 </tr>
 <tr>
 <td>MLS-Bench-Lite</td>
-<td align="center">48.3</td>
-<td align="center"><strong>49.9</strong></td>
-<td align="center">46.2</td>
-<td align="center">42.8</td>
-<td align="center">35.5</td>
-<td align="center">40.4</td>
+<td style="text-align:center">48.3</td>
+<td style="text-align:center"><strong>49.9</strong></td>
+<td style="text-align:center">46.2</td>
+<td style="text-align:center">42.8</td>
+<td style="text-align:center">35.5</td>
+<td style="text-align:center">40.4</td>
 </tr>
 <tr>
 <td>SciCode</td>
-<td align="center">58.7</td>
-<td align="center"><strong>60.2</strong></td>
-<td align="center">56.1</td>
-<td align="center">53.5</td>
-<td align="center">56.1</td>
-<td align="center">50.5</td>
+<td style="text-align:center">58.7</td>
+<td style="text-align:center"><strong>60.2</strong></td>
+<td style="text-align:center">56.1</td>
+<td style="text-align:center">53.5</td>
+<td style="text-align:center">56.1</td>
+<td style="text-align:center">50.5</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>Agentic 領域</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>Benchmark</th>
-<th align="center">Kimi K3 (max)</th>
-<th align="center">Claude Fable 5 (max, w/ fallback)</th>
-<th align="center">GPT-5.6 Sol (max)</th>
-<th align="center">Claude Opus 4.8 (max)</th>
-<th align="center">GPT-5.5 (xhigh)</th>
-<th align="center">GLM-5.2 (max)</th>
+<th style="text-align:center">Kimi K3 (max)</th>
+<th style="text-align:center">Claude Fable 5 (max, w/ fallback)</th>
+<th style="text-align:center">GPT-5.6 Sol (max)</th>
+<th style="text-align:center">Claude Opus 4.8 (max)</th>
+<th style="text-align:center">GPT-5.5 (xhigh)</th>
+<th style="text-align:center">GLM-5.2 (max)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>BrowseComp</td>
-<td align="center"><strong>91.2</strong></td>
-<td align="center">88.0</td>
-<td align="center">90.4</td>
-<td align="center">84.3</td>
-<td align="center">84.4</td>
-<td align="center">—</td>
+<td style="text-align:center"><strong>91.2</strong></td>
+<td style="text-align:center">88.0</td>
+<td style="text-align:center">90.4</td>
+<td style="text-align:center">84.3</td>
+<td style="text-align:center">84.4</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>DeepSearchQA (F1)</td>
-<td align="center"><strong>95.0</strong></td>
-<td align="center">94.2</td>
-<td align="center">—</td>
-<td align="center">93.1</td>
-<td align="center">—</td>
-<td align="center">—</td>
+<td style="text-align:center"><strong>95.0</strong></td>
+<td style="text-align:center">94.2</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">93.1</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>ResearchRubrics</td>
-<td align="center"><strong>76.2</strong></td>
-<td align="center">—</td>
-<td align="center">73.8</td>
-<td align="center">73.5</td>
-<td align="center">64.0</td>
-<td align="center">71.1</td>
+<td style="text-align:center"><strong>76.2</strong></td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">73.8</td>
+<td style="text-align:center">73.5</td>
+<td style="text-align:center">64.0</td>
+<td style="text-align:center">71.1</td>
 </tr>
 <tr>
 <td>GDPval-AA v2 (Elo)</td>
-<td align="center">1,686</td>
-<td align="center"><strong>1,747</strong></td>
-<td align="center">1,736</td>
-<td align="center">1,593</td>
-<td align="center">1,491</td>
-<td align="center">1,510</td>
+<td style="text-align:center">1,686</td>
+<td style="text-align:center"><strong>1,747</strong></td>
+<td style="text-align:center">1,736</td>
+<td style="text-align:center">1,593</td>
+<td style="text-align:center">1,491</td>
+<td style="text-align:center">1,510</td>
 </tr>
 <tr>
 <td>Toolathlon-Verified</td>
-<td align="center">76.5</td>
-<td align="center"><strong>77.9</strong></td>
-<td align="center">74.9</td>
-<td align="center">76.2</td>
-<td align="center">73.5</td>
-<td align="center">59.9</td>
+<td style="text-align:center">76.5</td>
+<td style="text-align:center"><strong>77.9</strong></td>
+<td style="text-align:center">74.9</td>
+<td style="text-align:center">76.2</td>
+<td style="text-align:center">73.5</td>
+<td style="text-align:center">59.9</td>
 </tr>
 <tr>
 <td>MCPMark-Verified</td>
-<td align="center"><strong>94.5</strong></td>
-<td align="center">87.4</td>
-<td align="center">92.9</td>
-<td align="center">76.4</td>
-<td align="center">92.9</td>
-<td align="center">—</td>
+<td style="text-align:center"><strong>94.5</strong></td>
+<td style="text-align:center">87.4</td>
+<td style="text-align:center">92.9</td>
+<td style="text-align:center">76.4</td>
+<td style="text-align:center">92.9</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>MCP-Atlas</td>
-<td align="center">84.2</td>
-<td align="center"><strong>84.7</strong></td>
-<td align="center">83.6</td>
-<td align="center">83.6</td>
-<td align="center">82.8</td>
-<td align="center">82.6</td>
+<td style="text-align:center">84.2</td>
+<td style="text-align:center"><strong>84.7</strong></td>
+<td style="text-align:center">83.6</td>
+<td style="text-align:center">83.6</td>
+<td style="text-align:center">82.8</td>
+<td style="text-align:center">82.6</td>
 </tr>
 <tr>
 <td>AutomationBench</td>
-<td align="center"><strong>30.8</strong></td>
-<td align="center">29.1</td>
-<td align="center">29.7</td>
-<td align="center">27.2</td>
-<td align="center">22.7</td>
-<td align="center">12.9</td>
+<td style="text-align:center"><strong>30.8</strong></td>
+<td style="text-align:center">29.1</td>
+<td style="text-align:center">29.7</td>
+<td style="text-align:center">27.2</td>
+<td style="text-align:center">22.7</td>
+<td style="text-align:center">12.9</td>
 </tr>
 <tr>
 <td>JobBench</td>
-<td align="center">54.3</td>
-<td align="center"><strong>57.4</strong></td>
-<td align="center">45.4</td>
-<td align="center">48.4</td>
-<td align="center">38.3</td>
-<td align="center">43.4</td>
+<td style="text-align:center">54.3</td>
+<td style="text-align:center"><strong>57.4</strong></td>
+<td style="text-align:center">45.4</td>
+<td style="text-align:center">48.4</td>
+<td style="text-align:center">38.3</td>
+<td style="text-align:center">43.4</td>
 </tr>
 <tr>
 <td>AA-Briefcase (Elo)</td>
-<td align="center">1,548</td>
-<td align="center"><strong>1,583</strong></td>
-<td align="center">1,495</td>
-<td align="center">1,354</td>
-<td align="center">1,158</td>
-<td align="center">1,260</td>
+<td style="text-align:center">1,548</td>
+<td style="text-align:center"><strong>1,583</strong></td>
+<td style="text-align:center">1,495</td>
+<td style="text-align:center">1,354</td>
+<td style="text-align:center">1,158</td>
+<td style="text-align:center">1,260</td>
 </tr>
 <tr>
 <td>Agents’ Last Exam</td>
-<td align="center">28.3</td>
-<td align="center">25.7</td>
-<td align="center"><strong>29.6</strong></td>
-<td align="center">27.0</td>
-<td align="center">26.6</td>
-<td align="center">20.4</td>
+<td style="text-align:center">28.3</td>
+<td style="text-align:center">25.7</td>
+<td style="text-align:center"><strong>29.6</strong></td>
+<td style="text-align:center">27.0</td>
+<td style="text-align:center">26.6</td>
+<td style="text-align:center">20.4</td>
 </tr>
 <tr>
 <td>APEX-Agents</td>
-<td align="center">41.0</td>
-<td align="center"><strong>43.3</strong></td>
-<td align="center">39.9</td>
-<td align="center">39.4</td>
-<td align="center">38.5</td>
-<td align="center">35.6</td>
+<td style="text-align:center">41.0</td>
+<td style="text-align:center"><strong>43.3</strong></td>
+<td style="text-align:center">39.9</td>
+<td style="text-align:center">39.4</td>
+<td style="text-align:center">38.5</td>
+<td style="text-align:center">35.6</td>
 </tr>
 <tr>
 <td>OfficeQA Pro</td>
-<td align="center">63.3</td>
-<td align="center"><strong>69.9</strong></td>
-<td align="center">63.2</td>
-<td align="center">63.9</td>
-<td align="center">60.9</td>
-<td align="center">41.4</td>
+<td style="text-align:center">63.3</td>
+<td style="text-align:center"><strong>69.9</strong></td>
+<td style="text-align:center">63.2</td>
+<td style="text-align:center">63.9</td>
+<td style="text-align:center">60.9</td>
+<td style="text-align:center">41.4</td>
 </tr>
 <tr>
 <td>SpreadsheetBench 2</td>
-<td align="center"><strong>34.8</strong></td>
-<td align="center">34.7</td>
-<td align="center">32.4</td>
-<td align="center">31.6</td>
-<td align="center">29.1</td>
-<td align="center">28.1</td>
+<td style="text-align:center"><strong>34.8</strong></td>
+<td style="text-align:center">34.7</td>
+<td style="text-align:center">32.4</td>
+<td style="text-align:center">31.6</td>
+<td style="text-align:center">29.1</td>
+<td style="text-align:center">28.1</td>
 </tr>
 <tr>
 <td>OSWorld-Verified</td>
-<td align="center">84.8</td>
-<td align="center"><strong>85.0</strong></td>
-<td align="center">83.0</td>
-<td align="center">83.4</td>
-<td align="center">79.0</td>
-<td align="center">—</td>
+<td style="text-align:center">84.8</td>
+<td style="text-align:center"><strong>85.0</strong></td>
+<td style="text-align:center">83.0</td>
+<td style="text-align:center">83.4</td>
+<td style="text-align:center">79.0</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>OSWorld 2.0</td>
-<td align="center">58.3</td>
-<td align="center"><strong>66.1</strong></td>
-<td align="center">62.6</td>
-<td align="center">55.7</td>
-<td align="center">49.5</td>
-<td align="center">—</td>
+<td style="text-align:center">58.3</td>
+<td style="text-align:center"><strong>66.1</strong></td>
+<td style="text-align:center">62.6</td>
+<td style="text-align:center">55.7</td>
+<td style="text-align:center">49.5</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>SaaS-Bench</td>
-<td align="center">60.1</td>
-<td align="center">—</td>
-<td align="center"><strong>61.4</strong></td>
-<td align="center">56.1</td>
-<td align="center">43.8</td>
-<td align="center">—</td>
+<td style="text-align:center">60.1</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center"><strong>61.4</strong></td>
+<td style="text-align:center">56.1</td>
+<td style="text-align:center">43.8</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>τ 3-Banking</td>
-<td align="center"><strong>33.4</strong></td>
-<td align="center">26.8</td>
-<td align="center">33.0</td>
-<td align="center">27.6</td>
-<td align="center">31.3</td>
-<td align="center">26.8</td>
+<td style="text-align:center"><strong>33.4</strong></td>
+<td style="text-align:center">26.8</td>
+<td style="text-align:center">33.0</td>
+<td style="text-align:center">27.6</td>
+<td style="text-align:center">31.3</td>
+<td style="text-align:center">26.8</td>
 </tr>
 <tr>
 <td>Harvey Lab-AA</td>
-<td align="center"><strong>94.6</strong></td>
-<td align="center">93.6</td>
-<td align="center">87.2</td>
-<td align="center">91.1</td>
-<td align="center">86.3</td>
-<td align="center">91.0</td>
+<td style="text-align:center"><strong>94.6</strong></td>
+<td style="text-align:center">93.6</td>
+<td style="text-align:center">87.2</td>
+<td style="text-align:center">91.1</td>
+<td style="text-align:center">86.3</td>
+<td style="text-align:center">91.0</td>
 </tr>
 <tr>
 <td>CorpFin v2</td>
-<td align="center">71.6</td>
-<td align="center"><strong>71.8</strong></td>
-<td align="center">64.4</td>
-<td align="center">66.7</td>
-<td align="center">68.4</td>
-<td align="center">66.1</td>
+<td style="text-align:center">71.6</td>
+<td style="text-align:center"><strong>71.8</strong></td>
+<td style="text-align:center">64.4</td>
+<td style="text-align:center">66.7</td>
+<td style="text-align:center">68.4</td>
+<td style="text-align:center">66.1</td>
 </tr>
 <tr>
 <td>Finance Agent v2</td>
-<td align="center">54.4</td>
-<td align="center"><strong>56.3</strong></td>
-<td align="center">53.8</td>
-<td align="center">53.9</td>
-<td align="center">51.8</td>
-<td align="center">49.7</td>
+<td style="text-align:center">54.4</td>
+<td style="text-align:center"><strong>56.3</strong></td>
+<td style="text-align:center">53.8</td>
+<td style="text-align:center">53.9</td>
+<td style="text-align:center">51.8</td>
+<td style="text-align:center">49.7</td>
 </tr>
 <tr>
 <td>Legal Research Bench</td>
-<td align="center">44.2</td>
-<td align="center"><strong>49.5</strong></td>
-<td align="center">48.1</td>
-<td align="center">43.8</td>
-<td align="center">40.4</td>
-<td align="center">31.3</td>
+<td style="text-align:center">44.2</td>
+<td style="text-align:center"><strong>49.5</strong></td>
+<td style="text-align:center">48.1</td>
+<td style="text-align:center">43.8</td>
+<td style="text-align:center">40.4</td>
+<td style="text-align:center">31.3</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>Vision 領域</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>Benchmark</th>
-<th align="center">Kimi K3 (max)</th>
-<th align="center">Claude Fable 5 (max)</th>
-<th align="center">GPT-5.6 Sol (max)</th>
-<th align="center">Claude Opus 4.8 (max)</th>
-<th align="center">GPT-5.5 (xhigh)</th>
-<th align="center">GLM-5.2 (max)</th>
+<th style="text-align:center">Kimi K3 (max)</th>
+<th style="text-align:center">Claude Fable 5 (max)</th>
+<th style="text-align:center">GPT-5.6 Sol (max)</th>
+<th style="text-align:center">Claude Opus 4.8 (max)</th>
+<th style="text-align:center">GPT-5.5 (xhigh)</th>
+<th style="text-align:center">GLM-5.2 (max)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>WorldVQA ForceAnswer</td>
-<td align="center">51.0</td>
-<td align="center"><strong>56.7</strong></td>
-<td align="center">41.8</td>
-<td align="center">39.1</td>
-<td align="center">38.5</td>
-<td align="center">—</td>
+<td style="text-align:center">51.0</td>
+<td style="text-align:center"><strong>56.7</strong></td>
+<td style="text-align:center">41.8</td>
+<td style="text-align:center">39.1</td>
+<td style="text-align:center">38.5</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>OmniDocBench</td>
-<td align="center"><strong>91.1</strong></td>
-<td align="center">89.8</td>
-<td align="center">85.8</td>
-<td align="center">87.9</td>
-<td align="center">89.4</td>
-<td align="center">—</td>
+<td style="text-align:center"><strong>91.1</strong></td>
+<td style="text-align:center">89.8</td>
+<td style="text-align:center">85.8</td>
+<td style="text-align:center">87.9</td>
+<td style="text-align:center">89.4</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>PerceptionBench</td>
-<td align="center">58.5</td>
-<td align="center"><strong>57.2</strong></td>
-<td align="center">59.7</td>
-<td align="center">47.2</td>
-<td align="center">55.8</td>
-<td align="center">—</td>
+<td style="text-align:center">58.5</td>
+<td style="text-align:center"><strong>57.2</strong></td>
+<td style="text-align:center">59.7</td>
+<td style="text-align:center">47.2</td>
+<td style="text-align:center">55.8</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>Video-MME (w/ sub)</td>
-<td align="center"><strong>90.0</strong></td>
-<td align="center">—</td>
-<td align="center">89.5</td>
-<td align="center">86.0</td>
-<td align="center">89.3</td>
-<td align="center">—</td>
+<td style="text-align:center"><strong>90.0</strong></td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">89.5</td>
+<td style="text-align:center">86.0</td>
+<td style="text-align:center">89.3</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>MMVU</td>
-<td align="center">82.1</td>
-<td align="center">—</td>
-<td align="center"><strong>81.2</strong></td>
-<td align="center">79.2</td>
-<td align="center">81.7</td>
-<td align="center">—</td>
+<td style="text-align:center">82.1</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center"><strong>81.2</strong></td>
+<td style="text-align:center">79.2</td>
+<td style="text-align:center">81.7</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>BabyVision w/ Python</td>
-<td align="center">85.7</td>
-<td align="center"><strong>90.5</strong></td>
-<td align="center">88.9</td>
-<td align="center">81.2</td>
-<td align="center">83.6</td>
-<td align="center">—</td>
+<td style="text-align:center">85.7</td>
+<td style="text-align:center"><strong>90.5</strong></td>
+<td style="text-align:center">88.9</td>
+<td style="text-align:center">81.2</td>
+<td style="text-align:center">83.6</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>MMMU-Pro</td>
-<td align="center">81.6 / 83.4</td>
-<td align="center">81.2 / 86.5</td>
-<td align="center"><strong>83.0 / 84.6</strong></td>
-<td align="center">78.9 / 82.7</td>
-<td align="center">81.2 / 83.2</td>
-<td align="center">—</td>
+<td style="text-align:center">81.6 / 83.4</td>
+<td style="text-align:center">81.2 / 86.5</td>
+<td style="text-align:center"><strong>83.0 / 84.6</strong></td>
+<td style="text-align:center">78.9 / 82.7</td>
+<td style="text-align:center">81.2 / 83.2</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>CharXiv (RQ)</td>
-<td align="center">84.8 / 91.3</td>
-<td align="center">88.9 / 93.5</td>
-<td align="center">84.6 / 89.1</td>
-<td align="center">80.5 / 89.9</td>
-<td align="center">84.1 / 89.0</td>
-<td align="center">—</td>
+<td style="text-align:center">84.8 / 91.3</td>
+<td style="text-align:center">88.9 / 93.5</td>
+<td style="text-align:center">84.6 / 89.1</td>
+<td style="text-align:center">80.5 / 89.9</td>
+<td style="text-align:center">84.1 / 89.0</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>Math-Vision</td>
-<td align="center">94.3 / 97.8</td>
-<td align="center"><strong>94.8 / 98.6</strong></td>
-<td align="center">95.8 / 97.8</td>
-<td align="center">86.7 / 97.1</td>
-<td align="center">92.2 / 96.8</td>
-<td align="center">—</td>
+<td style="text-align:center">94.3 / 97.8</td>
+<td style="text-align:center"><strong>94.8 / 98.6</strong></td>
+<td style="text-align:center">95.8 / 97.8</td>
+<td style="text-align:center">86.7 / 97.1</td>
+<td style="text-align:center">92.2 / 96.8</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>ZeroBench-main (pass@5)</td>
-<td align="center">23.0 / 41.0</td>
-<td align="center">23.0 / 46.0</td>
-<td align="center">17.0 / 35.0</td>
-<td align="center">17.0 / 34.0</td>
-<td align="center">22.0 / 41.0</td>
-<td align="center">—</td>
+<td style="text-align:center">23.0 / 41.0</td>
+<td style="text-align:center">23.0 / 46.0</td>
+<td style="text-align:center">17.0 / 35.0</td>
+<td style="text-align:center">17.0 / 34.0</td>
+<td style="text-align:center">22.0 / 41.0</td>
+<td style="text-align:center">—</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><em>註：HLE-Full、MMMU-Pro、CharXiv、Math-Vision、ZeroBench 每個格子報告無工具 / 有工具 augmentation 的分數（vision benchmark 為 Python 工具；HLE-Full 為一般工具）。Agents’ Last Exam leaderboard 上，Claude Fable 5 以 xhigh 努力度運行，40% 任務標註為 domain-oof。</em></p>
 <h3 id="6-1-1-基準測試套件"><a href="#6-1-1-基準測試套件" class="headerlink" title="6.1.1 基準測試套件"></a>6.1.1 基準測試套件</h3><p>我們沿四個能力維度對 Kimi K3 進行全面評估：</p>
 <ul>
@@ -788,138 +787,142 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p><strong>Vision</strong>：結合原生多模態架構和 Python 工具，在 OmniDocBench（91.1%）和 Video-MME（90.0%）上領先；Math-Vision 達 94.3%（有工具 97.8%）；ZeroBench-main 有工具時達 41.0%，追平 Claude Fable 5（46.0%）。</p>
 <h3 id="6-2-內部基準測試（表-3）"><a href="#6-2-內部基準測試（表-3）" class="headerlink" title="6.2 內部基準測試（表 3）"></a>6.2 內部基準測試（表 3）</h3><p>我們也在內部基準測試上評估 Kimi K3，這些套件探測公共套件未覆蓋的特定維度。所有模型以最大推理努力評估（GPT-5.5 除外為 xhigh）。</p>
 <p><strong>主要內部基準測試</strong>：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>Benchmark</th>
 <th>Harness</th>
-<th align="center">Kimi K3 (max)</th>
-<th align="center">Claude Fable 5 (max)</th>
-<th align="center">GPT-5.6 Sol (max)</th>
-<th align="center">Claude Opus 4.8 (max)</th>
+<th style="text-align:center">Kimi K3 (max)</th>
+<th style="text-align:center">Claude Fable 5 (max)</th>
+<th style="text-align:center">GPT-5.6 Sol (max)</th>
+<th style="text-align:center">Claude Opus 4.8 (max)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Swarm Bench</td>
 <td>Kimi Code</td>
-<td align="center"><strong>76.3</strong></td>
-<td align="center">73.1</td>
-<td align="center">70.8</td>
-<td align="center">68.5</td>
+<td style="text-align:center"><strong>76.3</strong></td>
+<td style="text-align:center">73.1</td>
+<td style="text-align:center">70.8</td>
+<td style="text-align:center">68.5</td>
 </tr>
 <tr>
 <td>Research Bench</td>
 <td>Kimi Code</td>
-<td align="center"><strong>90.0</strong></td>
-<td align="center">87.2</td>
-<td align="center">85.5</td>
-<td align="center">82.3</td>
+<td style="text-align:center"><strong>90.0</strong></td>
+<td style="text-align:center">87.2</td>
+<td style="text-align:center">85.5</td>
+<td style="text-align:center">82.3</td>
 </tr>
 <tr>
 <td>Kimi Code Bench 2.0</td>
 <td>Kimi Code</td>
-<td align="center">85.2</td>
-<td align="center"><strong>87.5</strong></td>
-<td align="center">84.1</td>
-<td align="center">78.9</td>
+<td style="text-align:center">85.2</td>
+<td style="text-align:center"><strong>87.5</strong></td>
+<td style="text-align:center">84.1</td>
+<td style="text-align:center">78.9</td>
 </tr>
 <tr>
 <td>Coding Experience</td>
 <td>Kimi Code</td>
-<td align="center"><strong>87.3</strong></td>
-<td align="center">84.1</td>
-<td align="center">82.6</td>
-<td align="center">79.4</td>
+<td style="text-align:center"><strong>87.3</strong></td>
+<td style="text-align:center">84.1</td>
+<td style="text-align:center">82.6</td>
+<td style="text-align:center">79.4</td>
 </tr>
 <tr>
 <td>Kimi Webdev Bench</td>
 <td>Kimi Work</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">—</td>
 </tr>
 <tr>
 <td>Finance Bench</td>
 <td>Kimi Work</td>
-<td align="center">89.1</td>
-<td align="center">88.7</td>
-<td align="center"><strong>89.3</strong></td>
-<td align="center">86.2</td>
+<td style="text-align:center">89.1</td>
+<td style="text-align:center">88.7</td>
+<td style="text-align:center"><strong>89.3</strong></td>
+<td style="text-align:center">86.2</td>
 </tr>
 <tr>
 <td>Agent Behavior Bench</td>
 <td>Kimi Work</td>
-<td align="center">71.4</td>
-<td align="center"><strong>73.8</strong></td>
-<td align="center">70.2</td>
-<td align="center">68.9</td>
+<td style="text-align:center">71.4</td>
+<td style="text-align:center"><strong>73.8</strong></td>
+<td style="text-align:center">70.2</td>
+<td style="text-align:center">68.9</td>
 </tr>
 <tr>
 <td>24/7 ClawBench 2.0</td>
 <td>OpenClaw</td>
-<td align="center">68.3</td>
-<td align="center"><strong>71.2</strong></td>
-<td align="center">69.5</td>
-<td align="center">67.1</td>
+<td style="text-align:center">68.3</td>
+<td style="text-align:center"><strong>71.2</strong></td>
+<td style="text-align:center">69.5</td>
+<td style="text-align:center">67.1</td>
 </tr>
 <tr>
 <td>MIRA Bench</td>
 <td>MIRA</td>
-<td align="center">72.1</td>
-<td align="center"><strong>75.6</strong></td>
-<td align="center">73.2</td>
-<td align="center">70.8</td>
+<td style="text-align:center">72.1</td>
+<td style="text-align:center"><strong>75.6</strong></td>
+<td style="text-align:center">73.2</td>
+<td style="text-align:center">70.8</td>
 </tr>
 <tr>
 <td>KAET</td>
 <td>Kimi Code</td>
-<td align="center"><strong>82.4</strong></td>
-<td align="center">79.3</td>
-<td align="center">77.8</td>
-<td align="center">75.5</td>
+<td style="text-align:center"><strong>82.4</strong></td>
+<td style="text-align:center">79.3</td>
+<td style="text-align:center">77.8</td>
+<td style="text-align:center">75.5</td>
 </tr>
 <tr>
 <td>CLIF Bench</td>
 <td>Kimi Code</td>
-<td align="center">78.9</td>
-<td align="center">77.4</td>
-<td align="center"><strong>79.2</strong></td>
-<td align="center">75.8</td>
+<td style="text-align:center">78.9</td>
+<td style="text-align:center">77.4</td>
+<td style="text-align:center"><strong>79.2</strong></td>
+<td style="text-align:center">75.8</td>
 </tr>
 <tr>
 <td>Online Experience</td>
 <td>Kimi Work</td>
-<td align="center">83.7</td>
-<td align="center">82.1</td>
-<td align="center"><strong>84.5</strong></td>
-<td align="center">79.9</td>
+<td style="text-align:center">83.7</td>
+<td style="text-align:center">82.1</td>
+<td style="text-align:center"><strong>84.5</strong></td>
+<td style="text-align:center">79.9</td>
 </tr>
 <tr>
 <td>DECK Bench</td>
 <td>Kimi Work</td>
-<td align="center"><strong>85.6</strong></td>
-<td align="center">84.2</td>
-<td align="center">82.8</td>
-<td align="center">80.3</td>
+<td style="text-align:center"><strong>85.6</strong></td>
+<td style="text-align:center">84.2</td>
+<td style="text-align:center">82.8</td>
+<td style="text-align:center">80.3</td>
 </tr>
 <tr>
 <td>Faithfulness</td>
 <td>Kimi Work</td>
-<td align="center"><strong>91.2</strong></td>
-<td align="center">89.8</td>
-<td align="center">88.5</td>
-<td align="center">86.7</td>
+<td style="text-align:center"><strong>91.2</strong></td>
+<td style="text-align:center">89.8</td>
+<td style="text-align:center">88.5</td>
+<td style="text-align:center">86.7</td>
 </tr>
 <tr>
 <td>Chat All-in-One Bench</td>
 <td>Kimi Work</td>
-<td align="center"><strong>88.4</strong></td>
-<td align="center">86.9</td>
-<td align="center">85.2</td>
-<td align="center">83.1</td>
+<td style="text-align:center"><strong>88.4</strong></td>
+<td style="text-align:center">86.9</td>
+<td style="text-align:center">85.2</td>
+<td style="text-align:center">83.1</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><em>表 3：內部基準測試結果。DECK Bench 報告 1 − hallucination rate（越高越好）。Claude Fable 5 在 ClawBench 2.0 有 2 次拒絕（80 個任務）；GPT-5.6 Sol 有 1 次拒絕；Claude Opus 4.8 有 14 次拒絕。</em></p>
 <p><strong>評估配置</strong>：除非基準測試按 harness 分列，否則 Harness 列報告 Kimi K3 所用的 harness。其他模型：Claude 模型和 GLM-5.2 使用 Claude Code；GPT 模型使用 Codex。例外：所有模型均用同一特定 harness 的基準測試——OpenClaw（ClawBench 2.0）、MIRA（自家 out-of-distribution harness）、Kimi Work（Agent Behavior Bench 和 Chat All-in-One）、Kimi Code（CLIF 和 Agentic Vision Bench）。</p>
 <p><strong>內部基準測試結果</strong>：與公共 benchmark 相比，內部套件更尖銳地分離了 Kimi K3 的強項與弱項。最明確的強項是編排和研究類 Agentic 能力：Kimi K3 以明顯優勢領導 Swarm Bench（76.3）和 Research Bench（90.0），表明在分解複雜目標、協調並行工作並產生符合評分標準的交付物方面能力強大。Coding 同樣是強項：在 Kimi Code Bench 2.0 上僅落後 Claude Fable 5，並在 Coding Experience 上奪冠——這表明實際 Coding Agent 的實用表現（溝通質量、行為適當性和指令遵循穩定性）優於其原始任務分數；在 Kimi Webdev Bench 上，專家評審以 +31.0 分的優勢偏好 Kimi K3 超過 Claude Opus 4.8，最大差距在 3D/WebGL/Shader 任務上。專業知識工作也有了顯著提升：Finance Bench 與 GPT-5.6 Sol 基本持平。</p>
@@ -944,6 +947,7 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p><strong>Arena</strong></p>
 <p>在眾包人類偏好 Arena [75] 上，Kimi K3 在 WebDev Arena（1,678 Elo，領先 Claude Fable 5 的 1,634）排名 99 個模型第一——這是首個登頂該 leaderboard 的開放模型。在 Text Arena（1,486 Elo）排名 200 個模型第八。在 Agent Arena（2026 年 7 月 19 日左右開放投票）中，Kimi K3 目前排名 37 個模型第四（9.1），低於 Claude Fable 5（12.7）、GPT-5.6 Sol（10.1）和 Claude Opus 4.8（9.8）。</p>
 <p><strong>表 5：Kimi K3 第三方獨立評估（截至 2026 年 7 月 23 日）</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -956,7 +960,8 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <th>GLM-5.2 (max)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Artificial Analysis Intelligence Index v4.1 (#4/580)</td>
 <td><strong>57.1</strong></td>
 <td>59.9</td>
@@ -1001,41 +1006,49 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <td>8.8</td>
 <td>6.5</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <h3 id="6-4-性價比"><a href="#6-4-性價比" class="headerlink" title="6.4 性價比"></a>6.4 性價比</h3><p>超越評分，我們透過跨四個涵蓋 coding 和 agentic 任務的套件比較 score 與 per-task cost 來檢驗推理性價比：Kimi Code Bench 2.0、BrowseComp、GDPval-AA v2 和 AA-Briefcase。</p>
 <p>在 Kimi Code Bench 2.0 上，Kimi K3 以 Claude Fable 5 38% 的成本落後 4.0 分；在 high effort 下已可匹配 Claude Opus 4.8 max-effort 分數，成本約為三分之一。在 BrowseComp 上，Kimi K3 以 91.2% 最高分達成每任務 $2.03——是 GPT-5.6 Sol（90.4%）的一半成本，比 Claude 模型在其 max effort 便宜一個數量級。在 GDPval-AA v2 上，Kimi K3 以低 13% 的成本與 GPT-5.6 Sol 相差不到 50 Elo，比 Claude Fable 5 便宜 2.6 倍。在 AA-Briefcase 上，Kimi K3 提供僅低於 Claude Fable 5 的分數，成本約為後者的一半。</p>
 <p>總體而言，Kimi K3 在所有四個套件中處於或接近性價比前沿，以 Claude Fable 5 成本的一小部分提供接近頂級的分數。</p>
 <hr>
 <h2 id="7-案例研究（Case-Studies）"><a href="#7-案例研究（Case-Studies）" class="headerlink" title="7. 案例研究（Case Studies）"></a>7. 案例研究（Case Studies）</h2><p><img src="/higumalu-note/images/k3_tech_report/gpu-case-study.png" alt="GPU 內核優化案例"><br><em>圖 14：AttnRes 內核優化案例——橫軸為優化迭代輪次，縱軸為相較 FLA Triton Baseline 的加速百分比（%）。Kimi K3 從 283.6ms 降至 114.4ms（−55.1%），Claude Fable 5 降至 121.4ms（−57.1%），兩者並列第一</em></p>
 <h3 id="7-1-GPU-內核優化"><a href="#7-1-GPU-內核優化" class="headerlink" title="7.1 GPU 內核優化"></a>7.1 GPU 內核優化</h3><p>Kimi K3 在一個標準化配置的沙箱中優化 GPU 內核（每任務最多 24 小時），評估四個代表性內核：AttnRes、DeepSeek Sparse Attention（DSA）、KDA 和 MLA（head dimension 512）。這些在 NVIDIA Hopper GPU 和替代供應商 GPGPU 上運行。</p>
-<p><strong>結果</strong>：Kimi K3 將 AttnRes 延遲從 283.6ms 降至 114.4ms（**提升 59.7%**），與 Claude Fable 5（+57.1%）並列第一。DSA 加速 55.1%，KDA 加速 73.6%，MLA 超過 50% 峰值 TFLOPS。</p>
+<p><strong>結果</strong>：Kimi K3 將 AttnRes 延遲從 283.6ms 降至 114.4ms（<strong>提升 59.7%</strong>），與 Claude Fable 5（+57.1%）並列第一。DSA 加速 55.1%，KDA 加速 73.6%，MLA 超過 50% 峰值 TFLOPS。</p>
 <h3 id="7-2-MiniTriton-編譯器開發"><a href="#7-2-MiniTriton-編譯器開發" class="headerlink" title="7.2 MiniTriton 編譯器開發"></a>7.2 MiniTriton 編譯器開發</h3><p>Kimi K3 從零開發了一個完整的 Triton-like 編譯器 MiniTriton，包含自定義 tile 級 Python 前端、Warp 級 MLIR 標注/優化層和 PTX 代碼生成管線。在此基礎上構建雙模式張量庫，提供 PyTorch-like 高層介面，eager 和 forward-only 編譯路徑共享同一編譯器和運行時。庫還提供反向模式 autograd、神經網路模組、分佈式原始運算（NCCL）、稀疏和可視化原始運算。</p>
 <p>在 NVIDIA L20 上，MiniTriton 在幾何平均意義下超越 PyTorch eager 和 <code>torch.compile</code>。從零開始的 tensor-core 矩陣乘法路徑在大 shape 時接近 cuBLAS，達到測量機器峰值峰值的約 90%。DSL 級別的 KDA [64] prefill 內核超越匹配的 Triton 參考實現。MiniTriton 還能端到端訓練 GPT 模型，損失曲線與 PyTorch 緊密跟踪，與 torch autograd 的差異在數值上可忽略。</p>
 <p><strong>圖 15：MiniTriton GPU 編譯器案例研究</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th align="center"></th>
-<th align="center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-a.png" alt="CUDA-core roofline"></td>
-<td align="center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-b.png" alt="Tensor-core roofline"></td>
+<tbody>
+<tr>
+<td style="text-align:center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-a.png" alt="CUDA-core roofline"></td>
+<td style="text-align:center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-b.png" alt="Tensor-core roofline"></td>
 </tr>
 <tr>
-<td align="center"><em>(a) CUDA-core roofline（fp32）</em></td>
-<td align="center"><em>(b) Tensor-core roofline（tf32/bf16）</em></td>
+<td style="text-align:center"><em>(a) CUDA-core roofline（fp32）</em></td>
+<td style="text-align:center"><em>(b) Tensor-core roofline（tf32/bf16）</em></td>
 </tr>
 <tr>
-<td align="center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-c.png" alt="GPT loss curve"></td>
-<td align="center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-d.png" alt="DDP scaling"></td>
+<td style="text-align:center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-c.png" alt="GPT loss curve"></td>
+<td style="text-align:center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-d.png" alt="DDP scaling"></td>
 </tr>
 <tr>
-<td align="center"><em>(c) MiniTriton 訓練 GPT 損失曲線與 torch eager 對比</em></td>
-<td align="center"><em>(d) 兩 GPU DDP 與單 GPU 訓練 loss 幾乎完全一致（max |diff| = 0.0033）</em></td>
+<td style="text-align:center"><em>(c) MiniTriton 訓練 GPT 損失曲線與 torch eager 對比</em></td>
+<td style="text-align:center">*(d) 兩 GPU DDP 與單 GPU 訓練 loss 幾乎完全一致（max \</td>
+<td>diff\</td>
+<td>= 0.0033）*</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><em>圖 15：MiniTriton GPU 編譯器案例研究，NVIDIA L20（sm_89）</em></p>
 <p><strong>用於研究</strong>：為重現計算天體物理學中的 I–Love–Q 通用關係，Kimi K3 審閱了 20 多篇論文並交叉驗證結果，從頭實現完整數值管線，評估超過 300 個狀態方程，識別已發表公式中的不一致之處，編寫超過 3,000 行 Python 代碼，並在一個多小時內產生互動式 HTML 儀表板——而資深研究人員通常需要一到兩週。</p>
 <p><strong>用於知識工作</strong>：在 Kimi Work 中，Kimi K3 製作了一個涵蓋 AI ASIC 行業 42 年曆史的互動研究網站。模型完成超過 120 輪迭代改進，基於 87 份季度報告和 99 份原始 PDF（超過 11,000 頁），透過超過 2,800 次網路搜索和超過 1,100 次終端查詢。在另一個案例中，Kimi K3 使用超過 20 個並發 subagent 分析 GWTC-5 中的 391 個重力波事件，產生七個科學可視化、兩個摘要表格和超過十篇論文的文獻綜合。</p>
@@ -1065,12 +1078,11 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 $z$，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 $\beta_1, \beta_2 \to \infty$，SiTU-GLU 精確退化為 SwiGLU。</p>
 <p>由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。這種平滑約束在原點附近保留非零梯度，不同於硬截斷，訓練表現更好。</p>
 <h3 id="附錄-C：Quantile-Balancing-的推導"><a href="#附錄-C：Quantile-Balancing-的推導" class="headerlink" title="附錄 C：Quantile Balancing 的推導"></a>附錄 C：Quantile Balancing 的推導</h3><p>QB 從最優平衡分配問題推導而來。令 $s \in \mathbb{R}^{m \times n}$ 收集 $m$ 個 Token 對 $n$ 個專家的路由器分數，其中每個 Token 恰好選擇 $k$ 個專家，最大分數平衡分配為：</p>
-<p>$$\max_{x_{i,j} \in {0,1}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}$$</p>
-<p>將約束放寬到連續值後，通過對偶理論推導出封閉形式的最優解，交替求解 token 側閾值 $\alpha_i$ 和專家側閾值 $\beta_j$，兩者都是分位數形式，收斂快速且精確。</p>
+<script type="math/tex; mode=display">\max_{x_{i,j} \in \{0,1\}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}</script><p>將約束放寬到連續值後，通過對偶理論推導出封閉形式的最優解，交替求解 token 側閾值 $\alpha_i$ 和專家側閾值 $\beta_j$，兩者都是分位數形式，收斂快速且精確。</p>
 <h3 id="附錄-D：Histogram-Based-分位數估計"><a href="#附錄-D：Histogram-Based-分位數估計" class="headerlink" title="附錄 D：Histogram-Based 分位數估計"></a>附錄 D：Histogram-Based 分位數估計</h3><p>QB 更新（方程 14）需要對整個訓練步計算分位數：對 $n$ 個專家中的每一個，取 margin $s_{:,j} - \alpha$ 的 $(1 - k/n)$-分位數，其中 Token 數 $m$ 跨越數百萬，分散在數據並行 rank 和梯度累積步之間。</p>
 <p>我們的關鍵觀察是：更新從不需要 margin 本身，只需要它們的逐專家分佈——這可以用直方圖以固定代價總結。具體來說：</p>
 <ul>
-<li><strong>Binning</strong>：將區間 $[b_{\min} - 1, b_{\max} + 1]$ 划分为 $B = 1000$ 個均勻 bin</li>
+<li><strong>Binning</strong>：將區間 $[b<em>{\min} - 1, b</em>{\max} + 1]$ 划分为 $B = 1000$ 個均勻 bin</li>
 <li><strong>Accumulation</strong>：每個 rank 在前向傳播期間 scatter-add 到每專家計數矩陣 $H \in \mathbb{N}^{n \times B}$，無需通信</li>
 <li><strong>All-reduce</strong>：步結束時一次整數 All-Reduce 求和局部計數</li>
 <li><strong>Quantile recovery</strong>：對每個專家，選擇第一個累積計數達到 $\lceil q \rceil$ 的 bin，線性插值恢復分位數</li>

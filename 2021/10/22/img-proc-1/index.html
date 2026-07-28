@@ -67,11 +67,7 @@
 <li>數值範圍：需要計算的pixel value範圍</li>
 </ul>
 <figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hist = cv2.calcHist([gray], <span class="literal">None</span>, <span class="literal">None</span>, [<span class="number">256</span>], [<span class="number">0</span>, <span class="number">255</span>])</span><br><span class="line">hist = np.ndarray.flatten(hist)</span><br></pre></td></tr></table></figure>
-
-
-<h2 id="輸出影像"><a href="#輸出影像" class="headerlink" title="輸出影像"></a>輸出影像</h2><p>在imshow中須設定color map參數</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">plt.cm.gray</span><br></pre></td></tr></table></figure>
-
+<h2 id="輸出影像"><a href="#輸出影像" class="headerlink" title="輸出影像"></a>輸出影像</h2><p>在imshow中須設定color map參數<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">plt.cm.gray</span><br></pre></td></tr></table></figure></p>
 <figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.imshow(gray, plt.cm.gray)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line">plt.figure(dpi=<span class="number">150</span>)</span><br><span class="line">plt.bar(<span class="built_in">range</span>(<span class="number">1</span>,<span class="number">257</span>), hist)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">

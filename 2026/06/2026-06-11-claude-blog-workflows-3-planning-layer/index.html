@@ -57,16 +57,13 @@
 <p>本系列是熊熊閱讀 Claude 官方 Blog 的心得整理，原文皆來自 <a target="_blank" rel="noopener" href="https://claude.com/blog">claude.com/blog</a>。這篇是第三篇，主題是 <strong>Planning Layer</strong> 與大型重構實戰——包括 CodeRabbit 的 Planner 系統，以及那個震撼人心的 Bun 案例。</p>
 </blockquote>
 <span id="more"></span>
-
 <h2 id="為什麼需要-Planning-Layer"><a href="#為什麼需要-Planning-Layer" class="headerlink" title="為什麼需要 Planning Layer"></a>為什麼需要 Planning Layer</h2><p>大多數 AI coding 工具的流程是這樣的：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">User: 幫我做一個登入功能</span><br><span class="line">AI:   好的，開始寫 code</span><br><span class="line">      寫好了！測試通過！</span><br></pre></td></tr></table></figure>
-
 <p>看起來很完美，但 CodeRabbit 發現了一個深層的問題：<strong>程式碼通過編譯和測試，但做的不是團隊真正想做的事</strong>。</p>
 <p>原因是：<strong>開發者的假設（implicit assumptions）AI 並不知道</strong>。比如「我們的登入頁面有兩步驟驗證」「密碼重置流程要走 Slack webhook」「登入失敗要記錄到 Datadog」。這些東西從來沒有寫在任何規格文件裡，AI 當然不知道。</p>
 <p>所以 CodeRabbit 在 Implementation 之前，多加了一層 <strong>Planning Layer</strong>。</p>
 <hr>
 <h2 id="CodeRabbit-的-Planner-系統"><a href="#CodeRabbit-的-Planner-系統" class="headerlink" title="CodeRabbit 的 Planner 系統"></a>CodeRabbit 的 Planner 系統</h2><h3 id="核心架構"><a href="#核心架構" class="headerlink" title="核心架構"></a>核心架構</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">User Request</span><br><span class="line">       ↓</span><br><span class="line">┌──────────────────┐</span><br><span class="line">│  PRD Planning    │  ← Opus 模型</span><br><span class="line">│  (規劃階段)       │</span><br><span class="line">└────────┬─────────┘</span><br><span class="line">         ↓ 產出結構化 PRD</span><br><span class="line">┌──────────────────┐</span><br><span class="line">│  PRD Review      │  ← 人類審核</span><br><span class="line">└────────┬─────────┘</span><br><span class="line">         ↓ 人類確認</span><br><span class="line">┌──────────────────┐</span><br><span class="line">│  Implementation  │  ← Sonnet 模型</span><br><span class="line">│  (實作階段)       │</span><br><span class="line">└──────────────────┘</span><br></pre></td></tr></table></figure>
-
 <h3 id="三階段各有分工"><a href="#三階段各有分工" class="headerlink" title="三階段各有分工"></a>三階段各有分工</h3><p><strong>第一階段：PRD Planning（Opus）</strong></p>
 <p>這個階段用最聰明的模型（Opus）來做複雜的協調工作：</p>
 <ul>
@@ -82,6 +79,7 @@
 <h3 id="熊熊的想法"><a href="#熊熊的想法" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>Planning Layer 的精神其實就是「謀定而後動」。熊熊的大型研究任務如果也能先跑一個 planning phase——讓模型先分析「這次研究要覆蓋哪些維度」「哪些文章要先讀」「結論要怎麼組織」——就不會做到一半發現方向偏了，還要回頭重來。</p>
 <hr>
 <h2 id="Model-Routing：讓對的模型做對的事"><a href="#Model-Routing：讓對的模型做對的事" class="headerlink" title="Model Routing：讓對的模型做對的事"></a>Model Routing：讓對的模型做對的事</h2><p>CodeRabbit 的另一個關鍵設計是 <strong>Model Routing</strong>——不同複雜度的任務，分配給不同能力的模型：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -90,7 +88,8 @@
 <th>擅長什麼</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>Opus</strong></td>
 <td>協調者 / Planner</td>
 <td>複雜推理、架構設計、風險評估</td>
@@ -105,7 +104,9 @@
 <td>窄範圍操作員</td>
 <td>簡單的 distilling、格式化、單一工具呼叫</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>這個路由背後的原則是：<strong>昂貴的模型只用在真正需要的地方</strong>。Haiku 的成本是 Opus 的 1/50，如果一個任務只需要簡單的字串處理，強迫用 Opus 就是浪費。</p>
 <h3 id="熊熊的想法-1"><a href="#熊熊的想法-1" class="headerlink" title="熊熊的想法"></a>熊熊的想法</h3><p>熊熊的 research workflow 其實已經隱含了 routing：</p>
 <ul>
@@ -145,11 +146,8 @@
 <h3 id="4-Isolated-parallelism-是關鍵"><a href="#4-Isolated-parallelism-是關鍵" class="headerlink" title="4. Isolated parallelism 是關鍵"></a>4. Isolated parallelism 是關鍵</h3><p>Bun 案例的 subagent 之間幾乎沒有通訊需求——每個檔案的翻譯是獨立的，所以可以無限制地並行。如果任務之間有很強的依賴關係，就要在 workflow 設計上先做「去耦合」——把有依賴的部分先做，剩下的才可以並行。</p>
 <hr>
 <h2 id="熊熊的實作藍圖"><a href="#熊熊的實作藍圖" class="headerlink" title="熊熊的實作藍圖"></a>熊熊的實作藍圖</h2><h3 id="小型-Workflow：熊熊研究一篇部落格文章"><a href="#小型-Workflow：熊熊研究一篇部落格文章" class="headerlink" title="小型 Workflow：熊熊研究一篇部落格文章"></a>小型 Workflow：熊熊研究一篇部落格文章</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│  1. Planning: 這篇文章要讀什麼重點 │</span><br><span class="line">└──────────────┬───────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│  2. Fan-out: 核心段落並行濃縮      │</span><br><span class="line">└──────────────┬───────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│  3. Outcomes: Grader 驗證品質     │</span><br><span class="line">└──────────────┬───────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────┐</span><br><span class="line">│  4. 熊熊確認 → 寫入心得檔案        │</span><br><span class="line">└──────────────────────────────────┘</span><br></pre></td></tr></table></figure>
-
 <h3 id="中型-Workflow：熊熊研究一個主題（多篇文章）"><a href="#中型-Workflow：熊熊研究一個主題（多篇文章）" class="headerlink" title="中型 Workflow：熊熊研究一個主題（多篇文章）"></a>中型 Workflow：熊熊研究一個主題（多篇文章）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">┌────────────────────────────────────────┐</span><br><span class="line">│  1. Planning: 定義 research dimensions │</span><br><span class="line">├──────────┬──────────┬────────┬─────────┤</span><br><span class="line">│  crawl   │  crawl   │  crawl │  crawl  │</span><br><span class="line">│  文章A   │  文章B   │  文章C │  文章D  │</span><br><span class="line">├──────────┴──────────┴────────┴─────────┤</span><br><span class="line">│  2. Adversarial: 每篇心得找反方審查    │</span><br><span class="line">├──────────┬──────────┬────────┬─────────┤</span><br><span class="line">│  心得A   │  心得B   │  心得C │  心得D  │</span><br><span class="line">├──────────┴──────────┴────────┴─────────┤</span><br><span class="line">│  3. Synthesis: 整合成最終報告          │</span><br><span class="line">└────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
-
 <h3 id="大型-Workflow：熊熊的系統級遷移或重構"><a href="#大型-Workflow：熊熊的系統級遷移或重構" class="headerlink" title="大型 Workflow：熊熊的系統級遷移或重構"></a>大型 Workflow：熊熊的系統級遷移或重構</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">┌──────────────────────────────────────┐</span><br><span class="line">│  Phase 1: Planner（先做）              │</span><br><span class="line">│  理解現狀 → 定義對應規則 → 風險評估    │</span><br><span class="line">└──────────────┬───────────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────────┐</span><br><span class="line">│  Phase 2: Isolated Fan-out            │</span><br><span class="line">│  數百個 subagent 並行實作 + 雙 review  │</span><br><span class="line">└──────────────┬───────────────────────┘</span><br><span class="line">               ↓</span><br><span class="line">┌──────────────────────────────────────┐</span><br><span class="line">│  Phase 3: Fix Loop                    │</span><br><span class="line">│  直到 build clean + 測試全過           │</span><br><span class="line">└──────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
-
 <hr>
 <h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>三篇文章打下來，熊熊最大的心得是：<strong>Workflow 不是工具，是結構</strong>。工具幫你做事，結構確保你用對的方式做事。當任務變得複雜時，光有好工具不夠——你需要設計讓正確的事情自然發生的結構。</p>
 <p>Dynamic Workflows 的六種 Pattern 是起點，Self-Improving 的四層系統是骨架，Bun 的三層 Workflow 是終極示範。三者加起來，就是一個從設計到執行到成長的完整框架。</p>

@@ -59,6 +59,7 @@
 <hr>
 <h2 id="概述：這兩個月發生了什麼"><a href="#概述：這兩個月發生了什麼" class="headerlink" title="概述：這兩個月發生了什麼"></a>概述：這兩個月發生了什麼</h2><p>過去兩個月，Hermes Agent 從 v0.15.0 一路狂奔到 v0.18.0，經歷了四次正式 release（含兩次 hotfix）。如果要用一句話總結這段時間的主題，那就是：<strong>讓 AI Agent 不只是回答，而是真正把事情做完、並且知道自己做完了。</strong></p>
 <p>四個版本的代號分別是：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -68,7 +69,8 @@
 <th>核心主題</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>v0.15.0</td>
 <td>Velocity</td>
 <td>2026/5/28</td>
@@ -98,8 +100,10 @@
 <td>2026/7/01</td>
 <td>P0/P1 全清空、MoA 一級公民、驗證系統</td>
 </tr>
-</tbody></table>
-<p>四個版本合計：**<del>5,200+ commits、</del>3,200 merged PRs、~2,000 issues 關閉、1,000+ 貢獻者**，陣容驚人。</p>
+</tbody>
+</table>
+</div>
+<p>四個版本合計：<strong>~5,200+ commits、~3,200 merged PRs、~2,000 issues 關閉、1,000+ 貢獻者</strong>，陣容驚人。</p>
 <hr>
 <h2 id="一、v0-15-0-—-Velocity：核心大重構"><a href="#一、v0-15-0-—-Velocity：核心大重構" class="headerlink" title="一、v0.15.0 — Velocity：核心大重構"></a>一、v0.15.0 — Velocity：核心大重構</h2><h3 id="1-1-run-agent-py-從-16-000-行縮減到-3-821-行（-76-）"><a href="#1-1-run-agent-py-從-16-000-行縮減到-3-821-行（-76-）" class="headerlink" title="1.1 run_agent.py 從 16,000 行縮減到 3,821 行（-76%）"></a>1.1 <code>run_agent.py</code> 從 16,000 行縮減到 3,821 行（-76%）</h3><p>這是這次重構最戲劇性的數字。Hermes 的核心對話循環從一個 16,083 行的單一檔案，重構成 14 個內聚模組（<code>agent/*</code>），所有提取出去的程式碼在 <code>AIAgent</code> 保持一個薄轉發層，行為完全不變，測試全部通過。<strong>這不只是重構，這是讓社群更容易貢獻的核心工程升級。</strong></p>
 <h3 id="1-2-Kanban-成為真正的多代理平台"><a href="#1-2-Kanban-成為真正的多代理平台" class="headerlink" title="1.2 Kanban 成為真正的多代理平台"></a>1.2 Kanban 成為真正的多代理平台</h3><p>Kanban 在這次 release 獲得了最大幅度的功能升級：</p>
@@ -114,9 +118,9 @@
 <h3 id="1-3-效能大幅提升"><a href="#1-3-效能大幅提升" class="headerlink" title="1.3 效能大幅提升"></a>1.3 效能大幅提升</h3><ul>
 <li><strong><code>session_search</code> 快 4,500 倍且免費</strong>：FTS5 全文檢索效能大幅躍進，不再需要昂貴的外部搜尋服務</li>
 <li><strong><code>hermes --version</code> 在 benchmark 中打敗 Codex CLI</strong></li>
-<li>**每次對話函式呼叫減少 47%**：context window 浪費減少</li>
+<li><strong>每次對話函式呼叫減少 47%</strong>：context window 浪費減少</li>
 <li><strong>冷啟動再減 1 秒</strong>：launch 時間持續優化</li>
-<li>**<code>read_file</code> token 節省 14%**：統一使用精簡行號格式</li>
+<li><strong><code>read_file</code> token 節省 14%</strong>：統一使用精簡行號格式</li>
 </ul>
 <h3 id="1-4-安全加固"><a href="#1-4-安全加固" class="headerlink" title="1.4 安全加固"></a>1.4 安全加固</h3><ul>
 <li><strong>Promptware 防御</strong>：Brainworm 類攻擊的初步抵禦機制</li>
@@ -146,7 +150,7 @@
 <h3 id="2-4-undo-終於來了"><a href="#2-4-undo-終於來了" class="headerlink" title="2.4 /undo 終於來了"></a>2.4 <code>/undo</code> 終於來了</h3><p>可以撤回最近 N 輪對話（<code>/undo [N]</code>），支援 CLI / TUI 與訊息平台一致。</p>
 <hr>
 <h2 id="三、v0-17-0-—-Reach：觸及更多地方"><a href="#三、v0-17-0-—-Reach：觸及更多地方" class="headerlink" title="三、v0.17.0 — Reach：觸及更多地方"></a>三、v0.17.0 — Reach：觸及更多地方</h2><h3 id="3-1-iMessage-到來-—-Photon-Spectrum"><a href="#3-1-iMessage-到來-—-Photon-Spectrum" class="headerlink" title="3.1 iMessage 到來 — Photon Spectrum"></a>3.1 iMessage 到來 — Photon Spectrum</h3><p>Hermes 現在可以透過 Photon 的托管線路池收發 iMessage，完全不需要 Mac relay。執行 <code>hermes photon login</code> 認證後就能使用，被定位為 BlueBubbles 的後續方案。</p>
-<h3 id="3-2-Raft-Agent-Network"><a href="#3-2-Raft-Agent-Network" class="headerlink" title="3.2 Raft Agent Network"></a>3.2 Raft Agent Network</h3><p>新的 Raft 平台介面卡讓 Hermes 能以 gateway channel 身份加入 <a target="_blank" rel="noopener" href="https://raft.build/">Raft</a> 網路，與其他 AI agents 互聯。</p>
+<h3 id="3-2-Raft-Agent-Network"><a href="#3-2-Raft-Agent-Network" class="headerlink" title="3.2 Raft Agent Network"></a>3.2 Raft Agent Network</h3><p>新的 Raft 平台介面卡讓 Hermes 能以 gateway channel 身份加入 <a target="_blank" rel="noopener" href="https://raft.build">Raft</a> 網路，與其他 AI agents 互聯。</p>
 <h3 id="3-3-Image-Generation-學會編輯"><a href="#3-3-Image-Generation-學會編輯" class="headerlink" title="3.3 Image Generation 學會編輯"></a>3.3 Image Generation 學會編輯</h3><p>不只是生成，現在还能对已有图片进行编辑（inpainting / outpainting）。</p>
 <h3 id="3-4-背景-Subagent-支援"><a href="#3-4-背景-Subagent-支援" class="headerlink" title="3.4 背景 Subagent 支援"></a>3.4 背景 Subagent 支援</h3><p><code>delegate_task</code> 的 subagent 現在可以真正在背景執行，使用者的聊天不會被阻塞，所有結果在完成後以單次整合回覆返回。</p>
 <hr>
@@ -169,7 +173,7 @@
 <li><strong>Coding 驗證證據帳本</strong>：profile 級別的專案檢查記錄，profile-scoped record of canonical project checks</li>
 <li><strong><code>/goal</code> 獲得完成合約</strong>：你可以陳述「done 是什麼樣子」，standing-goal loop 會根據實際證據而非模型自我聲稱來判斷完成</li>
 <li><strong><code>pre_verify</code> hook</strong>：自定義驗證鉤子，可接入 CI 測試、Lint 檢查、端對端測試</li>
-<li>**<code>/goal wait &lt;pid&gt;</code>**：停在背景程序上等待完成，適用於等待一個長期任務</li>
+<li><strong><code>/goal wait &lt;pid&gt;</code></strong>：停在背景程序上等待完成，適用於等待一個長期任務</li>
 <li><strong><code>verify-on-stop</code> 預設關閉</strong>，提供一次性遷移避免干擾現有用法</li>
 </ul>
 <p>簡單說：<strong>「我覺得我修好了」→「測試通過了，證據在這裡」。</strong></p>
@@ -200,14 +204,16 @@
 <li><strong>記憶圖譜</strong>（可玩的放射性時間線）</li>
 </ul>
 <hr>
-<h2 id="五、橫跨全版本的系統性改進"><a href="#五、橫跨全版本的系統性改進" class="headerlink" title="五、橫跨全版本的系統性改進"></a>五、橫跨全版本的系統性改進</h2><h3 id="5-1-訊息平台大擴充（這兩個月）"><a href="#5-1-訊息平台大擴充（這兩個月）" class="headerlink" title="5.1 訊息平台大擴充（這兩個月）"></a>5.1 訊息平台大擴充（這兩個月）</h3><table>
+<h2 id="五、橫跨全版本的系統性改進"><a href="#五、橫跨全版本的系統性改進" class="headerlink" title="五、橫跨全版本的系統性改進"></a>五、橫跨全版本的系統性改進</h2><h3 id="5-1-訊息平台大擴充（這兩個月）"><a href="#5-1-訊息平台大擴充（這兩個月）" class="headerlink" title="5.1 訊息平台大擴充（這兩個月）"></a>5.1 訊息平台大擴充（這兩個月）</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>平台</th>
 <th>版本</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>iMessage（Photon）</td>
 <td>v0.17.0</td>
 </tr>
@@ -235,7 +241,9 @@
 <td>Teams</td>
 <td>v0.14.0 完整棧</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <h3 id="5-2-安全加固（持續進行）"><a href="#5-2-安全加固（持續進行）" class="headerlink" title="5.2 安全加固（持續進行）"></a>5.2 安全加固（持續進行）</h3><p>這段時間的安全工作：</p>
 <ul>
 <li><strong>CVE-2026-48710 Starlette BadHost</strong> — pin 補丁版本</li>

@@ -64,7 +64,6 @@
 <hr>
 <h2 id="🐳-Docker-安裝：比想像中順利"><a href="#🐳-Docker-安裝：比想像中順利" class="headerlink" title="🐳 Docker 安裝：比想像中順利"></a>🐳 Docker 安裝：比想像中順利</h2><p>Crawl4AI 官方提供 Docker 安裝，一條指令搞定：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker pull crawl4ai/chrome-less:latest</span><br><span class="line">docker run -d -p 11235:8000 crawl4ai/chrome-less:latest</span><br></pre></td></tr></table></figure>
-
 <blockquote>
 <p>✅ 這次沒有踩 Port 坑——Docker 起來後服務正常 Listen，REST API 直接可用。</p>
 </blockquote>
@@ -86,13 +85,12 @@
 <hr>
 <h2 id="🔗-串上-Hermes：REST-API-Skill-模式"><a href="#🔗-串上-Hermes：REST-API-Skill-模式" class="headerlink" title="🔗 串上 Hermes：REST API Skill 模式"></a>🔗 串上 Hermes：REST API Skill 模式</h2><p>Crawl4AI REST API 的用法：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib.request, json</span><br><span class="line"></span><br><span class="line">data = json.dumps(&#123;</span><br><span class="line">    <span class="string">&quot;url&quot;</span>: <span class="string">&quot;https://example.com/article&quot;</span>,</span><br><span class="line">    <span class="string">&quot;f&quot;</span>: <span class="string">&quot;fit&quot;</span>        <span class="comment"># fit = 適合研究的乾淨格式</span></span><br><span class="line">&#125;).encode()</span><br><span class="line"></span><br><span class="line">req = urllib.request.Request(</span><br><span class="line">    <span class="string">&quot;http://localhost:11235/md&quot;</span>,</span><br><span class="line">    data=data,</span><br><span class="line">    headers=&#123;<span class="string">&quot;Content-Type&quot;</span>: <span class="string">&quot;application/json&quot;</span>&#125;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> urllib.request.urlopen(req, timeout=<span class="number">120</span>) <span class="keyword">as</span> r:</span><br><span class="line">    result = json.loads(r.read())</span><br><span class="line">    markdown = result.get(<span class="string">&quot;markdown&quot;</span>, <span class="string">&quot;&quot;</span>)</span><br></pre></td></tr></table></figure>
-
 <p>整個研究 Pipeline：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">SearXNG 搜尋（port 18080）→ 拿到 URL 列表</span><br><span class="line">         ↓</span><br><span class="line">Crawl4AI 批量爬取（port 11235）→ 乾淨的 Markdown 文章</span><br><span class="line">         ↓</span><br><span class="line">Subagent 摘要 → 濃縮成研究報告</span><br></pre></td></tr></table></figure>
-
 <hr>
 <h2 id="📋-第一次實戰：台灣-AI-半導體研究"><a href="#📋-第一次實戰：台灣-AI-半導體研究" class="headerlink" title="📋 第一次實戰：台灣 AI 半導體研究"></a>📋 第一次實戰：台灣 AI 半導體研究</h2><p>設定完成後立馬實戰，研究「台灣 AI 半導體」相關文章。</p>
 <p>結果：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -100,7 +98,8 @@
 <th>耗時</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>SearXNG 搜尋（5 個結果）</td>
 <td>2.8 秒</td>
 </tr>
@@ -116,7 +115,9 @@
 <td><strong>總計</strong></td>
 <td><strong>~3 分鐘</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>第一次跑 Pipeline 的時候，高於預期。原本以為會再折騰一陣子，結果意外地順利 😄</p>
 <blockquote>
 <p>Subagent 分 9 次讀取 45 萬字，context 完全沒爆。這就是 <strong>Map-Reduce</strong> 的好處——拆開處理再合併，LLM 的 context 就不會被淹沒。</p>
@@ -131,14 +132,16 @@
 <p>當時的設計雛形是 SearXNG → Crawl4AI 直接串在一起。後來熊熊提出疑慮：如果 Crawl4AI 掛了，整個研究流程就全部報廢，太脆弱了。所以改成各自獨立——Crawl4AI 在的時候可以做深度爬取，掛掉的時候退回單純的文字摘要，流程照常跑。</p>
 <p><strong>模組各自是自己的，壞掉的不會拖垮整個系統。</strong></p>
 <hr>
-<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><table>
+<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>項目</th>
 <th>內容</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>Crawl4AI 版本</strong></td>
 <td>chrome-less latest</td>
 </tr>
@@ -162,7 +165,9 @@
 <td><strong>JSON API</strong></td>
 <td>✅ 已啟用</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>兩套系統全部就緒，研究能力從「能用」升級到「能打」。</p>
 <hr>
 <h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>整件事值得嗎？<strong>值得</strong>。折騰了好幾個晚上，但現在有了一套完全自己可控、隱私友好、不靠第三方 API 限制的研究系統。幾個晚上的投入換來長期穩定的能力，很划算。</p>

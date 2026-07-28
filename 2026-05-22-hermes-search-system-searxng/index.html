@@ -69,13 +69,11 @@ Bing 的結果品質飄忽不定
 <hr>
 <h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-
 <p>結果在 Windows 上跑不起來，原因有好幾個。</p>
 <blockquote>
 <p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
 <p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-
 <p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
 </blockquote>
 <hr>
@@ -85,7 +83,6 @@ Bing 的結果品質飄忽不定
 <p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
 <p>需要在 <code>settings.yml</code> 裡手動加上：</p>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
-
 <p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
 </blockquote>
 <hr>
@@ -94,17 +91,18 @@ Bing 的結果品質飄忽不定
 <hr>
 <h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
-
 <p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
 <hr>
-<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><table>
+<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>項目</th>
 <th>內容</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>SearXNG 版本</strong></td>
 <td>官方 latest</td>
 </tr>
@@ -124,7 +122,9 @@ Bing 的結果品質飄忽不定
 <td><strong>運行時間</strong></td>
 <td>21 小時以上（連續運行）</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <hr>
 <h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
 <p>整件事值得嗎？<strong>值得</strong>。</p>

@@ -57,9 +57,7 @@
             <h2 id="🚩-版本-0-6-4-—-劑量方向計算修正"><a href="#🚩-版本-0-6-4-—-劑量方向計算修正" class="headerlink" title="🚩 版本 0.6.4 — 劑量方向計算修正"></a>🚩 版本 0.6.4 — 劑量方向計算修正</h2><p><strong>Commit:</strong> <code>17de809</code><br><strong>版本：</strong> v0.6.4<br><strong>日期：</strong> 2025-12-19</p>
 <hr>
 <h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我修正了 <code>sitk_transform.py</code> 中劑量方向（dose direction）的計算邏輯。</p>
-<p><strong>修正內容：</strong></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">row = ori[:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">row = ori[<span class="number">0</span>:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:<span class="number">6</span>]</span><br></pre></td></tr></table></figure>
-
+<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">row = ori[:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">row = ori[<span class="number">0</span>:<span class="number">3</span>]</span><br><span class="line">col = ori[<span class="number">3</span>:<span class="number">6</span>]</span><br></pre></td></tr></table></figure></p>
 <p>看似微小的改變，實際上修正了一個重要的問題：</p>
 <ul>
 <li>使用 <code>[:3]</code> 和 <code>[3:]</code> 時，Python 的切片操作可能會在某些邊界情況下產生非預期的行為</li>
@@ -67,7 +65,6 @@
 </ul>
 <p>然後我使用 <code>np.cross(row, col)</code> 計算第三個方向向量，構建完整的 3x3 方向矩陣。這個修正確保了劑量資料在轉換為 SimpleITK Image 時，方向性是正確的。</p>
 <h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.3 → 0.6.4</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br><span class="line">  - get_dose_direction 函數方向切片修正</span><br></pre></td></tr></table></figure>
-
 <hr>
 <h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 為什麼切片 <code>[3:]</code> 會有問題？具體是什麼邊界情況？</strong></p>
 <blockquote>
