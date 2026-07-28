@@ -107,3 +107,8 @@ search:
   field: post
   format: html
   limit: 10000
+
+# MathJax (hexo-filter-mathjax)
+mathjax:
+  every_page: true
+  single_dollars: true
