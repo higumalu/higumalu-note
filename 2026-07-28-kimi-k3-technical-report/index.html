@@ -1,0 +1,527 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kimi K3 技術報告：架構、訓練與效能深度解析 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="
+前言： Kimi K3 是 Moonshot AI 開源的多兆參數 MoE 模型，2.8T 總參數、1040 億激活參數、100 萬 Token 上下文。本文基於官方技術報告，圖文並茂地解析其核心,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">Kimi K3 技術報告：架構、訓練與效能深度解析</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">Kimi K3 技術報告：架構、訓練與效能深度解析</h1>
+        <div class="stuff">
+            <span>七月 28, 2026</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/KDA/" rel="tag">KDA</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Kimi/" rel="tag">Kimi</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/LLM/" rel="tag">LLM</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/MoE/" rel="tag">MoE</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E6%8A%80%E8%A1%93%E5%A0%B1%E5%91%8A/" rel="tag">技術報告</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <blockquote>
+<p><strong>前言：</strong> Kimi K3 是 Moonshot AI 開源的多兆參數 MoE 模型，2.8T 總參數、1040 億激活參數、100 萬 Token 上下文。本文基於官方技術報告，圖文並茂地解析其核心技術突破。</p>
+</blockquote>
+<span id="more"></span>
+
+<h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><p>Kimi K3 是一個原生多模態專家混合模型（MoE），在兩個維度上同時推進前沿：</p>
+<table>
+<thead>
+<tr>
+<th>維度</th>
+<th>內涵</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>訓練時計算擴展</strong></td>
+<td>2.8 兆總參數、1040 億激活參數、93 層、100 萬 Token 上下文</td>
+</tr>
+<tr>
+<td><strong>推理時計算擴展</strong></td>
+<td>多推理努力層級的強化學習、長程 Agentic 軌跡</td>
+</tr>
+</tbody></table>
+<p>相較 Kimi K2，整體擴展效率提升 <strong>2.5×</strong>。</p>
+<hr>
+<h2 id="2-整體架構：三維信息流"><a href="#2-整體架構：三維信息流" class="headerlink" title="2. 整體架構：三維信息流"></a>2. 整體架構：三維信息流</h2><p>Kimi K3 的核心設計圍繞三個互補維度組織信息流：</p>
+<p>每個 Block 包含：</p>
+<ul>
+<li><strong>3 層 Kimi Delta Attention（KDA）</strong> → 序列維度混合</li>
+<li><strong>1 層 Gated MLA</strong> → 全局內容交互</li>
+<li>每層注意力後接 <strong>Stable LatentMoE</strong> → 通道維度稀疏混合</li>
+<li><strong>Attention Residuals（AttnRes）</strong> → 深度維度的跳躍連接</li>
+</ul>
+<p><img src="/higumalu-note/images/k3_tech_report/page03.png" alt="Kimi K3 整體架構 Figure 2"><br><em>Kimi K3 整體架構，按 Token/Channel/Layer 三個混合維度組織，頂部為原生視覺輸入通道</em></p>
+<hr>
+<h2 id="3-Kimi-Delta-Attention（KDA）"><a href="#3-Kimi-Delta-Attention（KDA）" class="headerlink" title="3. Kimi Delta Attention（KDA）"></a>3. Kimi Delta Attention（KDA）</h2><h3 id="3-1-核心思想"><a href="#3-1-核心思想" class="headerlink" title="3.1 核心思想"></a>3.1 核心思想</h3><p>KDA 將 <strong>Delta Rule 遞歸</strong>與<strong>通道級遺忘門</strong>結合，用固定大小的遞歸狀態 $S_t \in \mathbb{R}^{d_k \times d_v}$ 替代標準 KV Cache。</p>
+<p><strong>遞歸更新（單頭形式）：</strong></p>
+<p>$$S_t = (I - \beta_t k_t k_t^\top) \odot \text{Diag}(\alpha_t) \cdot S_{t-1} + \beta_t k_t v_t^\top$$</p>
+<p>$$\tilde{o}_t = S_t^\top q_t$$</p>
+<p>其中：</p>
+<ul>
+<li>$\alpha_t \in (0, 1)^{d_k}$：通道級 retention factor</li>
+<li>$\beta_t \in (0, 1)$：Delta Rule 寫入強度</li>
+</ul>
+<h3 id="3-2-下限有界衰減（核心創新）"><a href="#3-2-下限有界衰減（核心創新）" class="headerlink" title="3.2 下限有界衰減（核心創新）"></a>3.2 下限有界衰減（核心創新）</h3><p><strong>問題診斷：</strong> Kimi Linear 的 <code>-Softplus</code> 映射無下界，16-token tile 的累積 log-decay 可能超出 <code>e^80</code>，在 BF16 中導致數值溢出。</p>
+<p><strong>Kimi K3 的解法：</strong></p>
+<p>$$g_t^h = g_{\min} \cdot \text{Sigmoid}(e^{A_h} z_t^h) \in (g_{\min}, 0)^{d_k}$$</p>
+<p>$$\alpha_t^h = \exp(g_t^h) \in (e^{g_{\min}}, 1)^{d_k}$$</p>
+<p>固定 $g_{\min} = -5$，確保每個 retention factor $\alpha &gt; e^{-5} \approx 6.7 \times 10^{-3}$。</p>
+<p><img src="/higumalu-note/images/k3_tech_report/page05.png" alt="下限有界衰減 Figure 3"><br><em>Log-decay 參數化對比 — Kimi Linear 無界 vs Kimi K3 有界（ gmin = −5）；對角線 tile 計算從昂貴的位置對計算變為 Tensor Core 密集運算</em></p>
+<h3 id="3-3-分塊並行形式"><a href="#3-3-分塊並行形式" class="headerlink" title="3.3 分塊並行形式"></a>3.3 分塊並行形式</h3><p>KDA 在 chunk 級別遞歸、chunk 內並行。對於 chunk size C：</p>
+<p>$$O[t] = \underbrace{(\Gamma_{1 \to C}^{[t]} \odot Q[t]) S[t]}<em>{\text {inter-chunk}} + \underbrace{A[t] \cdot eV[t]}</em>{\text {intra-chunk}}$$</p>
+<p>有界衰減保證了所有因果 tile（對角線和 off-diagonal）都能用 Tensor Core 密集矩陣乘法，<strong>完全消除了顯式位置對計算路徑</strong>。</p>
+<h3 id="3-4-全秩輸出門"><a href="#3-4-全秩輸出門" class="headerlink" title="3.4 全秩輸出門"></a>3.4 全秩輸出門</h3><p>$$y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \text{RMSNorm}(\tilde{o}_t)]$$</p>
+<p>從低秩參數化升級為輸入依賴的全秩投影，增強了每個 Token 對通道讀取的調製能力。</p>
+<hr>
+<h2 id="4-Gated-MLA"><a href="#4-Gated-MLA" class="headerlink" title="4. Gated MLA"></a>4. Gated MLA</h2><p>MLA（Multi-head Latent Attention）將每個 Token 的 Key-Value 表示壓縮到低維潛向量 $c_t = W_c x_t$，極大減少 KV Cache 佔用。</p>
+<p>Kimi K3 的 MLA 創新：</p>
+<ul>
+<li><strong>No Position Encoding（NoPE）</strong>：所有 MLA 層不應用顯式位置編碼</li>
+<li><strong>輸入依賴全秩輸出門</strong>：$y_t = W_o[\text{Sigmoid}(W_g x_t) \odot \tilde{o}_t]$</li>
+<li><strong>FP32 注意力輸出</strong>：修正 Flash Attention 中的有偏舍入誤差</li>
+</ul>
+<p>NoPE 的意義：擴展上下文長度時無需重新調整 RoPE 頻率基或 YaRN。</p>
+<hr>
+<h2 id="5-Attention-Residuals（AttnRes）"><a href="#5-Attention-Residuals（AttnRes）" class="headerlink" title="5. Attention Residuals（AttnRes）"></a>5. Attention Residuals（AttnRes）</h2><p>AttnRes 允許每個模塊<strong>選擇性</strong>從以下來源讀取表示：</p>
+<ul>
+<li>Embedding 層</li>
+<li>當前 block 輸出</li>
+<li>所有先前 block 輸出</li>
+</ul>
+<p>通過學習的偽查詢 $w$ 生成注意力權重 $\alpha$，實現跨深度的跳躍連接，突破了傳統殘差累積的信息 bottleneck。</p>
+<p><img src="/higumalu-note/images/k3_tech_report/page11.png" alt="擴展法則對比"><br><em>K2 與 K3 的擴展法則擬合曲線，Kimi K3 較 K2 提升 2.5× 效率</em></p>
+<hr>
+<h2 id="6-Stable-LatentMoE"><a href="#6-Stable-LatentMoE" class="headerlink" title="6. Stable LatentMoE"></a>6. Stable LatentMoE</h2><h3 id="6-1-規模"><a href="#6-1-規模" class="headerlink" title="6.1 規模"></a>6.1 規模</h3><table>
+<thead>
+<tr>
+<th>參數</th>
+<th>數值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>總專家數</td>
+<td>896</td>
+</tr>
+<tr>
+<td>每 Token 激活</td>
+<td>16</td>
+</tr>
+<tr>
+<td>共享專家</td>
+<td>3</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-Normalized-Router-Sigmoid-門控"><a href="#6-2-Normalized-Router-Sigmoid-門控" class="headerlink" title="6.2 Normalized Router + Sigmoid 門控"></a>6.2 Normalized Router + Sigmoid 門控</h3><p>$$\text{gate} = \text{Sigmoid}(W_g \cdot x) \in (0, 1)$$</p>
+<p>$$s = \text{Softmax}(\text{Norm}(W_r \cdot x))$$</p>
+<p>Normalized router 提供穩定的 Top-k 選擇，與 Sigmoid 門控配合。</p>
+<h3 id="6-3-SiTU-GLU"><a href="#6-3-SiTU-GLU" class="headerlink" title="6.3 SiTU-GLU"></a>6.3 SiTU-GLU</h3><p>傳統 SwiGLU 的問題：$x &gt; 0$ 時激活值無界。</p>
+<p><strong>SiTU（平滑 Tanh 單位）：</strong></p>
+<p>$$\text{SiTU-GLU}(x) = \underbrace{\beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right)}<em>{\text{gate branch}} \odot \underbrace{\beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)}</em>{\text{up branch}}$$</p>
+<ul>
+<li><strong>Gate branch</strong>: $\beta_1 = 4$</li>
+<li><strong>Up branch</strong>: $\beta_2 = 25$</li>
+<li><strong>輸出嚴格有界</strong>: $| \text{SiTU-GLU}(x) |_\infty \leq \beta_1 \beta_2 = 100$</li>
+<li>原點附近與 SwiGLU 一階匹配（$z + O(z^3 / \beta^2)$），$\beta \to \infty$ 退化为 SwiGLU</li>
+</ul>
+<h3 id="6-4-Quantile-Balancing（分位數平衡）"><a href="#6-4-Quantile-Balancing（分位數平衡）" class="headerlink" title="6.4 Quantile Balancing（分位數平衡）"></a>6.4 Quantile Balancing（分位數平衡）</h3><p><img src="/higumalu-note/images/k3_tech_report/page08.png" alt="Quantile Balancing"><br><em>(a) 不均衡路由：初始加載 (4, 3, 1, 0)；(b) 分位數平衡：每列繪製偏差後的分數灰條，紅色虛線為偏差調整線；(c) 均衡路由：最終加載 (2, 2, 2, 2)</em></p>
+<p>Quantile Balancing 從最優平衡分配問題出發，通過對偶理論證明交替最小化 token 側和專家側的分位數即可收斂到最優解。</p>
+<p><strong>Histogram 估計：</strong> 用 1000 個 bin 的直方圖估計分位數，僅需一次整數 all-reduce，代價不到原始 margin 通信的 1%。</p>
+<hr>
+<h2 id="7-架構對比：K2-→-K3"><a href="#7-架構對比：K2-→-K3" class="headerlink" title="7. 架構對比：K2 → K3"></a>7. 架構對比：K2 → K3</h2><table>
+<thead>
+<tr>
+<th>參數</th>
+<th>Kimi K2</th>
+<th>Kimi K3</th>
+<th>變化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>層數</td>
+<td>61</td>
+<td>93</td>
+<td>↑52%</td>
+</tr>
+<tr>
+<td>總參數</td>
+<td>1.04T</td>
+<td>2.78T</td>
+<td>↑167%</td>
+</tr>
+<tr>
+<td>激活參數</td>
+<td>32.6B</td>
+<td>104.2B</td>
+<td>↑220%</td>
+</tr>
+<tr>
+<td>Latent MoE 維度</td>
+<td>—</td>
+<td>3584</td>
+<td>新增</td>
+</tr>
+<tr>
+<td>每 Token 激活專家</td>
+<td>8</td>
+<td>16</td>
+<td>↑100%</td>
+</tr>
+<tr>
+<td>上下文長度</td>
+<td>128K</td>
+<td>1M</td>
+<td>↑8×</td>
+</tr>
+<tr>
+<td>注意力機制</td>
+<td>MLA</td>
+<td>Hybrid KDA–MLA</td>
+<td>新架構</td>
+</tr>
+<tr>
+<td>激活函數</td>
+<td>SwiGLU</td>
+<td>SiTU-GLU</td>
+<td>新函數</td>
+</tr>
+<tr>
+<td>視覺編碼器</td>
+<td>—</td>
+<td>MoonViT-V2 (27層, patch=14)</td>
+<td>新增</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="8-後訓練：百萬-Token-推理時擴展"><a href="#8-後訓練：百萬-Token-推理時擴展" class="headerlink" title="8. 後訓練：百萬 Token 推理時擴展"></a>8. 後訓練：百萬 Token 推理時擴展</h2><h3 id="8-1-多領域強化學習"><a href="#8-1-多領域強化學習" class="headerlink" title="8.1 多領域強化學習"></a>8.1 多領域強化學習</h3><p>訓練環境覆蓋：</p>
+<ul>
+<li><strong>長程 Coding</strong>：SWE-Bench, Terminal-Bench, 內核優化</li>
+<li><strong>通用 Agent</strong>：網頁開發、自主執行、工具調用（數百至數千次）</li>
+<li><strong>專業知識</strong>：可驗證搜索</li>
+<li><strong>多模態推理</strong>：視覺 in-the-loop 工具使用</li>
+<li><strong>持久化助理</strong>：百萬 Token 軌跡</li>
+</ul>
+<h3 id="8-2-多推理努力層級"><a href="#8-2-多推理努力層級" class="headerlink" title="8.2 多推理努力層級"></a>8.2 多推理努力層級</h3><table>
+<thead>
+<tr>
+<th>等級</th>
+<th>含義</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Low</td>
+<td>快速響應</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>標準推理</td>
+</tr>
+<tr>
+<td>High</td>
+<td>深度思考</td>
+</tr>
+<tr>
+<td>Max</td>
+<td>最強推理能力</td>
+</tr>
+</tbody></table>
+<p>訓練時跨四個層級，蒸餾整合為統一模型。</p>
+<hr>
+<h2 id="9-基準測試結果"><a href="#9-基準測試結果" class="headerlink" title="9. 基準測試結果"></a>9. 基準測試結果</h2><p><img src="/higumalu-note/images/k3_tech_report/page27.png" alt="Benchmark 結果 Table 2"><br><em>跨推理、coding、agentic、vision 四大領域的基準測試對比</em></p>
+<h3 id="亮點結果"><a href="#亮點結果" class="headerlink" title="亮點結果"></a>亮點結果</h3><table>
+<thead>
+<tr>
+<th>領域</th>
+<th>Benchmark</th>
+<th>Kimi K3 成績</th>
+<th>排名</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>知識/推理</strong></td>
+<td>GPQA Diamond</td>
+<td>93.5</td>
+<td>🥇 全場最高</td>
+</tr>
+<tr>
+<td><strong>知識/推理</strong></td>
+<td>CritPt</td>
+<td>74.7</td>
+<td>🥇 全場最高</td>
+</tr>
+<tr>
+<td><strong>Coding</strong></td>
+<td>ProgramBench</td>
+<td>77.8</td>
+<td>🥇 全場最高</td>
+</tr>
+<tr>
+<td><strong>Coding</strong></td>
+<td>DeepSWE</td>
+<td>67.5</td>
+<td>第二</td>
+</tr>
+<tr>
+<td><strong>Agentic</strong></td>
+<td>DeepSearchQA (F1)</td>
+<td>95.0</td>
+<td>🥇 全場最高</td>
+</tr>
+<tr>
+<td><strong>Agentic</strong></td>
+<td>BrowseComp</td>
+<td>93.5</td>
+<td>🥇 全場最高</td>
+</tr>
+<tr>
+<td><strong>Vision</strong></td>
+<td>OmniDocBench</td>
+<td>91.1</td>
+<td>🥇 全場最高</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="10-基礎設施創新"><a href="#10-基礎設施創新" class="headerlink" title="10. 基礎設施創新"></a>10. 基礎設施創新</h2><h3 id="10-1-KDA-系統共同設計"><a href="#10-1-KDA-系統共同設計" class="headerlink" title="10.1 KDA 系統共同設計"></a>10.1 KDA 系統共同設計</h3><ul>
+<li><strong>FlashKDA 內核</strong>：基於 CUTLASS，重疊 intra-chunk 計算與 cross-chunk 狀態傳播</li>
+<li><strong>KDA Context Parallelism</strong>：跨設備分割，同時保持狀態遞歸完整性</li>
+<li><strong>狀態感知前綴緩存</strong>：跨請求複用</li>
+</ul>
+<h3 id="10-2-MoonEP：完美均衡專家並行"><a href="#10-2-MoonEP：完美均衡專家並行" class="headerlink" title="10.2 MoonEP：完美均衡專家並行"></a>10.2 MoonEP：完美均衡專家並行</h3><p><strong>核心問題：</strong> 896 專家分散在多 EP rank 時，遠程 Token 的冗餘專家拷貝導致內存爆炸。</p>
+<p><strong>MoonEP 解法：</strong> 完美均衡的專家執行，靜態計算形狀，零拷貝通信。</p>
+<p><strong>理論上界：</strong> $M(I) \leq E / R$（每 rank 冗餘專家數不超過專家數/EP ranks 數）</p>
+<h3 id="10-3-百萬-Token-Agentic-RL-系統"><a href="#10-3-百萬-Token-Agentic-RL-系統" class="headerlink" title="10.3 百萬 Token Agentic RL 系統"></a>10.3 百萬 Token Agentic RL 系統</h3><ul>
+<li><strong>部分 Rollout</strong>：長軌跡分段執行</li>
+<li><strong>外部 KV-Cache 保留</strong>：跨分段持久化</li>
+<li><strong>可恢復 MicroVM Sandbox</strong>：保持長壽模型和環境狀態</li>
+<li><strong>自適應節流</strong>：動態調整執行節奏</li>
+</ul>
+<hr>
+<h2 id="11-案例研究"><a href="#11-案例研究" class="headerlink" title="11. 案例研究"></a>11. 案例研究</h2><p><img src="/higumalu-note/images/k3_tech_report/page33.png" alt="GPU 內核優化案例"><br><em>AttnRes 加速對比：Kimi K3 +59.7% 與 Claude Fable 5 +57.1% 並列第一</em></p>
+<h3 id="11-1-GPU-內核優化"><a href="#11-1-GPU-內核優化" class="headerlink" title="11.1 GPU 內核優化"></a>11.1 GPU 內核優化</h3><table>
+<thead>
+<tr>
+<th>Kernel</th>
+<th>提升幅度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AttnRes</td>
+<td><strong>59.7%</strong></td>
+</tr>
+<tr>
+<td>DSA</td>
+<td>55.1%</td>
+</tr>
+<tr>
+<td>KDA</td>
+<td>73.6%</td>
+</tr>
+<tr>
+<td>MLA</td>
+<td>&gt;50% 峰值 TFLOPS</td>
+</tr>
+</tbody></table>
+<p>Kimi K3 與 Claude Fable 5 並列第一，大幅超越 GPT-5.6 Sol（17.3%）和 GPT-5.5（30.8%）。</p>
+<h3 id="11-2-MiniTriton-編譯器開發"><a href="#11-2-MiniTriton-編譯器開發" class="headerlink" title="11.2 MiniTriton 編譯器開發"></a>11.2 MiniTriton 編譯器開發</h3><p>自主開發完整 Triton-like 編譯器：</p>
+<ul>
+<li>自定義 tile 級 Python 前端</li>
+<li>Warp 級 MLIR 標注/優化層</li>
+<li>PTX 代碼生成管線</li>
+<li>雙模式張量庫（eager + 編譯）</li>
+<li>端到端訓練 GPT，loss 曲線與 PyTorch 基準偏差 &lt; $10^{-4}$</li>
+</ul>
+<h3 id="11-3-晶片設計"><a href="#11-3-晶片設計" class="headerlink" title="11.3 晶片設計"></a>11.3 晶片設計</h3><p>早期概念驗證：為 nano 模型設計推理晶片原型</p>
+<ul>
+<li>工藝：Nangate45 標準單元庫，開源 EDA 工具</li>
+<li>面積：&lt; 4 mm² @ 100 MHz</li>
+<li>吞吐量：RTL 模擬 &gt; 8,700 tokens/s</li>
+</ul>
+<hr>
+<h2 id="12-總結"><a href="#12-總結" class="headerlink" title="12. 總結"></a>12. 總結</h2><p>Kimi K3 在開源模型中達到了最高水准，其核心技術突破：</p>
+<table>
+<thead>
+<tr>
+<th>創新</th>
+<th>意義</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>KDA 下限有界衰減</strong></td>
+<td>從昂貴位置對計算 → Tensor Core 密集運算，硬體效率大幅提升</td>
+</tr>
+<tr>
+<td><strong>SiTU-GLU</strong></td>
+<td>輸出嚴格有界，訓練穩定性提升，同時保留 Swish 特徵</td>
+</tr>
+<tr>
+<td><strong>Quantile Balancing</strong></td>
+<td>無輔助損失的數學最優均衡，histogram 估計將通信代價降至 &lt;1%</td>
+</tr>
+<tr>
+<td><strong>AttnRes</strong></td>
+<td>跨深度跳躍連接，突破殘差累積 bottleneck</td>
+</tr>
+<tr>
+<td><strong>百萬 Token RL</strong></td>
+<td>首個支持長程 Agentic 軌跡的 RL 系統</td>
+</tr>
+</tbody></table>
+<p><strong>模型權重完全開源：</strong> <a target="_blank" rel="noopener" href="https://huggingface.co/moonshotai/Kimi-K3">huggingface.co/moonshotai/Kimi-K3</a></p>
+<hr>
+<p><em>本報告基於 Kimi K3 Technical Report (2026-07) 整理，圖片均來自原報告。</em></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E6%A6%82%E8%BF%B0"><span class="toc-number">1.</span> <span class="toc-text">1. 概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%95%B4%E9%AB%94%E6%9E%B6%E6%A7%8B%EF%BC%9A%E4%B8%89%E7%B6%AD%E4%BF%A1%E6%81%AF%E6%B5%81"><span class="toc-number">2.</span> <span class="toc-text">2. 整體架構：三維信息流</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Kimi-Delta-Attention%EF%BC%88KDA%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">3. Kimi Delta Attention（KDA）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 核心思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E4%B8%8B%E9%99%90%E6%9C%89%E7%95%8C%E8%A1%B0%E6%B8%9B%EF%BC%88%E6%A0%B8%E5%BF%83%E5%89%B5%E6%96%B0%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 下限有界衰減（核心創新）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%88%86%E5%A1%8A%E4%B8%A6%E8%A1%8C%E5%BD%A2%E5%BC%8F"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 分塊並行形式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%85%A8%E7%A7%A9%E8%BC%B8%E5%87%BA%E9%96%80"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 全秩輸出門</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-Gated-MLA"><span class="toc-number">4.</span> <span class="toc-text">4. Gated MLA</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Attention-Residuals%EF%BC%88AttnRes%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">5. Attention Residuals（AttnRes）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-Stable-LatentMoE"><span class="toc-number">6.</span> <span class="toc-text">6. Stable LatentMoE</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E8%A6%8F%E6%A8%A1"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 規模</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-Normalized-Router-Sigmoid-%E9%96%80%E6%8E%A7"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 Normalized Router + Sigmoid 門控</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-SiTU-GLU"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 SiTU-GLU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-Quantile-Balancing%EF%BC%88%E5%88%86%E4%BD%8D%E6%95%B8%E5%B9%B3%E8%A1%A1%EF%BC%89"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 Quantile Balancing（分位數平衡）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%9E%B6%E6%A7%8B%E5%B0%8D%E6%AF%94%EF%BC%9AK2-%E2%86%92-K3"><span class="toc-number">7.</span> <span class="toc-text">7. 架構對比：K2 → K3</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E5%BE%8C%E8%A8%93%E7%B7%B4%EF%BC%9A%E7%99%BE%E8%90%AC-Token-%E6%8E%A8%E7%90%86%E6%99%82%E6%93%B4%E5%B1%95"><span class="toc-number">8.</span> <span class="toc-text">8. 後訓練：百萬 Token 推理時擴展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E5%A4%9A%E9%A0%98%E5%9F%9F%E5%BC%B7%E5%8C%96%E5%AD%B8%E7%BF%92"><span class="toc-number">8.1.</span> <span class="toc-text">8.1 多領域強化學習</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%A4%9A%E6%8E%A8%E7%90%86%E5%8A%AA%E5%8A%9B%E5%B1%A4%E7%B4%9A"><span class="toc-number">8.2.</span> <span class="toc-text">8.2 多推理努力層級</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E5%9F%BA%E6%BA%96%E6%B8%AC%E8%A9%A6%E7%B5%90%E6%9E%9C"><span class="toc-number">9.</span> <span class="toc-text">9. 基準測試結果</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%AE%E9%BB%9E%E7%B5%90%E6%9E%9C"><span class="toc-number">9.1.</span> <span class="toc-text">亮點結果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E5%9F%BA%E7%A4%8E%E8%A8%AD%E6%96%BD%E5%89%B5%E6%96%B0"><span class="toc-number">10.</span> <span class="toc-text">10. 基礎設施創新</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#10-1-KDA-%E7%B3%BB%E7%B5%B1%E5%85%B1%E5%90%8C%E8%A8%AD%E8%A8%88"><span class="toc-number">10.1.</span> <span class="toc-text">10.1 KDA 系統共同設計</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-2-MoonEP%EF%BC%9A%E5%AE%8C%E7%BE%8E%E5%9D%87%E8%A1%A1%E5%B0%88%E5%AE%B6%E4%B8%A6%E8%A1%8C"><span class="toc-number">10.2.</span> <span class="toc-text">10.2 MoonEP：完美均衡專家並行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-3-%E7%99%BE%E8%90%AC-Token-Agentic-RL-%E7%B3%BB%E7%B5%B1"><span class="toc-number">10.3.</span> <span class="toc-text">10.3 百萬 Token Agentic RL 系統</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E6%A1%88%E4%BE%8B%E7%A0%94%E7%A9%B6"><span class="toc-number">11.</span> <span class="toc-text">11. 案例研究</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-1-GPU-%E5%85%A7%E6%A0%B8%E5%84%AA%E5%8C%96"><span class="toc-number">11.1.</span> <span class="toc-text">11.1 GPU 內核優化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-MiniTriton-%E7%B7%A8%E8%AD%AF%E5%99%A8%E9%96%8B%E7%99%BC"><span class="toc-number">11.2.</span> <span class="toc-text">11.2 MiniTriton 編譯器開發</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-3-%E6%99%B6%E7%89%87%E8%A8%AD%E8%A8%88"><span class="toc-number">11.3.</span> <span class="toc-text">11.3 晶片設計</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E7%B8%BD%E7%B5%90"><span class="toc-number">12.</span> <span class="toc-text">12. 總結</span></a></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+</html>
