@@ -1,6 +1,7 @@
 'use strict';
 // Phase 1: Remove <em> remnants from markdown _..._ inside math expressions
 // Phase 2: Convert remaining $...$ inline math to MathJax <script> tags
+// Phase 3: Inject MathJax config + typeset call (ensures rendering even if CDN loaded before scripts)
 hexo.extend.filter.register('after_render:html', function(content) {
   if (!content) return content;
 
@@ -43,6 +44,22 @@ hexo.extend.filter.register('after_render:html', function(content) {
     i++;
   }
   content = result;
-  console.log('[mathjax-inline] converted:', converted);
+
+  // === Phase 3: Ensure MathJax typesets our newly injected scripts ===
+  // Inject a small script that calls typesetPromise for any remaining math scripts
+  if (content.includes('math/tex')) {
+    var headEnd = content.toLowerCase().indexOf('</head>');
+    if (headEnd >= 0) {
+      var typesetScript = '<script>' +
+'if (typeof MathJax !== "undefined") {' +
+'  MathJax.startup && MathJax.startup.promise && MathJax.startup.promise.then(function() {' +
+'    return MathJax.typesetPromise(document.body);' +
+'  }).catch(function(e) { console.error("MathJax typeset error:", e); });' +
+'}' +
+'</script>';
+      content = content.slice(0, headEnd) + typesetScript + content.slice(headEnd);
+    }
+  }
+
   return content;
 });
