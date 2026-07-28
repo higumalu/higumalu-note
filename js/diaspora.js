@@ -106,7 +106,12 @@ var Diaspora = {
                 }
             }, 0)
             var math = document.getElementById("single")
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, math])
+            if (window.MathJax && MathJax.Hub) {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, math])
+            } else if (window.MathJax && MathJax.typesetPromise) {
+                MathJax.typesetClear && MathJax.typesetClear([math])
+                MathJax.typesetPromise([math]).catch(function () {})
+            }
         })
     },
     preview: function() {

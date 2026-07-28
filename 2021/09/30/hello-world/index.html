@@ -110,19 +110,19 @@
 
     </div>
 </div>
-<script>
-window.MathJax = {
-  tex: { inlineMath: [["$","$"],["\\(","\\)"]], displayMath: [["$$","$$"],["\\[","\\]"]], processEscapes: true },
-  options: { enableMenu: false },
-  startup: {
-    ready: function() {
-      MathJax.startup.defaultReady();
-      MathJax.startup.promise.then(function() { return MathJax.typesetPromise(); });
-    }
-  }
-};
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [["$","$"],["\\(","\\)"]],
+    displayMath: [["$$","$$"],["\\[","\\]"]],
+    processEscapes: true
+  },
+  TeX: { extensions: ["AMSmath.js","AMSsymbols.js"] },
+  showProcessingMessages: false,
+  messageStyle: "none"
+});
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js" id="MathJax-script"></script></body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS_CHTML" id="MathJax-script"></script></body>
 
 
 <script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
