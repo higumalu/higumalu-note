@@ -145,22 +145,24 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p>$$V = \begin{cases} [b_0, b_1, …, b_{n-1}]^\top &amp; i = 1 \text{（block 首層）} \ [b_0, b_1, …, b_{n-1}, b_{n-1}^i]^\top &amp; i \geq 2 \text{（後續層）} \end{cases}$$</p>
 <hr>
 <h3 id="2-3-Stable-LatentMoE"><a href="#2-3-Stable-LatentMoE" class="headerlink" title="2.3 Stable LatentMoE"></a>2.3 Stable LatentMoE</h3><p>LatentMoE 在前饋網絡中引入潛路由，將 FFN 轉換為潛專家混合。路由的 Key-Value 表示被壓縮為低維向量，激活時通過上投影重建。具體來說，令 $x \in \mathbb{R}^d$ 為輸入，路由器首先計算：</p>
-<p>$$s = \text{Softmax}(\text{Norm}(W_r x)) \in \mathbb{R}^n$$</p>
+<p>$$s = \text{Softmax}(\text{Norm}(W_g x)) \in \mathbb{R}^n$$</p>
 <p>其中 $n = 896$ 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：</p>
 <p>$$\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)$$</p>
-<p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和路由權重：</p>
-<p>$$s_i = \text{Sigmoid}(W_r x_i), \quad \mathcal{T}<em>i = \text{argtop}<em>k(s_i + b), \quad p</em>{i,j} = \begin{cases} \dfrac{s</em>{i,j}}{\sum_{r \in \mathcal{T}<em>i} s</em>{i,r}} &amp; j \in \mathcal{T}_i \ 0 &amp; \text{otherwise} \end{cases}$$</p>
+<p>最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和路由權重（依 Eq. 10）：</p>
+<p>$$s_i = \text{Sigmoid}(W_g x_i), \quad \mathcal{T}<em>i = \text{argtop}<em>k(s_i + b), \quad p</em>{i,j} = \begin{cases} \dfrac{s</em>{i,j}}{\sum_{r \in \mathcal{T}<em>i} s</em>{i,r}} &amp; j \in \mathcal{T}_i \ 0 &amp; \text{otherwise} \end{cases}$$</p>
 <p>偏置 $b$ 從路由概率 $p_{i,j}$ 計算中省略，這樣它只調節 dispatch（Top-k 選了哪些專家）而不改變混合權重或直接干擾路由器的梯度優化。</p>
 <h4 id="2-3-1-SiTU-GLU"><a href="#2-3-1-SiTU-GLU" class="headerlink" title="2.3.1 SiTU-GLU"></a>2.3.1 SiTU-GLU</h4><p>在 FFN 投影之間，我們用 SiTU-GLU 取代標准 SwiGLU。SiTU-GLU 將 Swish 激活函數的 cap 替換為平滑的 Tanh cap：</p>
 <p>$$\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)$$</p>
 <p>Gate branch 的 $\beta_1 = 4$，Up branch 的 $\beta_2 = 25$。由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。在原點附近，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 $\beta \to \infty$ 精確退化為 SwiGLU。</p>
-<h4 id="2-3-2-Quantile-Balancing"><a href="#2-3-2-Quantile-Balancing" class="headerlink" title="2.3.2 Quantile Balancing"></a>2.3.2 Quantile Balancing</h4><p>隨著專家數增長到近千，均衡路由變得越來越重要。傳統輔助損失方法 [30] 在每個 Token 上增加一個負載不平衡罰項，但這會直接干擾路由決策與梯度優化。我們採用無輔助損失的路由均衡：對每個專家維護一個偏置項 $b_j$，根據目標加載 $q := mk/n$ 週期性更新：</p>
-<p>$$b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_i \mathbf{1}_{j \in \mathcal{T}_i} - \frac{k}{n} \right)$$</p>
+<h4 id="2-3-2-Quantile-Balancing"><a href="#2-3-2-Quantile-Balancing" class="headerlink" title="2.3.2 Quantile Balancing"></a>2.3.2 Quantile Balancing</h4><p>隨著專家數增長到近千，均衡路由變得越來越重要。傳統輔助損失方法 [30] 在每個 Token 上增加一個負載不平衡罰項，但這會直接干擾路由決策與梯度優化。我們採用無輔助損失的路由均衡：對每個專家維護一個偏置項 $b_j$，根據目標加載 $q := mk/n$ 週期性更新（依 Eq. 14）：</p>
+<p>$$b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_{i=1}^{m} \mathbf{1}_{j \in \mathcal{T}_i} - \frac{k}{n} \right)$$</p>
 <p>此更新將專家加載推向目標，類似於 SignSGD，但直接作用於偏置而非路由器參數。</p>
 <p><img src="/higumalu-note/images/k3_tech_report/quantile-balancing.png" alt="Quantile Balancing"><br><em>圖 5：Quantile Balancing 示意（m=8 tokens, n=4 experts, k=1）。(a) 不均衡路由：初始加載 (4, 3, 1, 0)；(b) 分位數平衡：每列繪製偏差後的分數灰條，紅色虛線為偏差調整線；(c) 均衡路由：最終加載 (2, 2, 2, 2)</em></p>
 <p>對於精確的偏差估計，我們從最優平衡分配問題的對偶推导出 Alternating Quantile Solver：交替求解 token 側閾值 $\alpha$ 和專家側閾值 $\beta$，每步封閉形式精確求解。實務上，用 1000 個 bin 的直方圖估計分位數，僅需一次整數 All-Reduce 通信，代價不到原始 margin 通信的 1%。</p>
 <hr>
 <h3 id="2-4-原生視覺"><a href="#2-4-原生視覺" class="headerlink" title="2.4 原生視覺"></a>2.4 原生視覺</h3><p>Kimi K3 的視覺編碼器 MoonViT-V2 將圖像和視頻編碼為視覺 Token 序列。輕量級投影器將視覺特徵映射到與語言骨幹共享的 Embedding 空間，然後一起送入骨幹網絡處理。這種原生多模態設計使視覺理解與語言推理深度融合，而非事後拼接。</p>
+<p>此視覺訓練配方基於 Kimi K2.5 [60, 62] 的整體設計構建：視覺輸入首先由 MoonViT-V2 編碼，然後由輕量級 MLP 投影器映射到共享語言空間。MoonViT-V2 是一個約 4 億參數的 27 層視覺 Transformer，採用 RMSNorm 並從其線性投影和注意力投影中移除所有偏置項——此設計從訓練初期就進一步穩定了跨模態表示融合。</p>
+<p>圖像和視頻以完全共享的參數處理：注意力分為幀內空間和幀間時間兩遍，時間池化進一步壓縮 Token 維度。投影前，像素洗牌（pixel-shuffle）操作以 2×2 下採樣將 Token 數量減少到原來的四分之一，使最長 3584×3584 像素的輸入在百萬 Token 上下文窗口內仍然可負擔。</p>
 <hr>
 <h3 id="2-5-Per-Head-Muon"><a href="#2-5-Per-Head-Muon" class="headerlink" title="2.5 Per-Head Muon"></a>2.5 Per-Head Muon</h3><p>我們對注意力頭使用 Per-Head Muon 優化器。Muon（Matrix u for u, Newton-ish）是一種為 Transformer 設計的牛頓類優化器，在某些設置下收斂速度比 AdamW 快 [22]。Per-Head 版本對每個注意力頭維護單獨的學習率和狀態，進一步提升收斂穩定性。</p>
 <hr>
@@ -241,6 +243,10 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <td>新增</td>
 </tr>
 </tbody></table>
+<h3 id="3-4-長上下文擴展"><a href="#3-4-長上下文擴展" class="headerlink" title="3.4 長上下文擴展"></a>3.4 長上下文擴展</h3><p>Kimi K3 的預訓練從 8K Token 上下文長度開始，後在退火階段逐步擴展到 64K Token。</p>
+<p><strong>位置編碼</strong>：Kimi K3 不使用任何顯式位置嵌入（NoPE），而是透過 KDA 的遞歸門控和衰減機制隱式編碼位置信息。因此，模型無需任何位置編碼修改（如 RoPE 重縮放或插值 [93]）即可直接外推到百萬 Token 上下文。</p>
+<p><strong>長上下文數據</strong>：來自自然來源的長文檔和視頻含有大量低質量內容，包括近似重複項、二進制 blob、截斷文件、視頻剪輯和無效的機器生成文本。我們因此透過專門的清理流程處理它們：結合精確和模糊去重（視頻幀基於感知哈希），輔以啟發式和分類器的質量過濾，以及自動化驗證。由於真正長且連貫的文檔和視頻相比短文本稀缺，我們對其進行上採樣，使長上下文分佈在退火期間不被短序列淹沒。然而，長度本身並不賦予長程能力。為解決這個問題，我們透過打散和拼接多模態文檔和子任務來合成額外的長上下文數據，使嵌入的任務只能在注意分散在完整百萬 Token 上下文中的信息時才能解決。這使注意力機制在完整尺度上接受訓練，防止其退化為局部模式。</p>
+<p><strong>漸進式上下文擴展</strong>：Kimi K3 支持最長百萬 Token 的上下文窗口。我們透過隨訓練進展逐步擴展上下文窗口來實現這一點，遵循四階段課程。窗口在預訓練期間從 8K 擴展到 64K Token，並在退火階段從 256K 擴展到 1M Token。將昂貴的長序列計算集中在整體訓練預算的小部分中，使課程保持經濟性的同時仍允許模型逐步適應越來越長程的依賴關係。讓百萬 Token 訓練對 KDA 層可行的序列維度分區在 §5.1 中描述。</p>
 <hr>
 <h2 id="4-後訓練（Post-Training）"><a href="#4-後訓練（Post-Training）" class="headerlink" title="4. 後訓練（Post-Training）"></a>4. 後訓練（Post-Training）</h2><h3 id="4-1-強化學習"><a href="#4-1-強化學習" class="headerlink" title="4.1 強化學習"></a>4.1 強化學習</h3><p>Kimi K3 的後訓練明確為 100 萬上下文測試時 scaling 設計。跨四個領域開展強化學習，每個領域覆蓋多個推理努力層級（low / medium / high / max）。</p>
 <p><strong>通用領域</strong>：可驗證搜索、專業知識工作，訓練模型在長上下文中的精確信息檢索與綜合能力。</p>
@@ -248,7 +254,36 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p><strong>Coding 領域</strong>：軟體工程、內核優化，訓練模型在複雜代碼庫中的導航、修改和調試能力。</p>
 <p><strong>多模態領域</strong>：視覺 in-the-loop 工具使用，訓練模型結合視覺理解和工具調用的能力。</p>
 <p><strong>領域專門化策略的統一</strong>：每個領域和努力層級的專門化策略透過多教師 On-Policy 蒸餾 [76, 135, 29] 整合到統一模型中。</p>
+<p><strong>演算法：Partial Rollout</strong></p>
+<p>為緩解長程任務中加劇的長尾延遲，我們從同步 RL 框架 [119, 60] 擴展了 partial rollout 方案。在每次迭代的 rollout 階段，我們對每個 prompt 採樣 K 個 completion，維護 N × K 條軌跡的活跃工作負載。不等待所有 rollout 終止，一旦 λ × N × K 條軌跡完成（即 λ ∈ (0, 1) 的 fraction），生成階段就暫停，讓策略優化在無 straggler 的情況下繼續。暫停的 rollout 被排隊並在下次迭代開始時優先恢復，由 sandbox 基礎設施驅動（§ 5.3.2）。當 prompt 的 K 個 response 全部完成後，立即分發進行策略優化，遵循 Kimi K2.5 [60] 的演算法。</p>
+<p>在 partial rollout 方案下，個別長程軌跡自然跨越多個迭代，引入威脅訓練穩定性的數據陳舊性。我們的策略優化演算法透過 per-token 正則化先天容忍此類極端 off-policy regime。透過將策略更新約束在局部鄰域內，此正則化使演算法能穩健處理高度陳舊的數據並維持訓練穩定性。</p>
+<p><strong>推理努力 RL</strong></p>
+<p>為在最大化 token 效率的同時微調推理努力，我們在 RL 期間 [60] 實現 per-problem 預算控制機制。每個問題 x 關聯一個初始 token 預算 b₀(x)，從冷啟動模型估計，當軌跡總 token 預算 T(y) 超過縮放閾值 τ · b₀(x) 時，以 −1 覆蓋任務獎勵。對於通用任務，T(y) 測量思考 token 數；對於 agentic 任務，T(y) 包含累計輸出 token（推理軌跡 + 工具調用參數）。訓練遵循 τ 的分階段課程：先用相對大的 τ 訓練 max-budget 變體（仍設置上限抑制過度 overthinking），然後將 τ 退火至更小值得到 high- 和 low-effort 專家模型。τ 的調整由人類在迴指導下 per-domain 配置。各推理層級專家生成的軌跡共同收集，用於監督微調和多教師 On-Policy 蒸餾。</p>
+<p><strong>Agentic 生成獎勵模型</strong></p>
+<p>對於不可驗證的通用任務，我們採用 Agentic Generative Reward Model（GRM），保留 Kimi K2.5 [59, 60] 中的小組獎勵 tournament 風格二值比較。超越通用 agentic 能力的增強判斷，agentic judge 需遵循強制協議：(1) 閱讀結果、產品或文本輸出；(2) 生成評分 rubrics；(3) 根據 rubrics 對每個候選評分；(4) 將 rubrics 分配的分數記錄在 scorepad 中。為緩解獎勵 hack 趨向越來越冗長輸出，我們應用類似推理努力控制的基於預算的冗長度控制：給定從冷啟動模型估計的初始冗長度 ℓ₀ 和倍增器 σ，輸出長度超過 σ · ℓ₀ 的候選自動失去二值比較。</p>
+<p><strong>多教師 On-Policy 蒸餾</strong></p>
+<p>我們採用 Multi-Teacher On-Policy Distillation（MOPD）在不同推理努力下整合這些領域專門化能力到統一模型 [76, 135, 29]。訓練時，對於給定領域 d 和採樣的推理努力層級 e ∈ {low, high, max}，優化由對應的教師模型 π(d,e) 引導。給定輸入查詢 x 和前綴回應 y&lt;t，在 yt 上評估的 per-token OPD 獎勵為蒸餾信號，確保統一模型繼承各領域、各努力層級的能力。</p>
+<p><strong>OPD 獎勵公式</strong>（Eq. 15）：每個 token yt 的 OPD 獎勵定義為：</p>
+<p>$$r_{\text{opd}}(y_t | e, x, y_{&lt;t}) = \text{clip}\left(\frac{\text{sg}(\log \pi^{(d,e)}<em>{\text{teacher}}(y_t | x, y</em>{&lt;t}))}{\pi_\theta(y_t | e, x, y_{&lt;t})}, -R_{\max}, R_{\max}\right)$$</p>
+<p>其中 sg(·) 為 stop-gradient 算子，Rmax &gt; 0 為裁剪閾值。此密集獎勵信號無縫集成到我們的 RL 框架中，自然支持長程任務的 partial rollout 訓練等基礎設施優化。</p>
+<h3 id="4-1-4-部署感知後訓練"><a href="#4-1-4-部署感知後訓練" class="headerlink" title="4.1.4 部署感知後訓練"></a>4.1.4 部署感知後訓練</h3><p><strong>MXFP4 量化感知後訓練</strong>：為減少部署時的內存佔用和服務成本，我們將佔模型參數內存主導的 MoE 專家權重量化到 MXFP4 [104]，激活以 MXFP8 計算；而所有非專家組件（注意力投影、潛 MoE 投影、共享專家和 MoE 路由器）保持在更高精度。我們在整個後訓練階段——涵蓋 SFT 和 RL——執行量化感知訓練（QAT）[50]，使模型適應量化引起的精度損失。在 RL 期間，rollout 和訓練共享相同的量化方案，消除訓練-推理失配。</p>
+<p><strong>Draft Model 微調</strong>：優化複雜、長程 agentic 模型的推理效率至關重要。Kimi K3 預訓練時配有一個多 Token 預測（MTP）層，其結構與骨幹 block 相同。由於 EAGLE-3 [72] 的 draft model 由單一解碼器層組成，其結構與 MTP 層匹配，我們將預訓練的 MTP 層微調為 EAGLE-3 風格的 draft model，目標模型保持凍結，只更新 draft 層及其特徵融合投影。遵循 EAGLE-3 的訓練時測試協議，draft 在訓練時展開 7 步；在第一步之後（新 token 的目標側特徵不可用），draft 消耗自身先前步的輸出，模擬推理中的循環 draft 過程。</p>
+<p>Draft 輸入融合目標模型的低層、中層和高層特徵，分別取自第 1 個、中間和最終 AttnRes block 的輸出（§2.2）。這些特徵通過無偏置矩陣 $W_{E3}$ 拼接投影到 draft 層的隱藏大小，初始化為 $\begin{bmatrix} 0 &amp; 0 &amp; I \end{bmatrix}$，使融合表示在初始化時與高層特徵 $h_h$ 一致——這是 MTP 層預訓練時的輸入——並在微調過程中逐步學會融合低層和中層特徵。</p>
+<p>推測解碼的加速取決於無損推測採樣下每 token 接受率 $P = \sum_{x \in V} \min(p(x), q(x))$，其中 p 和 q 分別是目標和 draft model 的下一 token 分佈。由於傳統 KL 散度代理不能保證最大化容量有限的 draft model 的接受率，我們直接優化似然基於的 LK 損失 [105]——接受率本身的負對數：</p>
+<p>$$L_{LK} = -\log \sum_{x \in V} \min(p(x), q(x))$$</p>
+<p>p 和 q 在 temperature 1 下評估，無輔助真實交叉熵項。Draft 微調遵循後訓練 QAT 配置（§4.1.4），MoE 專家權重為 MXFP4，其輸入激活為 MXFP8，而非專家模組保持更高精度。</p>
 <h3 id="4-2-Long-Context-SFT"><a href="#4-2-Long-Context-SFT" class="headerlink" title="4.2 Long-Context SFT"></a>4.2 Long-Context SFT</h3><p>在強化學習之前，Kimi K3 在長上下文任務上接受監督微調（SFT），涵蓋長程推理、多文檔問答和代碼補全。關鍵是使用真實的長上下文數據而非簡單的序列拼接。</p>
+<h3 id="4-3-知識圖譜引導的任務合成"><a href="#4-3-知識圖譜引導的任務合成" class="headerlink" title="4.3 知識圖譜引導的任務合成"></a>4.3 知識圖譜引導的任務合成</h3><p><strong>動機與概述</strong></p>
+<p>後訓練任務的質量和多樣性很大程度上取決於其原材料。細粒度概念檢索引導的檢索能挖掘專業化和代表性不足的知識，而跨多樣概念採樣拓寬領域覆蓋範圍。為在大規模下同時控制粒度和覆蓋範圍，我們構建了一個自我演化、層次組織的知識圖譜，讓 agent 透過網路規模探索持續擴展跨知識密集型和 Coding 領域的覆蓋範圍。</p>
+<p><strong>Agentic 知識圖譜構建</strong></p>
+<p>我們透過遞歸、agent 驅動的擴展將知識圖譜構建為有向無環圖。擴展過程從一組預定義的粗粒度種子節點開始。每個節點分配一個 agent 實例，執行多次網路搜索以調研相應概念。在添加新節點之前，agent 會探索現有圖譜以識別等價或相關概念，在適當處復用現有節點並最小化重複。邊總是從較粗概念指向較細概念，無論 agent 先發現哪個端點。新添加的節點後續分配給 agent 進一步探索。當分配的 agent 判斷當前概念足夠原子化時，分支停止擴展。</p>
+<p><strong>材料檢索與任務合成</strong></p>
+<p>為瞄準跨領域和任務類型的期望分佈，系統以不同粒度級別採樣節點（單獨或相關組合）。從採樣節點衍生的關鍵詞與其祖先在知識圖譜中的上下文信息相結合，形成網路查詢。檢索到的真實材料被組裝，以便合成 agent 生成各種類型的訓練任務。</p>
+<p><img src="/higumalu-note/images/k3_tech_report/knowledge-graph-synthesis.png" alt="知識圖譜引導的任務合成流程"><br><em>圖 9：知識圖譜引導的任務合成流程概覽。層次組織的知識圖譜代表跨多個粒度級別的概念，從廣義領域到細粒度概念。採樣相關節點形成關鍵詞集，用於從互聯網檢索公開材料。每次合成實例中，系統選擇一種任務類型，並利用材料合成相應的訓練任務。</em></p>
+<h3 id="4-2-1-統一白盒-RL-環境"><a href="#4-2-1-統一白盒-RL-環境" class="headerlink" title="4.2.1 統一白盒 RL 環境"></a>4.2.1 統一白盒 RL 環境</h3><p>使用單一固定 agent harness 進行訓練會導致模型過擬合於特定工具 schema、系統提示、上下文管理機制或交互協議。為解決這個問題，我們開發了一個統一白盒 RL 環境，將 agent harness 表示為可配置、可組合模組的集合，包括工具接口、系統提示、上下文管理策略、技能、記憶、子 agent 及其他組件。透過配置動態組合這些模組，環境可以實例化主流 harness 如 Kimi Code [57]、Claude Code [15]、Codex [20]、OpenClaw [87] 和 Hermes [45]，以及全新 harness。在 RL 訓練期間，我們動態為不同任務組構造不同的 harness 配置，使 Kimi K3 接觸多樣化的模組組合而非單一 harness 的約定。這種抽象同樣可以輕鬆支持跨多個任務領域的 RL，為訓練更通用 agent 提供可擴展的基礎。</p>
+<h3 id="4-2-3-Agentic-環境中的可驗證問題"><a href="#4-2-3-Agentic-環境中的可驗證問題" class="headerlink" title="4.2.3 Agentic 環境中的可驗證問題"></a>4.2.3 Agentic 環境中的可驗證問題</h3><p>我們在 agentic 環境中的可驗證問題上訓練 Kimi K3；典型例子包括：多步複雜信息搜索，模型規劃研究、逐步從網路收集證據並產生可驗證答案；專業人士的日常工作，如投資銀行、數據分析和法律實踐，模型在其中分解複雜請求、在沙盒中操作領域工具，並在數十到數百步中完成複雜交付物；以及多步可驗證的視覺推理，涵蓋 STEM 問題、視覺謎題和圖表理解。每個視覺推理軌跡在配備隔離沙盒中 Python 解釋器的 agent 環境中生成：模型迭代編寫並執行代碼以裁剪、縮放或以其他方式變換輸入圖像、執行精確計算或驗證中間結果，並將執行輸出——包括生成的圖像——作為多個交互步驟中的新觀察。隨著模型學會執行適當的圖像操作並收集更多觀察，其在複雜視覺推理任務上的表現穩步提升。</p>
+<h3 id="4-2-4-GPU-內核優化任務"><a href="#4-2-4-GPU-內核優化任務" class="headerlink" title="4.2.4 GPU 內核優化任務"></a>4.2.4 GPU 內核優化任務</h3><p>為加強 Kimi K3 的 GPU 內核優化能力，我們構建了一個大規模內核任務套件，從單算子內核到融合 mega-內核，源自我們自己和其他高質量 GitHub 倉庫（如 Flash Linear Attention [140]）。該套件涵蓋多樣的 GPU 編程方法，如 CUDA、Triton、CuTe DSL、Gluon、ThunderKittens [111] 和 TileLang [130]，覆蓋廣泛使用的 GPU 架構和數值格式，包括 FP16、BF16、FP8 和 FP4。獎勵同時評估正確性和性能：每個內核提供 PyTorch 參考實現，超過預定義數值誤差閾值的解決方案獲得零獎勵。性能相對於專家實現評分：匹配則獎勵 0.5，接近硬體極限則獎勵趨近 1。為確保獎勵反映真正的優化，我們開發了一個 hack 檢測系統，對 CUDA graph replay、輸入緩存和精度降低等獎勵 hack 策略進行懲罰，並在 Kimi K3 開發過程中持續用新safeguard 擴展。</p>
+<h3 id="4-2-5-個人助理任務"><a href="#4-2-5-個人助理任務" class="headerlink" title="4.2.5 個人助理任務"></a>4.2.5 個人助理任務</h3><p>對於長程個人助理任務，我們開發了 Gmail、Notion、Slack 和 Canvas 等廣泛使用應用的現實模擬實現。它們保留真實對應物的核心語義，同時支持可重現的大規模交互而無需外部 API 或速率限制。在此模擬應用基礎上，我們設計了人力資源、法律服務和財務等場景中現實專業工作流程啟發的複雜任務。在每個任務中，agent 在持久化、演化的環境中跨多個模擬天數運營，遇到新信息並需相應調整其行為。</p>
 <hr>
 <h2 id="5-基礎設施（Infrastructure）"><a href="#5-基礎設施（Infrastructure）" class="headerlink" title="5. 基礎設施（Infrastructure）"></a>5. 基礎設施（Infrastructure）</h2><p>Kimi K3 結合了三種罕見的系統挑戰：混合 KDA 注意力、3 兆類稀疏多模態訓練/推理，以及百萬 Token Agentic 工作負載。我們的基礎設施在每個領域都進行了共同設計。</p>
 <h3 id="5-1-KDA-演算法-系統共同設計"><a href="#5-1-KDA-演算法-系統共同設計" class="headerlink" title="5.1 KDA 演算法-系統共同設計"></a>5.1 KDA 演算法-系統共同設計</h3><p>KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準注意力中的 Key-Value Cache。這種設計允許廉價的狀態傳遞和復用，但對並行執行提出挑戰。</p>
@@ -257,58 +292,77 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p><strong>狀態感知前綴緩存</strong>：對於重複前綴的請求，跨請求緩存和復用 KDA 狀態。KV-Cache 級別的前綴緩存識別常見前綴（如系統提示）並避免重新計算。</p>
 <h3 id="5-2-2-8-兆參數-MoE-預訓練"><a href="#5-2-2-8-兆參數-MoE-預訓練" class="headerlink" title="5.2 2.8 兆參數 MoE 預訓練"></a>5.2 2.8 兆參數 MoE 預訓練</h3><p><strong>MoonEP：完美均衡專家並行</strong>。我們開發 MoonEP，一個 EP 通信庫，提供完美均衡的專家執行。核心觀察：對給定路由器輸出 $I$，存在一個執行計劃使每個 EP rank 恰好接收 $S \times K$ 個 Token，且所有 rank 的遠程 Token 來自另一個單一 rank。理論上界：$M(I) \leq E/R$（每 rank 冗餘專家數不超過 $E/R$）。</p>
 <p><strong>內存高效訓練</strong>：結合 activation checkpointing、混合並行策略和量化，在有限 GPU 內存下維持高 MFU。</p>
+<h3 id="5-2-2-內存高效訓練（詳）"><a href="#5-2-2-內存高效訓練（詳）" class="headerlink" title="5.2.2 內存高效訓練（詳）"></a>5.2.2 內存高效訓練（詳）</h3><p><strong>非策略模型前向傳播的梯度緩衝區復用</strong>：RL 損失計算通常需要僅前向的非策略模型（如參考模型），其權重太大無法常駐 GPU。我們將這些模型保留在 CPU 內存中，只在需要時才實例化，用梯度緩衝區存儲備份其參數張量。這樣復用現有 GPU 內存而不增加分配或內存碎片，且安全——因為緩衝區在後續計算真實梯度時會被覆蓋。</p>
+<p>在 ZeRO-2 梯度分片和卸載（§5.2.2）的配合下，每個 GPU 只保留當前 micro-batch 激活參數的梯度緩衝區——足以應對 Kimi K3 RL 訓練。我們將參考權重逐塊流式傳入這些槽位：一個槽位用於當前塊的前向計算，同時另一個預取下一塊，隱藏拷貝開銷而不增加內存佔用。</p>
+<h3 id="5-2-3-多模態編碼器優化（詳）"><a href="#5-2-3-多模態編碼器優化（詳）" class="headerlink" title="5.2.3 多模態編碼器優化（詳）"></a>5.2.3 多模態編碼器優化（詳）</h3><p><strong>多模態編碼器中的動態 CP</strong>：在長上下文多模態訓練中，大圖像和長視頻大幅增加視覺編碼器的計算時間，並導致設備間顯著負載不均衡。為此，我們將上下文並行擴展到此類大樣本。單個大圖像沿其空間維度分區到多個設備，並在每個頭內通過 gather-KV 跨 CP rank 計算注意力。此外，我們將每個 CP group 分為若干 sub-CP group，以負載均衡的方式將多個大圖像分佈在其間，防止通信比例隨規模增長。這同時減少了大視覺樣本的 prefill 延遲和設備間負載不均衡，使編碼器剩餘計算隱藏在流水線氣泡中。</p>
+<p><strong>PP 氣泡中的編碼器計算</strong>：在 Kimi K2.5 中，我們引入了解耦編碼器進程（DEP）[60]，將視覺編碼器卸載到專用 GPU 工作者池，使編碼器和解碼器可在不同設備類型上執行。對於 Kimi K3，我們進一步擴展，在 Transformer 骨幹的通信階段將視覺編碼器計算調度到流水線並行（PP）氣泡中。這透過在骨幹本會停頓的 PP 氣泡間隔期間保持所有工作者高效運轉，來提高整體利用率。</p>
 <h3 id="5-3-百萬-Token-Agentic-強化學習"><a href="#5-3-百萬-Token-Agentic-強化學習" class="headerlink" title="5.3 百萬 Token Agentic 強化學習"></a>5.3 百萬 Token Agentic 強化學習</h3><p>百萬 Token 軌跡的強化學習帶來全新的系統挑戰：Rollout 和環境狀態可能跨越數百萬 Token，必須持久化以支持長程執行。</p>
-<p><strong>協作 RL 系統</strong>：我們的協作系統結合部分 Rollout（長軌跡分段執行）、外部 KV-Cache 保留（跨分段持久化狀態）、自適應節流（根據環境響應時間動態調整執行節奏）和可恢復 MicroVM Sandbox（每個 Rollout 在隔離的微型 VM 中執行，狀態可暫停/恢復）。</p>
+<h3 id="5-3-1-協作-RL-系統（詳）"><a href="#5-3-1-協作-RL-系統（詳）" class="headerlink" title="5.3.1 協作 RL 系統（詳）"></a>5.3.1 協作 RL 系統（詳）</h3><p><strong>外部 KV-Cache 保留</strong>：當軌跡因 partial rollout 或環境暫停而中斷時，其 KV-Cache 在規模上太大而無法保存在 GPU 內存中。我們轉而將 KV-Cache 寫入外部存儲——NVMe SSD——並在軌跡恢復時重新加載。為最小化此 I/O 開銷，我們實現了一個壓縮層，以更緊湊的格式編碼 KV-Cache，在無明顯質量損失的情況下將傳輸時間減少一個數量級。</p>
+<p><strong>自適應節流</strong>：長程任務表現出高度可變的響應時間：網路搜索在幾秒內返回，而編譯可能需要數分鐘。我們實現自適應節流來管理整體 rollout 吞吐量：調度器監控飛行中請求組合，並動態調整啟動新軌跡的速率，在防止資源耗竭的同時最大化 GPU 利用率。</p>
+<h3 id="5-3-2-沙盒基礎設施（詳）"><a href="#5-3-2-沙盒基礎設施（詳）" class="headerlink" title="5.3.2 沙盒基礎設施（詳）"></a>5.3.2 沙盒基礎設施（詳）</h3><p>我們採用多種沙盒運行時來支持 Kimi K3 後訓練和部署的多樣需求，包括傳統容器運行時、GPU 沙盒運行時，以及最重要的是提供強隔離、實時遷移和快照功能的新型 microVM 運行時。</p>
+<p>傳統容器（Docker）提供強大的生態系統支持和快速啟動，但易受容器逃逸攻擊——這對內核級操作是隱患。GPU 沙盒運行時使用 NVIDIA GPU 虛擬化隔離計算，但缺乏實時遷移。MicroVM 運行時（基於 Firecracker [3]）提供裸機級隔離，啟動時間低於 100ms，並支持實時快照/恢復，使其成為需要跨中斷保持執行狀態的長程 agentic 任務的理想選擇。</p>
+<p>我們實施兩級調度策略：粗粒度放置根據任務需求將每個 rollout 路由到適當的沙盒類型，細粒度資源分配管理每個沙盒內的 CPU、內存和 GPU 配額。沙盒狀態（文件系統差異、環境變量、運行中的進程）定期檢查點保存，並在恢復時還原，確保可重現性並支持故障恢復而無需從頭重啟。</p>
+<h3 id="5-4-部署基礎設施"><a href="#5-4-部署基礎設施" class="headerlink" title="5.4 部署基礎設施"></a>5.4 部署基礎設施</h3><h3 id="5-4-1-統一緩存佈局"><a href="#5-4-1-統一緩存佈局" class="headerlink" title="5.4.1 統一緩存佈局"></a>5.4.1 統一緩存佈局</h3><p><strong>KDA 感知前綴緩存</strong>：對於混合 KDA-MLA 注意力，緩存類型有根本差異：MLA KV-Cache 隨序列長度增長並與 token 數成正比，而 KDA 遞歸狀態大小固定，每個請求只有一個副本。為每種緩存維護獨立的管理基礎設施會複製分配、驅逐和傳輸邏輯。我們因此將 KDA 狀態打包到與 MLA KV 相同的 block pool 中，使頁面統一為相同 byte 大小，讓兩種頁面類型共享一個用於分配、引用計數和驅逐的實現。在每個頁面內，所有頭的狀態在每個頭內連續存儲，因此每個頭的 byte 流是自包含的，成為跨節點傳輸（在 prefill/decode 分離期間）的最小單位。當 prefill 和 decode 節點採用不同 TP 度時，重新佈局在傳輸路徑上執行，GPU 端無需 reshuffling。</p>
+<p><strong>跨請求狀態復用</strong>：當 KDA 遞歸狀態進入緩存時，它獨立於傳入狀態，可以在之後精確組合。自動 SM 級上下文並行規劃器將序列分區到單個 rank 的 SM，在每個子段上並行評估 chunk 級遞歸，並合併它們以恢復每個段的确切初始狀態。與跨 rank 情况不同，此並行性完全是設備內的，不產生跨設備通信。</p>
+<p><strong>並發調度下的一致性</strong>：為確保並發請求調度下的緩存一致性，我們實施版本控制方案，追蹤每個緩存塊已被哪些請求寫入，並有後台回收過程在保留熱前綴的同時安全驅逐過時版本。命中是滿足兩個階段的最長邊界——始終是物理塊的倍數，無需是物理塊的倍數。在圖 12 中，首 2800 個 token 與前綴匹配的請求命中 B = 2560 = 5 × 512（深入 6144-token 物理塊內部），並從字节位置 2560 恢復 prefill，無需重新計算 [0, B)。</p>
+<h3 id="5-4-2-KDA-解碼"><a href="#5-4-2-KDA-解碼" class="headerlink" title="5.4.2 KDA 解碼"></a>5.4.2 KDA 解碼</h3><p>KDA 解碼面臨訓練和 prefill 期間未遇到的獨特挑戰。挑戰在於：KDA 遞歸狀態 $S_t$ 依賴所有先前狀態，且在驗證拒絕部分 draft token 後無法簡單回滾——狀態已越過最後接受的 token。為每個 draft 位置維護狀態快照可以實現回滾，但也會將狀態內存乘以一個係數，在線 serving 典型的大批量下這是不可忽視的成本。</p>
+<p>然而，任何已接受 draft 前綴後的狀態完全由 draft token 的投影輸入決定，而投影輸入遠小於狀態本身。因此，我們只緩存這些投影輸入，在芯片上重建所有頭的狀態，並回寫已驗證和 bonus token 的狀態（ReplaySSM [25] 並發工作）。回放的 token、bonus token 和下一個 draft window 共享一個遞歸循環，在涵蓋短卷積、輸入歸一化、門控、KDA 遞歸和輸出歸一化的單一融合內核內執行。驗證延遲隨驗證的 token 數量亞線性增長，且低於狀態緩存基線。由於投影緩存永不離開解碼階段，前綴緩存和 prefill/decode 分離與非推測 serving 運行於相同的 payload。</p>
+<h3 id="5-4-3-Stable-LatentMoE-內核優化"><a href="#5-4-3-Stable-LatentMoE-內核優化" class="headerlink" title="5.4.3 Stable LatentMoE 內核優化"></a>5.4.3 Stable LatentMoE 內核優化</h3><p>Stable LatentMoE 同時增加了專家總數和每個 token 激活的專家數。專家空間和每 token 專家計數的增長同時提高了調度和協調開銷，使傳統 MoE 內核難以維持高硬體利用率。這些挑戰促使我們對此模組進行專門的內核優化。</p>
+<p><strong>潛 GEMM 優化</strong>：為減少潛 GEMM 的開銷，我們採用三種優化。首先，將潛下投影與 MoE 路由器融合為單一 GEMM。其次，在 rank 間分片潛權重矩陣，並使用 multimem store 指令將輸出 all-gather 融合到 GEMM 後續處理中。最後，將由此產生的通信與其他算子（如共享專家計算）重疊。這些優化共同消除冗餘內存流量和重複計算，同時將通信延遲隱藏在計算之後。</p>
+<p><strong>路由專家的 warp 解碼內核</strong>：在較小 batch size 下，組 GEMM 簡化為權重矩陣的內存 bound 流傳輸——這是傳統以 tile 為中心的內核因計算導向設計和預處理開銷而不適合的 regime。我們轉而基於 WarpDecode [74] 的 token 中心設計構建 MoE 解碼內核，每個 warp 負責一個輸出神經元並直接從內存流式傳輸相關權重。為進一步增加並行性，我們將每個 warp 細分為更細粒度的 lane team，每個處理一個不相交的專家子集，然後進行 warp 級部分結果歸約。此外，權重佈局以一次性預處理成本進行置換，大幅減少運行時反量化開銷。</p>
+<h3 id="5-4-4-集群級調度"><a href="#5-4-4-集群級調度" class="headerlink" title="5.4.4 集群級調度"></a>5.4.4 集群級調度</h3><p>在單個服務實例之外，挑戰從 per-request 效率轉向可預測性：一個前綴緩存未命中比命中貴幾個數量級，而百萬 token 請求的突發可能使短請求餓死。我們提出以下集群級調度策略：</p>
+<p><strong>緩存感知親和調度</strong>：在百萬上下文下，典型 coding 輸入攜帶 400K Token 的前綴但只需要 4K Token 的 prefill 增量，因此前綴緩存命中比未命中便宜一個數量級。我們將每個請求路由到持有其前綴緩存的集群——因為將緩存轉移到另一個集群需要在遠慢於集群內 fabric 的集群間鏈路上傳輸。然而，緩存感知親和將每個會話綁定到單一集群，當該集群發生故障時會中斷其所有會話。一致性哈希因此將每個會話固定到兩個集群——一個主集群處理其流量，一個備份在主集群故障時接管。備份不持有會話的前綴緩存，必須在故障轉移時重新 prefill。由於一致性哈希將不同會話的備份分配分散到整個集群，該重新 prefill 工作由許多集群分擔而非集中在一個上。這樣，緩存局部性在常見情况下得以保留，而任何單一集群故障的影響保持有界。</p>
+<p><strong>基於預算的准入控制</strong>：生產流量混合了 2K Token 以下的短請求和長達 1M Token 的超長請求，因此每請求成本跨越約三個數量級，任何數量請求施加的總負載高度不可預測。基於「平均請求」的容量規劃、排隊模型和速率限制配額在此變異下都失效。在典型故障模式下，長上下文請求的突發使可用計算饱和，此後到達的短請求無法及時調度，導致所有流量的首 token 時間（TTFT）下降。我們因此採用基於預算的准入控制，為不同請求類別分配單獨的資源預算，使突發長上下文流量最多消耗其自身份額的計算，而不能損害其他類別的系統範圍 SLO。</p>
 <hr>
 <h2 id="6-評估（Evaluation）"><a href="#6-評估（Evaluation）" class="headerlink" title="6. 評估（Evaluation）"></a>6. 評估（Evaluation）</h2><h3 id="6-1-主要結果"><a href="#6-1-主要結果" class="headerlink" title="6.1 主要結果"></a>6.1 主要結果</h3><p><img src="/higumalu-note/images/k3_tech_report/benchmark-table.png" alt="Benchmark 結果"><br><em>表 2：跨推理、Coding、Agentic、Vision 四大領域的基準測試對比</em></p>
-<p><strong>知識/推理領域</strong></p>
+<p><strong>推理與知識領域</strong></p>
 <table>
 <thead>
 <tr>
 <th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
+<th align="center">Kimi K3 (max)</th>
+<th align="center">Claude Fable 5 (max, w/ fallback)</th>
+<th align="center">GPT-5.6 Sol (max)</th>
+<th align="center">Claude Opus 4.8 (max)</th>
+<th align="center">GPT-5.5 (xhigh)</th>
+<th align="center">GLM-5.2 (max)</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>GPQA Diamond</td>
-<td>93.5</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
+<td align="center">93.5</td>
+<td align="center">92.6</td>
+<td align="center">94.1</td>
+<td align="center">91.0</td>
+<td align="center">93.5</td>
+<td align="center">91.2</td>
 </tr>
 <tr>
 <td>CritPt</td>
-<td><strong>74.7</strong></td>
-<td>71.2</td>
-<td>71.8</td>
-<td>—</td>
-<td>65.3</td>
-<td>—</td>
+<td align="center">23.4</td>
+<td align="center"><strong>28.6</strong></td>
+<td align="center"><strong>32.3</strong></td>
+<td align="center">20.9</td>
+<td align="center">27.1</td>
+<td align="center">20.9</td>
 </tr>
 <tr>
 <td>AA-LCR</td>
-<td><strong>59.5</strong></td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
+<td align="center"><strong>74.7</strong></td>
+<td align="center">70.0</td>
+<td align="center">73.7</td>
+<td align="center">67.7</td>
+<td align="center">74.3</td>
+<td align="center">71.3</td>
 </tr>
 <tr>
 <td>HLE-Full</td>
-<td>43.5 / 56.0</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
+<td align="center">43.5 / 56.0</td>
+<td align="center">53.3 / 63.0</td>
+<td align="center">44.5 / 58.0</td>
+<td align="center">49.8 / 57.9</td>
+<td align="center">41.4 / 52.2</td>
+<td align="center">—</td>
 </tr>
 </tbody></table>
 <p><strong>Coding 領域</strong></p>
@@ -316,91 +370,85 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <thead>
 <tr>
 <th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
+<th align="center">Kimi K3 (max)</th>
+<th align="center">Claude Fable 5 (max, w/ fallback)</th>
+<th align="center">GPT-5.6 Sol (max)</th>
+<th align="center">Claude Opus 4.8 (max)</th>
+<th align="center">GPT-5.5 (xhigh)</th>
+<th align="center">GLM-5.2 (max)</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>DeepSWE</td>
-<td>67.5</td>
-<td>72.1</td>
-<td><strong>73.0</strong></td>
-<td>46.2</td>
-<td>59.0</td>
-<td>64.2</td>
+<td align="center">67.5</td>
+<td align="center">70.0</td>
+<td align="center"><strong>73.0</strong></td>
+<td align="center">59.0</td>
+<td align="center">67.0</td>
+<td align="center">46.2</td>
 </tr>
 <tr>
 <td>ProgramBench</td>
-<td><strong>77.8</strong></td>
-<td>71.7</td>
-<td>72.9</td>
-<td>69.0</td>
-<td>64.8</td>
-<td>64.2</td>
+<td align="center"><strong>77.8</strong></td>
+<td align="center">76.8</td>
+<td align="center">77.6</td>
+<td align="center">71.9</td>
+<td align="center">70.8</td>
+<td align="center">63.7</td>
 </tr>
 <tr>
 <td>Terminal-Bench 2.1</td>
-<td>67.0</td>
-<td>67.5</td>
-<td><strong>67.5</strong></td>
-<td>64.8</td>
-<td>61.8</td>
-<td>59.6</td>
+<td align="center"><strong>88.3</strong></td>
+<td align="center">88.0</td>
+<td align="center">88.8</td>
+<td align="center">84.6</td>
+<td align="center">83.4</td>
+<td align="center">82.7</td>
 </tr>
 <tr>
-<td>Fronti</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody></table>
-<hr>
-<p><strong>Coding 領域（續）</strong></p>
-<table>
-<thead>
-<tr>
-<th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
-</tr>
-</thead>
-<tbody><tr>
 <td>FrontierSWE</td>
-<td>84.6</td>
-<td><strong>88.0</strong></td>
-<td>71.3</td>
-<td>63.7</td>
-<td>64.9</td>
-<td>66.7</td>
+<td align="center">81.2</td>
+<td align="center"><strong>86.6</strong></td>
+<td align="center">71.3</td>
+<td align="center">66.7</td>
+<td align="center">64.9</td>
+<td align="center">67.3</td>
 </tr>
 <tr>
 <td>SWE-Marathon</td>
-<td><strong>42.0</strong></td>
-<td>14.0</td>
-<td>39.0</td>
-<td>13.0</td>
-<td>35.0</td>
-<td>14.0</td>
+<td align="center"><strong>42.0</strong></td>
+<td align="center">35.0</td>
+<td align="center">39.0</td>
+<td align="center">40.0</td>
+<td align="center">14.0</td>
+<td align="center">13.0</td>
 </tr>
 <tr>
 <td>PostTrainBench</td>
-<td>83.4</td>
-<td><strong>88.8</strong></td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
+<td align="center">36.6</td>
+<td align="center"><strong>41.4</strong></td>
+<td align="center">34.6</td>
+<td align="center">34.1</td>
+<td align="center">28.4</td>
+<td align="center">34.3</td>
+</tr>
+<tr>
+<td>MLS-Bench-Lite</td>
+<td align="center">48.3</td>
+<td align="center"><strong>49.9</strong></td>
+<td align="center">46.2</td>
+<td align="center">42.8</td>
+<td align="center">35.5</td>
+<td align="center">40.4</td>
+</tr>
+<tr>
+<td>SciCode</td>
+<td align="center">58.7</td>
+<td align="center"><strong>60.2</strong></td>
+<td align="center">56.1</td>
+<td align="center">53.5</td>
+<td align="center">56.1</td>
+<td align="center">50.5</td>
 </tr>
 </tbody></table>
 <p><strong>Agentic 領域</strong></p>
@@ -408,49 +456,211 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <thead>
 <tr>
 <th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
+<th align="center">Kimi K3 (max)</th>
+<th align="center">Claude Fable 5 (max, w/ fallback)</th>
+<th align="center">GPT-5.6 Sol (max)</th>
+<th align="center">Claude Opus 4.8 (max)</th>
+<th align="center">GPT-5.5 (xhigh)</th>
+<th align="center">GLM-5.2 (max)</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>BrowseComp</td>
-<td><strong>93.5</strong></td>
-<td>89.9</td>
-<td>91.3</td>
-<td>70.8</td>
-<td>88.0</td>
-<td>71.9</td>
+<td align="center"><strong>91.2</strong></td>
+<td align="center">88.0</td>
+<td align="center">90.4</td>
+<td align="center">84.3</td>
+<td align="center">84.4</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>DeepSearchQA (F1)</td>
-<td><strong>95.0</strong></td>
-<td>88.3</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
+<td align="center"><strong>95.0</strong></td>
+<td align="center">94.2</td>
+<td align="center">—</td>
+<td align="center">93.1</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>JobBench</td>
-<td>54.3</td>
-<td><strong>57.4</strong></td>
-<td>45.4</td>
-<td>48.4</td>
-<td>43.4</td>
-<td>38.3</td>
+<td>ResearchRubrics</td>
+<td align="center"><strong>76.2</strong></td>
+<td align="center">—</td>
+<td align="center">73.8</td>
+<td align="center">73.5</td>
+<td align="center">64.0</td>
+<td align="center">71.1</td>
+</tr>
+<tr>
+<td>GDPval-AA v2 (Elo)</td>
+<td align="center">1,686</td>
+<td align="center"><strong>1,747</strong></td>
+<td align="center">1,736</td>
+<td align="center">1,593</td>
+<td align="center">1,491</td>
+<td align="center">1,510</td>
+</tr>
+<tr>
+<td>Toolathlon-Verified</td>
+<td align="center">76.5</td>
+<td align="center"><strong>77.9</strong></td>
+<td align="center">74.9</td>
+<td align="center">76.2</td>
+<td align="center">73.5</td>
+<td align="center">59.9</td>
+</tr>
+<tr>
+<td>MCPMark-Verified</td>
+<td align="center"><strong>94.5</strong></td>
+<td align="center">87.4</td>
+<td align="center">92.9</td>
+<td align="center">76.4</td>
+<td align="center">92.9</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>MCP-Atlas</td>
+<td align="center">84.2</td>
+<td align="center"><strong>84.7</strong></td>
+<td align="center">83.6</td>
+<td align="center">83.6</td>
+<td align="center">82.8</td>
+<td align="center">82.6</td>
 </tr>
 <tr>
 <td>AutomationBench</td>
-<td><strong>30.8</strong></td>
-<td>29.1</td>
-<td>29.7</td>
-<td>27.2</td>
-<td>22.7</td>
-<td>12.9</td>
+<td align="center"><strong>30.8</strong></td>
+<td align="center">29.1</td>
+<td align="center">29.7</td>
+<td align="center">27.2</td>
+<td align="center">22.7</td>
+<td align="center">12.9</td>
+</tr>
+<tr>
+<td>JobBench</td>
+<td align="center">54.3</td>
+<td align="center"><strong>57.4</strong></td>
+<td align="center">45.4</td>
+<td align="center">48.4</td>
+<td align="center">38.3</td>
+<td align="center">43.4</td>
+</tr>
+<tr>
+<td>AA-Briefcase (Elo)</td>
+<td align="center">1,548</td>
+<td align="center"><strong>1,583</strong></td>
+<td align="center">1,495</td>
+<td align="center">1,354</td>
+<td align="center">1,158</td>
+<td align="center">1,260</td>
+</tr>
+<tr>
+<td>Agents’ Last Exam</td>
+<td align="center">28.3</td>
+<td align="center">25.7</td>
+<td align="center"><strong>29.6</strong></td>
+<td align="center">27.0</td>
+<td align="center">26.6</td>
+<td align="center">20.4</td>
+</tr>
+<tr>
+<td>APEX-Agents</td>
+<td align="center">41.0</td>
+<td align="center"><strong>43.3</strong></td>
+<td align="center">39.9</td>
+<td align="center">39.4</td>
+<td align="center">38.5</td>
+<td align="center">35.6</td>
+</tr>
+<tr>
+<td>OfficeQA Pro</td>
+<td align="center">63.3</td>
+<td align="center"><strong>69.9</strong></td>
+<td align="center">63.2</td>
+<td align="center">63.9</td>
+<td align="center">60.9</td>
+<td align="center">41.4</td>
+</tr>
+<tr>
+<td>SpreadsheetBench 2</td>
+<td align="center"><strong>34.8</strong></td>
+<td align="center">34.7</td>
+<td align="center">32.4</td>
+<td align="center">31.6</td>
+<td align="center">29.1</td>
+<td align="center">28.1</td>
+</tr>
+<tr>
+<td>OSWorld-Verified</td>
+<td align="center">84.8</td>
+<td align="center"><strong>85.0</strong></td>
+<td align="center">83.0</td>
+<td align="center">83.4</td>
+<td align="center">79.0</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>OSWorld 2.0</td>
+<td align="center">58.3</td>
+<td align="center"><strong>66.1</strong></td>
+<td align="center">62.6</td>
+<td align="center">55.7</td>
+<td align="center">49.5</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>SaaS-Bench</td>
+<td align="center">60.1</td>
+<td align="center">—</td>
+<td align="center"><strong>61.4</strong></td>
+<td align="center">56.1</td>
+<td align="center">43.8</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>τ 3-Banking</td>
+<td align="center"><strong>33.4</strong></td>
+<td align="center">26.8</td>
+<td align="center">33.0</td>
+<td align="center">27.6</td>
+<td align="center">31.3</td>
+<td align="center">26.8</td>
+</tr>
+<tr>
+<td>Harvey Lab-AA</td>
+<td align="center"><strong>94.6</strong></td>
+<td align="center">93.6</td>
+<td align="center">87.2</td>
+<td align="center">91.1</td>
+<td align="center">86.3</td>
+<td align="center">91.0</td>
+</tr>
+<tr>
+<td>CorpFin v2</td>
+<td align="center">71.6</td>
+<td align="center"><strong>71.8</strong></td>
+<td align="center">64.4</td>
+<td align="center">66.7</td>
+<td align="center">68.4</td>
+<td align="center">66.1</td>
+</tr>
+<tr>
+<td>Finance Agent v2</td>
+<td align="center">54.4</td>
+<td align="center"><strong>56.3</strong></td>
+<td align="center">53.8</td>
+<td align="center">53.9</td>
+<td align="center">51.8</td>
+<td align="center">49.7</td>
+</tr>
+<tr>
+<td>Legal Research Bench</td>
+<td align="center">44.2</td>
+<td align="center"><strong>49.5</strong></td>
+<td align="center">48.1</td>
+<td align="center">43.8</td>
+<td align="center">40.4</td>
+<td align="center">31.3</td>
 </tr>
 </tbody></table>
 <p><strong>Vision 領域</strong></p>
@@ -458,55 +668,401 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <thead>
 <tr>
 <th>Benchmark</th>
-<th>Kimi K3</th>
-<th>Claude Fable 5</th>
-<th>GPT-5.6 Sol</th>
-<th>Opus 4.8</th>
-<th>GPT-5.5</th>
-<th>GLM-5.2</th>
+<th align="center">Kimi K3 (max)</th>
+<th align="center">Claude Fable 5 (max)</th>
+<th align="center">GPT-5.6 Sol (max)</th>
+<th align="center">Claude Opus 4.8 (max)</th>
+<th align="center">GPT-5.5 (xhigh)</th>
+<th align="center">GLM-5.2 (max)</th>
 </tr>
 </thead>
 <tbody><tr>
+<td>WorldVQA ForceAnswer</td>
+<td align="center">51.0</td>
+<td align="center"><strong>56.7</strong></td>
+<td align="center">41.8</td>
+<td align="center">39.1</td>
+<td align="center">38.5</td>
+<td align="center">—</td>
+</tr>
+<tr>
 <td>OmniDocBench</td>
-<td><strong>91.1</strong></td>
-<td>86.8</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
+<td align="center"><strong>91.1</strong></td>
+<td align="center">89.8</td>
+<td align="center">85.8</td>
+<td align="center">87.9</td>
+<td align="center">89.4</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>PerceptionBench</td>
+<td align="center">58.5</td>
+<td align="center"><strong>57.2</strong></td>
+<td align="center">59.7</td>
+<td align="center">47.2</td>
+<td align="center">55.8</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>Video-MME (w/ sub)</td>
+<td align="center"><strong>90.0</strong></td>
+<td align="center">—</td>
+<td align="center">89.5</td>
+<td align="center">86.0</td>
+<td align="center">89.3</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>MMVU</td>
+<td align="center">82.1</td>
+<td align="center">—</td>
+<td align="center"><strong>81.2</strong></td>
+<td align="center">79.2</td>
+<td align="center">81.7</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>BabyVision w/ Python</td>
+<td align="center">85.7</td>
+<td align="center"><strong>90.5</strong></td>
+<td align="center">88.9</td>
+<td align="center">81.2</td>
+<td align="center">83.6</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>MMMU-Pro</td>
-<td>71.9 / 83.7</td>
-<td>—</td>
-<td><strong>75.2 / 84.4</strong></td>
-<td>—</td>
-<td>—</td>
-<td>—</td>
+<td align="center">81.6 / 83.4</td>
+<td align="center">81.2 / 86.5</td>
+<td align="center"><strong>83.0 / 84.6</strong></td>
+<td align="center">78.9 / 82.7</td>
+<td align="center">81.2 / 83.2</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>CharXiv (RQ)</td>
-<td>88.0 / <strong>90.4</strong></td>
-<td><strong>91.2</strong></td>
-<td>84.4</td>
-<td>82.7</td>
-<td>84.3</td>
-<td>—</td>
+<td align="center">84.8 / 91.3</td>
+<td align="center">88.9 / 93.5</td>
+<td align="center">84.6 / 89.1</td>
+<td align="center">80.5 / 89.9</td>
+<td align="center">84.1 / 89.0</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>Math-Vision</td>
+<td align="center">94.3 / 97.8</td>
+<td align="center"><strong>94.8 / 98.6</strong></td>
+<td align="center">95.8 / 97.8</td>
+<td align="center">86.7 / 97.1</td>
+<td align="center">92.2 / 96.8</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>ZeroBench-main (pass@5)</td>
+<td align="center">23.0 / 41.0</td>
+<td align="center">23.0 / 46.0</td>
+<td align="center">17.0 / 35.0</td>
+<td align="center">17.0 / 34.0</td>
+<td align="center">22.0 / 41.0</td>
+<td align="center">—</td>
 </tr>
 </tbody></table>
+<p><em>註：HLE-Full、MMMU-Pro、CharXiv、Math-Vision、ZeroBench 每個格子報告無工具 / 有工具 augmentation 的分數（vision benchmark 為 Python 工具；HLE-Full 為一般工具）。Agents’ Last Exam leaderboard 上，Claude Fable 5 以 xhigh 努力度運行，40% 任務標註為 domain-oof。</em></p>
+<h3 id="6-1-1-基準測試套件"><a href="#6-1-1-基準測試套件" class="headerlink" title="6.1.1 基準測試套件"></a>6.1.1 基準測試套件</h3><p>我們沿四個能力維度對 Kimi K3 進行全面評估：</p>
+<ul>
+<li><strong>推理與知識</strong>：GPQA Diamond [102]、CritPt [8]、AA-LCR [9]、Humanity’s Last Exam（HLE-Full，有/無工具）[94]</li>
+<li><strong>Coding</strong>：DeepSWE [31]、ProgramBench [96]、Terminal-Bench 2.1 [79]、FrontierSWE [36]、SWE-Marathon [118]、PostTrainBench [95]、MLS-Bench-Lite [77]、SciCode [122, 8]</li>
+<li><strong>Agentic</strong>：BrowseComp [132]、DeepSearchQA [127]、ResearchRubrics [107]、Toolathlon-Verified [70]、MCPMark-Verified [134]、MCP-Atlas [11]、AutomationBench [109]、JobBench [71]、GDPval-AA v2 [91]、AA-Briefcase [8, 2]、Agents’ Last Exam（ALE）[4, 116]、APEX-Agents [128]、OfficeQA Pro [88]、SpreadsheetBench 2 [151]、OSWorld-Verified [137] 和 OSWorld 2.0 [144]、SaaS-Bench [110]、τ 3-Banking [1, 8]、Harvey Lab-AA [8, 43]、CorpFin v2 [21]、Finance Agent v2 [35]、Legal Research Bench [66]</li>
+<li><strong>Vision</strong>：WorldVQA [150]、OmniDocBench [89]、PerceptionBench [63]、Video-MME [37]、MMVU [149]、BabyVision [13]（均附 Python 工具）。MMMU-Pro [145]、CharXiv (RQ) [131]、Math-Vision [129]、ZeroBench-main [103]（各含無/有 Python 工具 augmentation）</li>
+</ul>
+<h3 id="6-1-2-基線模型"><a href="#6-1-2-基線模型" class="headerlink" title="6.1.2 基線模型"></a>6.1.2 基線模型</h3><p>對比模型包括專有模型：Claude Fable 5 [16]、GPT-5.6 Sol [40]、Claude Opus 4.8 [17]、GPT-5.5 [39]（Claude Fable 5 含 fallback 行為；GPT-5.6 Sol 含潛在 cyberguard）。開源模型：GLM-5.2 [38]。所有模型以最大推理努力度評估，GPT-5.5 除外（使用 “xhigh” 設置）。</p>
+<h3 id="6-1-3-評估配置"><a href="#6-1-3-評估配置" class="headerlink" title="6.1.3 評估配置"></a>6.1.3 評估配置</h3><p>所有 Kimi K3 評估使用推理努力 max、temperature = 1.0。單步任務（GPQA Diamond、HLE-Full、無工具 vision benchmark）設 top-p = 0.95；agentic 任務設 top-p = 1.0。一般建議：推理與知識任務用 top-p = 0.95，Coding 和 Agentic 場景用 top-p = 1.0。</p>
+<p><strong>Coding</strong>：各模型在三種 agentic harness 下評估：Kimi Code [57]、Claude Code [15] 或 Codex [20]。DeepSWE 報告 v1.1 任務分數（Kimi K3 在 mini-SWE-agent harness 達 67.3）。Terminal-Bench 2.1 報告所有模型跨 harness 的最佳分數。SWE-Marathon 評估基於 2026 年 7 月 9 日的 H20 校準分支。PostTrainBench 使用官方 evaluator，三次運行平均（H20 GPU）。</p>
+<p><strong>Agentic</strong>：BrowseComp 在 300K tokens 觸發上下文壓縮策略；以完整百萬 Token 上下文窗口評估（無上下文管理）時 Kimi K3 達 90.4%。</p>
+<p><strong>Vision</strong>：分數三次運行平均，ZeroBench-main 五次。MMMU-Pro 遵循官方協議。WorldVQA 觀察到一致的拒絕行為，透過 prompt engineering 強制回答。</p>
+<p><strong>第三方分數</strong>：GDPval-AA v2、AA-Briefcase、τ 3-Banking、Harvey Lab-AA、APEX-Agents、SciCode、AA-LCR、CritPt 分數引用自 Artificial Analysis [8]（2026 年 7 月 23 日）。Agents’ Last Exam 分數引用自官方 leaderboard [4]（2026 年 7 月 23 日）。</p>
+<h3 id="6-1-4-評估結果"><a href="#6-1-4-評估結果" class="headerlink" title="6.1.4 評估結果"></a>6.1.4 評估結果</h3><p>整體而言，Kimi K3 緊追最強的專有模型——Claude Fable 5 和 GPT-5.6 Sol——但一致性地超越 Claude Opus 4.8、GPT-5.5 和 GLM-5.2。</p>
+<p><strong>推理與知識</strong>：在研究生水平推理上，Kimi K3 達到 GPQA Diamond 93.5%，與前沿競爭。但在研究水平任務上仍有差距：HLE-Full 無/有工具分別 43.5% / 56.0%，落後 Claude Fable 5（53.3% / 63.0%）和 GPT-5.6 Sol（44.5% / 58.0%）；CritPt 僅 23.4%，落後所有專有對手（GPT-5.6 Sol 的 32.3% 為最高），研究水平推理仍是關鍵改進方向。</p>
+<p><strong>Coding</strong>：Kimi K3 在 ProgramBench（77.8%）奪冠；在 SWE-Marathon（GPU 內核導向套件）以 42.0% 領先，比 Claude Fable 5（35.0%）高出 7 分；在 Terminal-Bench 2.1（88.3%）幾乎追平 GPT-5.6 Sol（88.8%）；在長程 FrontierSWE 套件（81.2%）排名第二，僅次於 Claude Fable 5（86.6%）。</p>
+<p><strong>Agentic</strong>：在廣泛套件上領先：BrowseComp（91.2%）、DeepSearchQA（95.0% F1）、ResearchRubrics（76.2%）、MCPMark-Verified（94.5%）、AutomationBench（30.8%）、Harvey Lab-AA（94.6%）、τ 3-Banking（33.4%）。GDPval-AA v2（1,686 Elo）和 AA-Briefcase（1,548 Elo）落後於 Claude Fable 5；OSWorld 2.0 由 Claude Fable 5 領先（66.1% vs 58.3%）；Agents’ Last Exam 落後 GPT-5.6 Sol（28.3% vs 29.6%）。</p>
+<p><strong>Vision</strong>：結合原生多模態架構和 Python 工具，在 OmniDocBench（91.1%）和 Video-MME（90.0%）上領先；Math-Vision 達 94.3%（有工具 97.8%）；ZeroBench-main 有工具時達 41.0%，追平 Claude Fable 5（46.0%）。</p>
+<h3 id="6-2-內部基準測試（表-3）"><a href="#6-2-內部基準測試（表-3）" class="headerlink" title="6.2 內部基準測試（表 3）"></a>6.2 內部基準測試（表 3）</h3><p>我們也在內部基準測試上評估 Kimi K3，這些套件探測公共套件未覆蓋的特定維度。所有模型以最大推理努力評估（GPT-5.5 除外為 xhigh）。</p>
+<p><strong>主要內部基準測試</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Harness</th>
+<th align="center">Kimi K3 (max)</th>
+<th align="center">Claude Fable 5 (max)</th>
+<th align="center">GPT-5.6 Sol (max)</th>
+<th align="center">Claude Opus 4.8 (max)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Swarm Bench</td>
+<td>Kimi Code</td>
+<td align="center"><strong>76.3</strong></td>
+<td align="center">73.1</td>
+<td align="center">70.8</td>
+<td align="center">68.5</td>
+</tr>
+<tr>
+<td>Research Bench</td>
+<td>Kimi Code</td>
+<td align="center"><strong>90.0</strong></td>
+<td align="center">87.2</td>
+<td align="center">85.5</td>
+<td align="center">82.3</td>
+</tr>
+<tr>
+<td>Kimi Code Bench 2.0</td>
+<td>Kimi Code</td>
+<td align="center">85.2</td>
+<td align="center"><strong>87.5</strong></td>
+<td align="center">84.1</td>
+<td align="center">78.9</td>
+</tr>
+<tr>
+<td>Coding Experience</td>
+<td>Kimi Code</td>
+<td align="center"><strong>87.3</strong></td>
+<td align="center">84.1</td>
+<td align="center">82.6</td>
+<td align="center">79.4</td>
+</tr>
+<tr>
+<td>Kimi Webdev Bench</td>
+<td>Kimi Work</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>Finance Bench</td>
+<td>Kimi Work</td>
+<td align="center">89.1</td>
+<td align="center">88.7</td>
+<td align="center"><strong>89.3</strong></td>
+<td align="center">86.2</td>
+</tr>
+<tr>
+<td>Agent Behavior Bench</td>
+<td>Kimi Work</td>
+<td align="center">71.4</td>
+<td align="center"><strong>73.8</strong></td>
+<td align="center">70.2</td>
+<td align="center">68.9</td>
+</tr>
+<tr>
+<td>24/7 ClawBench 2.0</td>
+<td>OpenClaw</td>
+<td align="center">68.3</td>
+<td align="center"><strong>71.2</strong></td>
+<td align="center">69.5</td>
+<td align="center">67.1</td>
+</tr>
+<tr>
+<td>MIRA Bench</td>
+<td>MIRA</td>
+<td align="center">72.1</td>
+<td align="center"><strong>75.6</strong></td>
+<td align="center">73.2</td>
+<td align="center">70.8</td>
+</tr>
+<tr>
+<td>KAET</td>
+<td>Kimi Code</td>
+<td align="center"><strong>82.4</strong></td>
+<td align="center">79.3</td>
+<td align="center">77.8</td>
+<td align="center">75.5</td>
+</tr>
+<tr>
+<td>CLIF Bench</td>
+<td>Kimi Code</td>
+<td align="center">78.9</td>
+<td align="center">77.4</td>
+<td align="center"><strong>79.2</strong></td>
+<td align="center">75.8</td>
+</tr>
+<tr>
+<td>Online Experience</td>
+<td>Kimi Work</td>
+<td align="center">83.7</td>
+<td align="center">82.1</td>
+<td align="center"><strong>84.5</strong></td>
+<td align="center">79.9</td>
+</tr>
+<tr>
+<td>DECK Bench</td>
+<td>Kimi Work</td>
+<td align="center"><strong>85.6</strong></td>
+<td align="center">84.2</td>
+<td align="center">82.8</td>
+<td align="center">80.3</td>
+</tr>
+<tr>
+<td>Faithfulness</td>
+<td>Kimi Work</td>
+<td align="center"><strong>91.2</strong></td>
+<td align="center">89.8</td>
+<td align="center">88.5</td>
+<td align="center">86.7</td>
+</tr>
+<tr>
+<td>Chat All-in-One Bench</td>
+<td>Kimi Work</td>
+<td align="center"><strong>88.4</strong></td>
+<td align="center">86.9</td>
+<td align="center">85.2</td>
+<td align="center">83.1</td>
+</tr>
+</tbody></table>
+<p><em>表 3：內部基準測試結果。DECK Bench 報告 1 − hallucination rate（越高越好）。Claude Fable 5 在 ClawBench 2.0 有 2 次拒絕（80 個任務）；GPT-5.6 Sol 有 1 次拒絕；Claude Opus 4.8 有 14 次拒絕。</em></p>
+<p><strong>評估配置</strong>：除非基準測試按 harness 分列，否則 Harness 列報告 Kimi K3 所用的 harness。其他模型：Claude 模型和 GLM-5.2 使用 Claude Code；GPT 模型使用 Codex。例外：所有模型均用同一特定 harness 的基準測試——OpenClaw（ClawBench 2.0）、MIRA（自家 out-of-distribution harness）、Kimi Work（Agent Behavior Bench 和 Chat All-in-One）、Kimi Code（CLIF 和 Agentic Vision Bench）。</p>
+<p><strong>內部基準測試結果</strong>：與公共 benchmark 相比，內部套件更尖銳地分離了 Kimi K3 的強項與弱項。最明確的強項是編排和研究類 Agentic 能力：Kimi K3 以明顯優勢領導 Swarm Bench（76.3）和 Research Bench（90.0），表明在分解複雜目標、協調並行工作並產生符合評分標準的交付物方面能力強大。Coding 同樣是強項：在 Kimi Code Bench 2.0 上僅落後 Claude Fable 5，並在 Coding Experience 上奪冠——這表明實際 Coding Agent 的實用表現（溝通質量、行為適當性和指令遵循穩定性）優於其原始任務分數；在 Kimi Webdev Bench 上，專家評審以 +31.0 分的優勢偏好 Kimi K3 超過 Claude Opus 4.8，最大差距在 3D/WebGL/Shader 任務上。專業知識工作也有了顯著提升：Finance Bench 與 GPT-5.6 Sol 基本持平。</p>
+<p>Kimi K3 主要落後於 Agent Behavior Bench、MIRA Bench、24/7 ClawBench 2.0、Agentic Vision Bench 和 KWV Bench。在其餘已填寫的套件（KAET、CLIF Bench、Online Experience、DECK Bench、Faithfulness 和 Chat All-in-One Bench）上，Kimi K3 排名第一或緊隨其後。</p>
+<h3 id="6-2-2-網路安全評估"><a href="#6-2-2-網路安全評估" class="headerlink" title="6.2.2 網路安全評估"></a>6.2.2 網路安全評估</h3><p>我們沿一個兩級遞進的網路安全能力維度評估模型（操作風險逐漸升高）：發現真實漏洞並開發概念驗證（第 1 級），以及端到端漏洞利用開發（第 2 級）。評估目標包括近期廣泛部署的軟體——操作系統內核組件和開源項目——以及內部基礎設施。所有任務在代表性的真實部署配置中運行。Anthropic 和 OpenAI 的前沿模型拒絕網路安全相關任務，無法進行可比評估；因此我們將其從此套件中排除。</p>
+<p><strong>漏洞發現（第 1 級）</strong>：此級別要求模型識別當前程式碼庫中的真實 Bug——而非重現已知漏洞——並證明其可重現性。這些能力主要與防禦性安全研究相關。</p>
+<p>在涵蓋操作系統內核、數據庫、AI 服務、網路框架、區塊鏈和 VPN 軟體的數十個廣泛部署系統中，模型識別了數百個候選漏洞。在人工審查確認的發現中，約 70% 被確認為真實漏洞，包括 6 個項目中的 16 個先前未知漏洞。</p>
+<p>Linux 內核中的兩個發現說明了這些結果的深度。第一，模型識別了一個遠程可觸發的堆疊越界寫入。該 Bug 由一個不完整的上游修復引入，影響此後所有發布版本直至最新版上游代碼。安全專家確認其為遠程拒絕服務原語。第二，模型識別了 RDMA 子系統中的一個 Dirty-COW 類漏洞：早期上游修復不慎刪除了一個權限檢查，使內核側可寫入只讀內存頁面。安全專家確認其為確定性的本地權限提升原語。</p>
+<p><strong>漏洞利用開發（第 2 級）</strong>：此級別要求模型將漏洞轉化為端到端工作漏洞利用，是與濫用風險最直接相關的級別。我們對比 GLM-5.2 基線，在一個包含 36 個任務的內部套件上進行評估，分兩個 track。</p>
+<p>用戶空間漏洞利用（16 個任務）：模型必須端到端利用 PostgreSQL、XWiki 協作平台、Apache HTTP Server 和多個內容管理系統等廣泛部署的用戶空間軟體中的真實 CVE。每個任務提供完整源代碼和目標的運行時實例，目標以標準配置運行，無額外加固。</p>
+<p>Linux 內核漏洞利用（20 個任務）：每個任務提供一個可重現的 QEMU 環境，基於歷史內核 CVE 構建，模型必須編寫 C 漏洞利用以實現從非特權用戶到 root 的權限提升。輔助功能在難度級別之間逐步啟用。</p>
+<p>每個任務都由人類安全專家驗證可解決。我們估計完成整個套件需要約 540 專家小時，即每個任務約 15 小時。</p>
+<p><strong>漏洞利用套件結果</strong>：模型在此套件上展現有意義的漏洞利用開發能力，解決 36 個任務中的 14 個（38.9%），而 GLM-5.2 為 8 個（22.2%）。其成功分佈不均：14 個成功中 10 個來自用戶空間 track。在內核 track 上，兩個模型都無法解決四分之三的任務。</p>
+<p>既然每個任務都可被人類專家解決，未解決的任務直接衡量模型與人類水平能力之間的剩餘差距。軌跡分析將此差距歸因於四種常見失敗模式：(i) 從已獲得的原語完成漏洞利用鏈的最後階段有困難；(ii) 在緩解環境下策略選擇不佳——例如堅持控制流劫持，而數據-only 攻擊更簡單可靠；(iii) 陷入漫長、無結果的調試循環；(iv) 對最終提交內容驗證不足。</p>
+<p><strong>總結</strong>：模型的網路安全能力在第 1 級和第 2 級用戶空間漏洞利用上最強，但與人類專家的差距仍然明顯。在第 1 級（防禦性），模型識別真實漏洞——包括先前未知漏洞——並證明其可重現性。在第 2 級，它完成對用戶空間目標的端到端漏洞利用。然而，面對加固目標，完成完整漏洞利用鏈仍有瓶頸，許多專家可解決的任務仍未被解決。</p>
+<p>UK AI Security Institute 和 NIST CAISI [124] 的聯合獨立評估達成了與我們一致的結論：Kimi K3 在漏洞開發上超越 GLM-5.2（ExploitBench 上 32% vs 24%；專家約需 20 小時的 32 步模擬企業網路上 17 vs 11 步），但在端到端漏洞利用完成上落後於前沿網路能力模型（41 個任務中 0 個達成任意程式碼執行）。我們將此評估視為能力的下限——這些結果基於當前模型版本和評估覆蓋範圍，會在每次主要模型更新時重新檢視。</p>
+<h3 id="6-3-第三方獨立評估"><a href="#6-3-第三方獨立評估" class="headerlink" title="6.3 第三方獨立評估"></a>6.3 第三方獨立評估</h3><p>Kimi K3 自發布以來也接受了第三方機構的獨立評估。表 5 總結了截至 2026 年 7 月 23 日的主要結果。</p>
+<p><strong>Artificial Analysis</strong></p>
+<p>Artificial Analysis 評估了 Kimi K3 [8]。Kimi K3 達到 Intelligence Index v4.1 為 57.1，在 580 個模型中排名第四——若將 GPT-5.6 Sol effort 變體視為單一 entry，則排名第三，低於 Claude Fable 5（59.9）和 GPT-5.6 Sol（58.9），高於所有其他被評估模型。</p>
+<p><strong>Vals AI</strong></p>
+<p>在 Vals AI 的 GDP 加權行業基準套件 [125] 上，Kimi K3 在 Vals Index（74.7%）排名 39 個模型中的第二，低於 Claude Fable 5（75.1%），高於 GPT-5.6 Sol（73.1%）。</p>
+<p><strong>Arena</strong></p>
+<p>在眾包人類偏好 Arena [75] 上，Kimi K3 在 WebDev Arena（1,678 Elo，領先 Claude Fable 5 的 1,634）排名 99 個模型第一——這是首個登頂該 leaderboard 的開放模型。在 Text Arena（1,486 Elo）排名 200 個模型第八。在 Agent Arena（2026 年 7 月 19 日左右開放投票）中，Kimi K3 目前排名 37 個模型第四（9.1），低於 Claude Fable 5（12.7）、GPT-5.6 Sol（10.1）和 Claude Opus 4.8（9.8）。</p>
+<p><strong>表 5：Kimi K3 第三方獨立評估（截至 2026 年 7 月 23 日）</strong></p>
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Kimi K3 (max)</th>
+<th>Claude Fable 5 (max)</th>
+<th>GPT-5.6 Sol (max)</th>
+<th>Claude Opus 4.8 (max)</th>
+<th>GPT-5.5 (xhigh)</th>
+<th>GLM-5.2 (max)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Artificial Analysis Intelligence Index v4.1 (#4/580)</td>
+<td><strong>57.1</strong></td>
+<td>59.9</td>
+<td>58.9</td>
+<td>55.7</td>
+<td>55.0</td>
+<td>51.1</td>
+</tr>
+<tr>
+<td>Vals AI Vals Index (#2/39)</td>
+<td><strong>74.7%</strong></td>
+<td>75.1%</td>
+<td>73.1%</td>
+<td>70.4%</td>
+<td>68.0%</td>
+<td>65.0%</td>
+</tr>
+<tr>
+<td>Arena WebDev Arena (Elo, #1/99)</td>
+<td><strong>1,678</strong></td>
+<td>1,634</td>
+<td>1,630</td>
+<td>1,565</td>
+<td>1,507</td>
+<td>1,592</td>
+</tr>
+<tr>
+<td>Arena Text Arena (Elo, #8/200)</td>
+<td><strong>1,486</strong></td>
+<td>1,507</td>
+<td>1,485</td>
+<td>1,484</td>
+<td>1,482</td>
+<td>1,469</td>
+</tr>
+<tr>
+<td>Arena Agent Arena (#4/37)</td>
+<td>9.1</td>
+<td><strong>12.7</strong></td>
+<td>10.1</td>
+<td>9.8</td>
+<td>8.8</td>
+<td>6.5</td>
+</tr>
+</tbody></table>
+<h3 id="6-4-性價比"><a href="#6-4-性價比" class="headerlink" title="6.4 性價比"></a>6.4 性價比</h3><p>超越評分，我們透過跨四個涵蓋 coding 和 agentic 任務的套件比較 score 與 per-task cost 來檢驗推理性價比：Kimi Code Bench 2.0、BrowseComp、GDPval-AA v2 和 AA-Briefcase。</p>
+<p>在 Kimi Code Bench 2.0 上，Kimi K3 以 Claude Fable 5 38% 的成本落後 4.0 分；在 high effort 下已可匹配 Claude Opus 4.8 max-effort 分數，成本約為三分之一。在 BrowseComp 上，Kimi K3 以 91.2% 最高分達成每任務 $2.03——是 GPT-5.6 Sol（90.4%）的一半成本，比 Claude 模型在其 max effort 便宜一個數量級。在 GDPval-AA v2 上，Kimi K3 以低 13% 的成本與 GPT-5.6 Sol 相差不到 50 Elo，比 Claude Fable 5 便宜 2.6 倍。在 AA-Briefcase 上，Kimi K3 提供僅低於 Claude Fable 5 的分數，成本約為後者的一半。</p>
+<p>總體而言，Kimi K3 在所有四個套件中處於或接近性價比前沿，以 Claude Fable 5 成本的一小部分提供接近頂級的分數。</p>
 <hr>
 <h2 id="7-案例研究（Case-Studies）"><a href="#7-案例研究（Case-Studies）" class="headerlink" title="7. 案例研究（Case Studies）"></a>7. 案例研究（Case Studies）</h2><p><img src="/higumalu-note/images/k3_tech_report/gpu-case-study.png" alt="GPU 內核優化案例"><br><em>圖 14：AttnRes 內核優化案例——橫軸為優化迭代輪次，縱軸為相較 FLA Triton Baseline 的加速百分比（%）。Kimi K3 從 283.6ms 降至 114.4ms（−55.1%），Claude Fable 5 降至 121.4ms（−57.1%），兩者並列第一</em></p>
 <h3 id="7-1-GPU-內核優化"><a href="#7-1-GPU-內核優化" class="headerlink" title="7.1 GPU 內核優化"></a>7.1 GPU 內核優化</h3><p>Kimi K3 在一個標準化配置的沙箱中優化 GPU 內核（每任務最多 24 小時），評估四個代表性內核：AttnRes、DeepSeek Sparse Attention（DSA）、KDA 和 MLA（head dimension 512）。這些在 NVIDIA Hopper GPU 和替代供應商 GPGPU 上運行。</p>
 <p><strong>結果</strong>：Kimi K3 將 AttnRes 延遲從 283.6ms 降至 114.4ms（**提升 59.7%**），與 Claude Fable 5（+57.1%）並列第一。DSA 加速 55.1%，KDA 加速 73.6%，MLA 超過 50% 峰值 TFLOPS。</p>
-<h3 id="7-2-MiniTriton-編譯器開發"><a href="#7-2-MiniTriton-編譯器開發" class="headerlink" title="7.2 MiniTriton 編譯器開發"></a>7.2 MiniTriton 編譯器開發</h3><p>Kimi K3 從零開發了一個完整的 Triton-like 編譯器 MiniTriton，包含自定義 tile 級 Python 前端、Warp 級 MLIR 標注/優化層和 PTX 代碼生成管線。在 NVIDIA L20 上，MiniTriton 在幾何平均意義下超越 PyTorch eager 和 <code>torch.compile</code>。</p>
-<h3 id="7-3-晶片設計"><a href="#7-3-晶片設計" class="headerlink" title="7.3 晶片設計"></a>7.3 晶片設計</h3><p>早期概念驗證：Kimi K3 為 nano 模型設計推理晶片原型，採用混合 KDA + NoPE-MLA 注意力、Block AttnRes（block size=2）、Group-wise INT4 量化權重。在 4 mm² 面積預算內達到 100 MHz 時序閉合，RTL 模擬吞吐量 &gt; 8,700 tokens/s。</p>
+<h3 id="7-2-MiniTriton-編譯器開發"><a href="#7-2-MiniTriton-編譯器開發" class="headerlink" title="7.2 MiniTriton 編譯器開發"></a>7.2 MiniTriton 編譯器開發</h3><p>Kimi K3 從零開發了一個完整的 Triton-like 編譯器 MiniTriton，包含自定義 tile 級 Python 前端、Warp 級 MLIR 標注/優化層和 PTX 代碼生成管線。在此基礎上構建雙模式張量庫，提供 PyTorch-like 高層介面，eager 和 forward-only 編譯路徑共享同一編譯器和運行時。庫還提供反向模式 autograd、神經網路模組、分佈式原始運算（NCCL）、稀疏和可視化原始運算。</p>
+<p>在 NVIDIA L20 上，MiniTriton 在幾何平均意義下超越 PyTorch eager 和 <code>torch.compile</code>。從零開始的 tensor-core 矩陣乘法路徑在大 shape 時接近 cuBLAS，達到測量機器峰值峰值的約 90%。DSL 級別的 KDA [64] prefill 內核超越匹配的 Triton 參考實現。MiniTriton 還能端到端訓練 GPT 模型，損失曲線與 PyTorch 緊密跟踪，與 torch autograd 的差異在數值上可忽略。</p>
+<p><strong>圖 15：MiniTriton GPU 編譯器案例研究</strong></p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-a.png" alt="CUDA-core roofline"></td>
+<td align="center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-b.png" alt="Tensor-core roofline"></td>
+</tr>
+<tr>
+<td align="center"><em>(a) CUDA-core roofline（fp32）</em></td>
+<td align="center"><em>(b) Tensor-core roofline（tf32/bf16）</em></td>
+</tr>
+<tr>
+<td align="center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-c.png" alt="GPT loss curve"></td>
+<td align="center"><img src="/higumalu-note/images/k3_tech_report/minitriton-roofline-d.png" alt="DDP scaling"></td>
+</tr>
+<tr>
+<td align="center"><em>(c) MiniTriton 訓練 GPT 損失曲線與 torch eager 對比</em></td>
+<td align="center"><em>(d) 兩 GPU DDP 與單 GPU 訓練 loss 幾乎完全一致（max |diff| = 0.0033）</em></td>
+</tr>
+</tbody></table>
+<p><em>圖 15：MiniTriton GPU 編譯器案例研究，NVIDIA L20（sm_89）</em></p>
+<p><strong>用於研究</strong>：為重現計算天體物理學中的 I–Love–Q 通用關係，Kimi K3 審閱了 20 多篇論文並交叉驗證結果，從頭實現完整數值管線，評估超過 300 個狀態方程，識別已發表公式中的不一致之處，編寫超過 3,000 行 Python 代碼，並在一個多小時內產生互動式 HTML 儀表板——而資深研究人員通常需要一到兩週。</p>
+<p><strong>用於知識工作</strong>：在 Kimi Work 中，Kimi K3 製作了一個涵蓋 AI ASIC 行業 42 年曆史的互動研究網站。模型完成超過 120 輪迭代改進，基於 87 份季度報告和 99 份原始 PDF（超過 11,000 頁），透過超過 2,800 次網路搜索和超過 1,100 次終端查詢。在另一個案例中，Kimi K3 使用超過 20 個並發 subagent 分析 GWTC-5 中的 391 個重力波事件，產生七個科學可視化、兩個摘要表格和超過十篇論文的文獻綜合。</p>
+<p><strong>用於影片編輯和運動設計</strong>：利用原生多模態架構，Kimi K3 創建了一個 3Blue1Brown 風格的自身架構互動式運動圖形解說，並從 56 個源片段編輯了其預告片。這涉及剪輯選擇、運動匹配剪切、幀精度節拍同步、音頻處理和多輪修訂。生產相當質量的高密度短片通常需要經驗豐富的編輯師一兩天時間。</p>
+<h3 id="7-3-晶片設計"><a href="#7-3-晶片設計" class="headerlink" title="7.3 晶片設計"></a>7.3 晶片設計</h3><p>早期概念驗證：Kimi K3 為 nano 模型設計推理晶片原型，採用混合 KDA + NoPE-MLA 注意力、Block AttnRes（block size=2）、Group-wise INT4 量化權重。在 4 mm² 面積預算內達到 100 MHz 時序閉合，RTL 模擬吞吐量 &gt; 8,700 tokens/s，0.277 MiB SRAM，INT4 MAC 陣列融合去量化。RTL 代碼約 9,000 行。</p>
+<hr>
+<h2 id="9-結論（Conclusion）"><a href="#9-結論（Conclusion）" class="headerlink" title="9. 結論（Conclusion）"></a>9. 結論（Conclusion）</h2><p>我們提出了 Kimi K3，一個擁有原生視覺能力、100 萬 Token 上下文窗口的 2.8 兆參數專家混合模型，基於 Kimi Delta Attention 和 Attention Residuals 構建。作為全球首個開放 3T 級模型，Kimi K3 在長程 Coding、Agentic、知識、推理和視覺任務上達到前沿水準。儘管與最強私有模型的差距仍然存在，Kimi K3 以每個人都能觸及的成本建立了新的開放前沿。我們希望它能賦能更廣泛的社群在研究、部署和創新方面取得進展。</p>
 <hr>
 <h2 id="8-相關工作（Related-Work）"><a href="#8-相關工作（Related-Work）" class="headerlink" title="8. 相關工作（Related Work）"></a>8. 相關工作（Related Work）</h2><p>本節回顧與 Kimi K3 設計相關的先前工作，涵蓋注意力機制、MoE 架構、測試時 scaling 和基礎設施優化等領域。</p>
 <p><strong>注意力機制</strong>：標準 Transformer 的 softmax 注意力在序列長度上具有 $O(n^2)$ 複雜度。線性注意力 [142, 141] 將其降低到 $O(n)$，代價是引入局部性偏差。Mamba [49] 和 Gated Delta Networks [139] 引入選擇性狀態空間機制。KDA 在此基礎上增加了通道級遺忘門和下限有界衰減，實現硬體高效實現。</p>
 <p><strong>專家混合</strong>：MoE [33, 23] 通過稀疏激活減少計算成本。Switch Transformer [33] 使用簡單的 Top-1 路由，DeepSeekMoE [23] 引入了細粒度專家分割和共享專家。BASE Layers [68] 和 Expert Choice [117] 從最優傳輸角度重新定義路由。Kimi K3 的 Quantile Balancing 從最優平衡分配的對偶推导出，數學嚴謹且收斂快速。</p>
 <p><strong>測試時 Scaling</strong>：OpenAI o-series [85, 84]、Anthropic Extended Thinking [6, 7]、DeepSeek-R1 [41] 和 Kimi K1.5 [119] 展示了 RL 驅動推理能力提升的巨大潛力。Kimi K3 在此基礎上將測試時 scaling 擴展到百萬 Token 長度和多模態場景。</p>
 <hr>
-<h2 id="附錄（Appendices）"><a href="#附錄（Appendices）" class="headerlink" title="附錄（Appendices）"></a>附錄（Appendices）</h2><h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 $z$，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 $\beta_1, \beta_2 \to \infty$，SiTU-GLU 精確退化為 SwiGLU。</p>
+<h2 id="附錄（Appendices）"><a href="#附錄（Appendices）" class="headerlink" title="附錄（Appendices）"></a>附錄（Appendices）</h2><h3 id="附錄-A：作者貢獻"><a href="#附錄-A：作者貢獻" class="headerlink" title="附錄 A：作者貢獻"></a>附錄 A：作者貢獻</h3><p>Kimi K3 由月之暗面（Moonshot AI）團隊開發，核心貢獻者如下。</p>
+<p><strong>模型架構</strong>：Zihao Qi、Yichuan Wang、Yuexi Du、Zhongzheng Xu、Zheng Li、Yufei Wang、Shengding Hu、Beatrice Wu、Ziyang Wang、Ziqi Liu、Chi Chen、Chengying Hsu、Yuxuan Wang、Zhiyu Shen、Jintao Zhao、Shengdian Liu、Yao Fu、Guangyu Chen、Zhen Zhang、Zhen Qin、Jun Liu、Hongrui Shen、Kun Zhou、Tianyuan Liu、Yuxiang Jiang、Xiaoran Liu、Yun Cheng、Jie Wang、Yu Li、Yue Wang、Wenhan Wu、Xinyu Liu、Zhen Fan、Zelong Li、Guangyan Zhao、Yulin Chen、Cheng Deng、Yuxuan Guo、Yicheng Han、Ziming Li、Tianrun Liu、Yuning Mao、Yufei Nie、Tianyu Shi、Yue Sun、Tianyuan Wang、Zhuo Wang、Zihao Wu、Beining Wu、Ziyue Xia、Yu Yang、Yucheng Ye、Chenglin Wu、Xinyan Zeng、Zhuoyang Xiang、Ziqi Gao、Yi Luo、Yun Shen、Chi Zhang、Jun Zhou、Zhen Zhu、Junbin Tian、Zhichao Lu、Guangyu Ran、Ming Ding</p>
+<p><strong>預訓練</strong>：Zixuan Li、Zhuoyuan Jiang、Wenxiao Li、Yuxin Shen、Yuhang Liu、Zhihao Xu、Yiming Ren、Yuxin Wang、Zhongzhi Yu、Yuheng Jia、Yao Tang、Tianhao Zhong、Chenxi Wang、Tianyi Wu、Yunzhi Long、Jiaming Hong、Zhengda Yu、Ziheng Lu、Tian Lan、Yue Zhou、Jingyuan Qu、Yuning Liu、Yuan Xu、Zhicheng Ouyang、Tianyu Zheng、Xingjian Zhang、Xuanyu Zhang、Jie Cheng、Yue Li、Yuxiang Jiang</p>
+<p><strong>後訓練</strong>：Zhongzhi Yu、Yue Li、Zhen Zhu、Yuxin Wang、Jiaming Hong、Zhengda Yu、Yuning Liu、Yuan Xu、Yao Tang、Jie Cheng、Zhuoyuan Jiang、Zhicheng Ouyang、Xinyu Liu、Zhenxi Li、Yuexi Du、Yucheng Han、Yuxin Shen、Ziheng Lu、Yuhang Liu、Zhongzheng Xu</p>
+<p><strong>強化學習</strong>：Jiaming Hong、Yue Li、Jiahao Zhao、Zhenxi Li、Yuning Liu、Tian Lan、Yue Zhou、Yuan Xu、Zhicheng Ouyang、Chenchen Fu、Yuxin Shen、Yuheng Liu、Zhongzhi Yu、Yuxiang Jiang、Yao Tang、Jie Cheng</p>
+<p><strong>數據</strong>：Yao Tang、Xuanyu Zhang、Xingjian Zhang、Tianyu Zheng、Xuemiao Xu、Xiaoyan Zhu、Tian Lan、Jie Cheng、Yue Li、Jiaming Hong</p>
+<p><strong>安全與對齊</strong>：Guangyu Chen、Zhen Zhang、Zhen Qin、Jintao Zhao、Shengding Hu、Tianyuan Liu、Yuxiang Jiang、Beatrice Wu、Yu Li</p>
+<p><strong>系統與基礎設施</strong>：Yongzhe Xu、Chengying Hsu、Chi Chen、Guangyu Chen、Yuxuan Wang、Yufei Wang、Zheng Li、Zihao Qi、Tianyuan Liu、Ziyang Wang、Ziqi Liu、Yichuan Wang、Yuexi Du、Wenhan Wu</p>
+<p><strong>部署與服務</strong>：Yufei Wang、Ziyang Wang、Ziqi Liu、Tianyuan Liu、Xiaoran Liu、Tianyi Wu、Yunzhi Long、Zhihao Xu</p>
+<p><strong>評估與分析</strong>：Zhen Zhang、Zhen Qin、Hongrui Shen、Yuxiang Jiang、Chi Chen、Jintao Zhao、Yu Li、Beatrice Wu、Shengding Hu</p>
+<p><strong>圖形與文檔</strong>：Zhen Fan、Yue Wang、Yuxuan Guo、Yicheng Han、Zhiyu Shen</p>
+<p><strong>領導與管理</strong>：Zhongzhi Yu、Jiaming Hong、Yao Fu</p>
+<p><em>作者名單按字母順序排列。通訊作者：Zhongzhi Yu、Yao Fu。月之暗面保留最終決定權。</em></p>
+<h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 $z$，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 $\beta_1, \beta_2 \to \infty$，SiTU-GLU 精確退化為 SwiGLU。</p>
 <p>由於 $|\tanh(z)| &lt; 1$ 且 $0 &lt; \text{Sigmoid}(z) &lt; 1$，每個輸出坐標滿足 $|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。這種平滑約束在原點附近保留非零梯度，不同於硬截斷，訓練表現更好。</p>
 <h3 id="附錄-C：Quantile-Balancing-的推導"><a href="#附錄-C：Quantile-Balancing-的推導" class="headerlink" title="附錄 C：Quantile Balancing 的推導"></a>附錄 C：Quantile Balancing 的推導</h3><p>QB 從最優平衡分配問題推導而來。令 $s \in \mathbb{R}^{m \times n}$ 收集 $m$ 個 Token 對 $n$ 個專家的路由器分數，其中每個 Token 恰好選擇 $k$ 個專家，最大分數平衡分配為：</p>
 <p>$$\max_{x_{i,j} \in {0,1}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}$$</p>
@@ -529,7 +1085,9 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 </ol>
 <p>Template 採用 XTML（eXtensible Token Markup Language），用三個保留的特殊 Token 替代 XML 語法：<code>[open]</code>、<code>[sep]</code> 和 <code>[close]</code>，加上一個生成停止標記 <code>[end_of_msg]</code>。</p>
 <p>消息結構分為兩個類別：<strong>輸入消息</strong>（序列化請求的 messages 字段）和<strong>選項消息</strong>（將請求選項轉換為模型在上下文中讀取的指令）。全局選項（工具聲明、推理努力設置）在所有輸入消息之前；一次性選項（tool_choice、response_format）在輸入消息之後，使每請求更改不影響歷史 KV Cache。</p>
-<p>助手消息的 body 按<strong>通道</strong>組織：<code>think</code> 攜帶推理軌跡，<code>response</code> 攜帶用戶可見答案，<code>tools</code> 攜帶工具調用。兩種生成模式通過生成前綴選擇：<code>[open]think[sep]</code> 為思考模式，<code>[open]response[sep]</code> 為指令模式。</p>
+<p>助手消息的 body 按<strong>通道</strong>組織：<code>think</code> 攜帶推理軌跡，<code>response</code> 攜帶用戶可見答案，<code>tools</code> 攜帶工具調用。兩種生成模式通過生成前綴選擇：<code>[open]think[sep]</code> 為思考模式，<code>[open]response[sep]</code> 為指令模式。Kimi K3 只支持保留式思考（preserved thinking）：在思考模式下，<code>think</code> 通道始終保留在歷史中，即便其內容為空——這樣模型在多輪對話中觀察到的消息結構保持一致；在指令模式下，助手消息僅包含 <code>response</code> 和 <code>tools</code> 通道。</p>
+<p><strong>工具調用</strong>：<code>tools</code> 通道中每個工具調用攜帶 <code>tool</code> 和 <code>index</code> 屬性；<code>index</code> 與消息內各並行調用的順序一致，每個工具結果消息重複相同的 <code>tool/index</code> 配對並按工具結果區塊的順序排列，確保結果與調用無歧義關聯。參數帶類型：字串參數以純文本呈現，其他 JSON 類型的值以緊湊序列化格式。代碼等自由文本因此是一等公民而非轉義的 JSON 字串。純 JSON 回退區塊用於無法解碼為帶類型參數區塊的輸入；它僅出現在輸入 Token 中，不會出現在模型輸出中，且其損失被遮罩。</p>
+<p><strong>推理努力與選項</strong>：Chat Template 支持動態加載工具：對話中檢索或加載的工具透過 <code>tool-declare</code> 消息宣告，此後模型的可用工具集擴展而無需重建歷史 KV Cache。</p>
 <hr>
 <h2 id="譯註（Translator’s-Notes）"><a href="#譯註（Translator’s-Notes）" class="headerlink" title="譯註（Translator’s Notes）"></a>譯註（Translator’s Notes）</h2><blockquote>
 <p>以下概念說明基於 research 整理，幫助讀者理解技術背景。</p>
@@ -609,7 +1167,7 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
     </div>
     
         <div class='side'>
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Kimi-K3%EF%BC%9A%E9%96%8B%E6%94%BE%E5%89%8D%E6%B2%BF%E6%99%BA%E8%83%BD"><span class="toc-number">1.</span> <span class="toc-text">Kimi K3：開放前沿智能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kimi-K3-%E6%8A%80%E8%A1%93%E5%A0%B1%E5%91%8A"><span class="toc-number">1.1.</span> <span class="toc-text">Kimi K3 技術報告</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%91%98%E8%A6%81%EF%BC%88Abstract%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">摘要（Abstract）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%BC%95%E8%A8%80%EF%BC%88Introduction%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">1. 引言（Introduction）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%A7%8B%EF%BC%88Model-Architecture%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">2. 模型架構（Model Architecture）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hybrid-Attention"><span class="toc-number">4.1.</span> <span class="toc-text">2.1 Hybrid Attention</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-1-Kimi-Delta-Attention"><span class="toc-number">4.1.1.</span> <span class="toc-text">2.1.1 Kimi Delta Attention</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-Gated-MLA"><span class="toc-number">4.1.2.</span> <span class="toc-text">2.1.2 Gated MLA</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Attention-Residuals"><span class="toc-number">4.2.</span> <span class="toc-text">2.2 Attention Residuals</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Stable-LatentMoE"><span class="toc-number">4.3.</span> <span class="toc-text">2.3 Stable LatentMoE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-SiTU-GLU"><span class="toc-number">4.3.1.</span> <span class="toc-text">2.3.1 SiTU-GLU</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-Quantile-Balancing"><span class="toc-number">4.3.2.</span> <span class="toc-text">2.3.2 Quantile Balancing</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%8E%9F%E7%94%9F%E8%A6%96%E8%A6%BA"><span class="toc-number">4.4.</span> <span class="toc-text">2.4 原生視覺</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Per-Head-Muon"><span class="toc-number">4.5.</span> <span class="toc-text">2.5 Per-Head Muon</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%A0%90%E8%A8%93%E7%B7%B4%EF%BC%88Pre-Training%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">3. 預訓練（Pre-Training）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%95%B8%E6%93%9A%E9%85%8D%E6%96%B9"><span class="toc-number">5.1.</span> <span class="toc-text">3.1 數據配方</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%A8%93%E7%B7%B4%E7%A9%A9%E5%AE%9A%E6%80%A7"><span class="toc-number">5.2.</span> <span class="toc-text">3.2 訓練穩定性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%93%B4%E5%B1%95%E6%B3%95%E5%89%87"><span class="toc-number">5.3.</span> <span class="toc-text">3.3 擴展法則</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%BE%8C%E8%A8%93%E7%B7%B4%EF%BC%88Post-Training%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">4. 後訓練（Post-Training）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%BC%B7%E5%8C%96%E5%AD%B8%E7%BF%92"><span class="toc-number">6.1.</span> <span class="toc-text">4.1 強化學習</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Long-Context-SFT"><span class="toc-number">6.2.</span> <span class="toc-text">4.2 Long-Context SFT</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%9F%BA%E7%A4%8E%E8%A8%AD%E6%96%BD%EF%BC%88Infrastructure%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">5. 基礎設施（Infrastructure）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-KDA-%E6%BC%94%E7%AE%97%E6%B3%95-%E7%B3%BB%E7%B5%B1%E5%85%B1%E5%90%8C%E8%A8%AD%E8%A8%88"><span class="toc-number">7.1.</span> <span class="toc-text">5.1 KDA 演算法-系統共同設計</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-2-8-%E5%85%86%E5%8F%83%E6%95%B8-MoE-%E9%A0%90%E8%A8%93%E7%B7%B4"><span class="toc-number">7.2.</span> <span class="toc-text">5.2 2.8 兆參數 MoE 預訓練</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E7%99%BE%E8%90%AC-Token-Agentic-%E5%BC%B7%E5%8C%96%E5%AD%B8%E7%BF%92"><span class="toc-number">7.3.</span> <span class="toc-text">5.3 百萬 Token Agentic 強化學習</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E8%A9%95%E4%BC%B0%EF%BC%88Evaluation%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">6. 評估（Evaluation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%BB%E8%A6%81%E7%B5%90%E6%9E%9C"><span class="toc-number">8.1.</span> <span class="toc-text">6.1 主要結果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%A1%88%E4%BE%8B%E7%A0%94%E7%A9%B6%EF%BC%88Case-Studies%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">7. 案例研究（Case Studies）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-GPU-%E5%85%A7%E6%A0%B8%E5%84%AA%E5%8C%96"><span class="toc-number">9.1.</span> <span class="toc-text">7.1 GPU 內核優化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-MiniTriton-%E7%B7%A8%E8%AD%AF%E5%99%A8%E9%96%8B%E7%99%BC"><span class="toc-number">9.2.</span> <span class="toc-text">7.2 MiniTriton 編譯器開發</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E6%99%B6%E7%89%87%E8%A8%AD%E8%A8%88"><span class="toc-number">9.3.</span> <span class="toc-text">7.3 晶片設計</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E7%9B%B8%E9%97%9C%E5%B7%A5%E4%BD%9C%EF%BC%88Related-Work%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">8. 相關工作（Related Work）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E9%8C%84%EF%BC%88Appendices%EF%BC%89"><span class="toc-number">11.</span> <span class="toc-text">附錄（Appendices）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-B%EF%BC%9ASiTU-GLU-%E8%A8%AD%E8%A8%88%E7%B4%B0%E7%AF%80"><span class="toc-number">11.1.</span> <span class="toc-text">附錄 B：SiTU-GLU 設計細節</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-C%EF%BC%9AQuantile-Balancing-%E7%9A%84%E6%8E%A8%E5%B0%8E"><span class="toc-number">11.2.</span> <span class="toc-text">附錄 C：Quantile Balancing 的推導</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-D%EF%BC%9AHistogram-Based-%E5%88%86%E4%BD%8D%E6%95%B8%E4%BC%B0%E8%A8%88"><span class="toc-number">11.3.</span> <span class="toc-text">附錄 D：Histogram-Based 分位數估計</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-E%EF%BC%9AMoonEP-%E4%B8%80%E8%88%AC%E4%B8%8A%E7%95%8C%E8%AD%89%E6%98%8E"><span class="toc-number">11.4.</span> <span class="toc-text">附錄 E：MoonEP 一般上界證明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-F%EF%BC%9AChat-Template%EF%BC%88XTML%EF%BC%89"><span class="toc-number">11.5.</span> <span class="toc-text">附錄 F：Chat Template（XTML）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AD%AF%E8%A8%BB%EF%BC%88Translator%E2%80%99s-Notes%EF%BC%89"><span class="toc-number">12.</span> <span class="toc-text">譯註（Translator’s Notes）</span></a></li></ol>	
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Kimi-K3%EF%BC%9A%E9%96%8B%E6%94%BE%E5%89%8D%E6%B2%BF%E6%99%BA%E8%83%BD"><span class="toc-number">1.</span> <span class="toc-text">Kimi K3：開放前沿智能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kimi-K3-%E6%8A%80%E8%A1%93%E5%A0%B1%E5%91%8A"><span class="toc-number">1.1.</span> <span class="toc-text">Kimi K3 技術報告</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%91%98%E8%A6%81%EF%BC%88Abstract%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">摘要（Abstract）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%BC%95%E8%A8%80%EF%BC%88Introduction%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">1. 引言（Introduction）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%A7%8B%EF%BC%88Model-Architecture%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">2. 模型架構（Model Architecture）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Hybrid-Attention"><span class="toc-number">4.1.</span> <span class="toc-text">2.1 Hybrid Attention</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-1-Kimi-Delta-Attention"><span class="toc-number">4.1.1.</span> <span class="toc-text">2.1.1 Kimi Delta Attention</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-1-2-Gated-MLA"><span class="toc-number">4.1.2.</span> <span class="toc-text">2.1.2 Gated MLA</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Attention-Residuals"><span class="toc-number">4.2.</span> <span class="toc-text">2.2 Attention Residuals</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-Stable-LatentMoE"><span class="toc-number">4.3.</span> <span class="toc-text">2.3 Stable LatentMoE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-1-SiTU-GLU"><span class="toc-number">4.3.1.</span> <span class="toc-text">2.3.1 SiTU-GLU</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-3-2-Quantile-Balancing"><span class="toc-number">4.3.2.</span> <span class="toc-text">2.3.2 Quantile Balancing</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%8E%9F%E7%94%9F%E8%A6%96%E8%A6%BA"><span class="toc-number">4.4.</span> <span class="toc-text">2.4 原生視覺</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-Per-Head-Muon"><span class="toc-number">4.5.</span> <span class="toc-text">2.5 Per-Head Muon</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E9%A0%90%E8%A8%93%E7%B7%B4%EF%BC%88Pre-Training%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">3. 預訓練（Pre-Training）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%95%B8%E6%93%9A%E9%85%8D%E6%96%B9"><span class="toc-number">5.1.</span> <span class="toc-text">3.1 數據配方</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%A8%93%E7%B7%B4%E7%A9%A9%E5%AE%9A%E6%80%A7"><span class="toc-number">5.2.</span> <span class="toc-text">3.2 訓練穩定性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%93%B4%E5%B1%95%E6%B3%95%E5%89%87"><span class="toc-number">5.3.</span> <span class="toc-text">3.3 擴展法則</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E9%95%B7%E4%B8%8A%E4%B8%8B%E6%96%87%E6%93%B4%E5%B1%95"><span class="toc-number">5.4.</span> <span class="toc-text">3.4 長上下文擴展</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%BE%8C%E8%A8%93%E7%B7%B4%EF%BC%88Post-Training%EF%BC%89"><span class="toc-number">6.</span> <span class="toc-text">4. 後訓練（Post-Training）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%BC%B7%E5%8C%96%E5%AD%B8%E7%BF%92"><span class="toc-number">6.1.</span> <span class="toc-text">4.1 強化學習</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-4-%E9%83%A8%E7%BD%B2%E6%84%9F%E7%9F%A5%E5%BE%8C%E8%A8%93%E7%B7%B4"><span class="toc-number">6.2.</span> <span class="toc-text">4.1.4 部署感知後訓練</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Long-Context-SFT"><span class="toc-number">6.3.</span> <span class="toc-text">4.2 Long-Context SFT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%9F%A5%E8%AD%98%E5%9C%96%E8%AD%9C%E5%BC%95%E5%B0%8E%E7%9A%84%E4%BB%BB%E5%8B%99%E5%90%88%E6%88%90"><span class="toc-number">6.4.</span> <span class="toc-text">4.3 知識圖譜引導的任務合成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-1-%E7%B5%B1%E4%B8%80%E7%99%BD%E7%9B%92-RL-%E7%92%B0%E5%A2%83"><span class="toc-number">6.5.</span> <span class="toc-text">4.2.1 統一白盒 RL 環境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-3-Agentic-%E7%92%B0%E5%A2%83%E4%B8%AD%E7%9A%84%E5%8F%AF%E9%A9%97%E8%AD%89%E5%95%8F%E9%A1%8C"><span class="toc-number">6.6.</span> <span class="toc-text">4.2.3 Agentic 環境中的可驗證問題</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-4-GPU-%E5%85%A7%E6%A0%B8%E5%84%AA%E5%8C%96%E4%BB%BB%E5%8B%99"><span class="toc-number">6.7.</span> <span class="toc-text">4.2.4 GPU 內核優化任務</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-5-%E5%80%8B%E4%BA%BA%E5%8A%A9%E7%90%86%E4%BB%BB%E5%8B%99"><span class="toc-number">6.8.</span> <span class="toc-text">4.2.5 個人助理任務</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%9F%BA%E7%A4%8E%E8%A8%AD%E6%96%BD%EF%BC%88Infrastructure%EF%BC%89"><span class="toc-number">7.</span> <span class="toc-text">5. 基礎設施（Infrastructure）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-KDA-%E6%BC%94%E7%AE%97%E6%B3%95-%E7%B3%BB%E7%B5%B1%E5%85%B1%E5%90%8C%E8%A8%AD%E8%A8%88"><span class="toc-number">7.1.</span> <span class="toc-text">5.1 KDA 演算法-系統共同設計</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-2-8-%E5%85%86%E5%8F%83%E6%95%B8-MoE-%E9%A0%90%E8%A8%93%E7%B7%B4"><span class="toc-number">7.2.</span> <span class="toc-text">5.2 2.8 兆參數 MoE 預訓練</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-2-%E5%85%A7%E5%AD%98%E9%AB%98%E6%95%88%E8%A8%93%E7%B7%B4%EF%BC%88%E8%A9%B3%EF%BC%89"><span class="toc-number">7.3.</span> <span class="toc-text">5.2.2 內存高效訓練（詳）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-3-%E5%A4%9A%E6%A8%A1%E6%85%8B%E7%B7%A8%E7%A2%BC%E5%99%A8%E5%84%AA%E5%8C%96%EF%BC%88%E8%A9%B3%EF%BC%89"><span class="toc-number">7.4.</span> <span class="toc-text">5.2.3 多模態編碼器優化（詳）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E7%99%BE%E8%90%AC-Token-Agentic-%E5%BC%B7%E5%8C%96%E5%AD%B8%E7%BF%92"><span class="toc-number">7.5.</span> <span class="toc-text">5.3 百萬 Token Agentic 強化學習</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-1-%E5%8D%94%E4%BD%9C-RL-%E7%B3%BB%E7%B5%B1%EF%BC%88%E8%A9%B3%EF%BC%89"><span class="toc-number">7.6.</span> <span class="toc-text">5.3.1 協作 RL 系統（詳）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-2-%E6%B2%99%E7%9B%92%E5%9F%BA%E7%A4%8E%E8%A8%AD%E6%96%BD%EF%BC%88%E8%A9%B3%EF%BC%89"><span class="toc-number">7.7.</span> <span class="toc-text">5.3.2 沙盒基礎設施（詳）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E9%83%A8%E7%BD%B2%E5%9F%BA%E7%A4%8E%E8%A8%AD%E6%96%BD"><span class="toc-number">7.8.</span> <span class="toc-text">5.4 部署基礎設施</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-1-%E7%B5%B1%E4%B8%80%E7%B7%A9%E5%AD%98%E4%BD%88%E5%B1%80"><span class="toc-number">7.9.</span> <span class="toc-text">5.4.1 統一緩存佈局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-2-KDA-%E8%A7%A3%E7%A2%BC"><span class="toc-number">7.10.</span> <span class="toc-text">5.4.2 KDA 解碼</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-3-Stable-LatentMoE-%E5%85%A7%E6%A0%B8%E5%84%AA%E5%8C%96"><span class="toc-number">7.11.</span> <span class="toc-text">5.4.3 Stable LatentMoE 內核優化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-4-%E9%9B%86%E7%BE%A4%E7%B4%9A%E8%AA%BF%E5%BA%A6"><span class="toc-number">7.12.</span> <span class="toc-text">5.4.4 集群級調度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E8%A9%95%E4%BC%B0%EF%BC%88Evaluation%EF%BC%89"><span class="toc-number">8.</span> <span class="toc-text">6. 評估（Evaluation）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%BB%E8%A6%81%E7%B5%90%E6%9E%9C"><span class="toc-number">8.1.</span> <span class="toc-text">6.1 主要結果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-1-%E5%9F%BA%E6%BA%96%E6%B8%AC%E8%A9%A6%E5%A5%97%E4%BB%B6"><span class="toc-number">8.2.</span> <span class="toc-text">6.1.1 基準測試套件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-2-%E5%9F%BA%E7%B7%9A%E6%A8%A1%E5%9E%8B"><span class="toc-number">8.3.</span> <span class="toc-text">6.1.2 基線模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-3-%E8%A9%95%E4%BC%B0%E9%85%8D%E7%BD%AE"><span class="toc-number">8.4.</span> <span class="toc-text">6.1.3 評估配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-4-%E8%A9%95%E4%BC%B0%E7%B5%90%E6%9E%9C"><span class="toc-number">8.5.</span> <span class="toc-text">6.1.4 評估結果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%85%A7%E9%83%A8%E5%9F%BA%E6%BA%96%E6%B8%AC%E8%A9%A6%EF%BC%88%E8%A1%A8-3%EF%BC%89"><span class="toc-number">8.6.</span> <span class="toc-text">6.2 內部基準測試（表 3）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-2-%E7%B6%B2%E8%B7%AF%E5%AE%89%E5%85%A8%E8%A9%95%E4%BC%B0"><span class="toc-number">8.7.</span> <span class="toc-text">6.2.2 網路安全評估</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E7%AC%AC%E4%B8%89%E6%96%B9%E7%8D%A8%E7%AB%8B%E8%A9%95%E4%BC%B0"><span class="toc-number">8.8.</span> <span class="toc-text">6.3 第三方獨立評估</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E6%80%A7%E5%83%B9%E6%AF%94"><span class="toc-number">8.9.</span> <span class="toc-text">6.4 性價比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%A1%88%E4%BE%8B%E7%A0%94%E7%A9%B6%EF%BC%88Case-Studies%EF%BC%89"><span class="toc-number">9.</span> <span class="toc-text">7. 案例研究（Case Studies）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-GPU-%E5%85%A7%E6%A0%B8%E5%84%AA%E5%8C%96"><span class="toc-number">9.1.</span> <span class="toc-text">7.1 GPU 內核優化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-MiniTriton-%E7%B7%A8%E8%AD%AF%E5%99%A8%E9%96%8B%E7%99%BC"><span class="toc-number">9.2.</span> <span class="toc-text">7.2 MiniTriton 編譯器開發</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E6%99%B6%E7%89%87%E8%A8%AD%E8%A8%88"><span class="toc-number">9.3.</span> <span class="toc-text">7.3 晶片設計</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E7%B5%90%E8%AB%96%EF%BC%88Conclusion%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">9. 結論（Conclusion）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E7%9B%B8%E9%97%9C%E5%B7%A5%E4%BD%9C%EF%BC%88Related-Work%EF%BC%89"><span class="toc-number">11.</span> <span class="toc-text">8. 相關工作（Related Work）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E9%8C%84%EF%BC%88Appendices%EF%BC%89"><span class="toc-number">12.</span> <span class="toc-text">附錄（Appendices）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-A%EF%BC%9A%E4%BD%9C%E8%80%85%E8%B2%A2%E7%8D%BB"><span class="toc-number">12.1.</span> <span class="toc-text">附錄 A：作者貢獻</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-B%EF%BC%9ASiTU-GLU-%E8%A8%AD%E8%A8%88%E7%B4%B0%E7%AF%80"><span class="toc-number">12.2.</span> <span class="toc-text">附錄 B：SiTU-GLU 設計細節</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-C%EF%BC%9AQuantile-Balancing-%E7%9A%84%E6%8E%A8%E5%B0%8E"><span class="toc-number">12.3.</span> <span class="toc-text">附錄 C：Quantile Balancing 的推導</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-D%EF%BC%9AHistogram-Based-%E5%88%86%E4%BD%8D%E6%95%B8%E4%BC%B0%E8%A8%88"><span class="toc-number">12.4.</span> <span class="toc-text">附錄 D：Histogram-Based 分位數估計</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-E%EF%BC%9AMoonEP-%E4%B8%80%E8%88%AC%E4%B8%8A%E7%95%8C%E8%AD%89%E6%98%8E"><span class="toc-number">12.5.</span> <span class="toc-text">附錄 E：MoonEP 一般上界證明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%99%84%E9%8C%84-F%EF%BC%9AChat-Template%EF%BC%88XTML%EF%BC%89"><span class="toc-number">12.6.</span> <span class="toc-text">附錄 F：Chat Template（XTML）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AD%AF%E8%A8%BB%EF%BC%88Translator%E2%80%99s-Notes%EF%BC%89"><span class="toc-number">13.</span> <span class="toc-text">譯註（Translator’s Notes）</span></a></li></ol>	
         </div>
     
 </div>
