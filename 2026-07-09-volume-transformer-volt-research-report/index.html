@@ -107,8 +107,8 @@
 <p>2D RoPE 的核心公式：</p>
 <ul>
 <li>將 dim 切成對，每對維度構成複數平面上的旋轉</li>
-<li>位置 m 的旋轉角為 <script type="math/tex">\thetam^{(i)} = m \cdot \theta_i</script>，其中 <script type="math/tex">\theta_i = \theta{base}^{-i/d}</script></li>
-<li>旋轉後的 Q、K 做內積時，自然編碼了相對位置 <script type="math/tex">m-n</script> 的關係</li>
+<li>位置 m 的旋轉角為 $\thetam^{(i)} = m \cdot \theta_i$，其中 $\theta_i = \theta{base}^{-i/d}$</li>
+<li>旋轉後的 Q、K 做內積時，自然編碼了相對位置 $m-n$ 的關係</li>
 </ul>
 <p>RoPE 的三大優點（也是 Volt 選用它而不是傳統位置編碼的原因）：</p>
 <ol>
@@ -121,8 +121,8 @@
 <p><strong>三軸 Axial 設計</strong>：</p>
 <ul>
 <li>x、y、z 三個座標軸<strong>各自獨立計算</strong>旋轉頻率，最後串接</li>
-<li>為什麼不直接用 3D 座標做 outer product？因為那樣會產生 <script type="math/tex">12 \times 12 \times 8 = 1152</script> 維爆炸</li>
-<li>Axial 設計只需 <script type="math/tex">12+12+8=32</script> 維，兼顧效率與完整性</li>
+<li>為什麼不直接用 3D 座標做 outer product？因為那樣會產生 $12 \times 12 \times 8 = 1152$ 維爆炸</li>
+<li>Axial 設計只需 $12+12+8=32$ 維，兼顧效率與完整性</li>
 </ul>
 <div class="table-container">
 <table>
@@ -189,10 +189,10 @@
 <h3 id="FlashAttention-Variable-Length-Packing"><a href="#FlashAttention-Variable-Length-Packing" class="headerlink" title="FlashAttention + Variable-Length Packing"></a>FlashAttention + Variable-Length Packing</h3><p>從原始碼可以看到具體實現：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RoPE_Attention</span>(<span class="params">nn.Module</span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span>(<span class="params">self, x, freqs_cis, cu_seqlens, max_seqlen</span>):</span></span><br><span class="line">        qkv = self.qkv(x).view(N, <span class="number">3</span>, self.num_heads, self.h_dim)</span><br><span class="line">        q, k, v = qkv.unbind(dim=<span class="number">0</span>)</span><br><span class="line">        q, k = self.apply_rotary_emb(q, k, freqs_cis)  <span class="comment"># 旋轉 Q/K</span></span><br><span class="line">        qkv = torch.stack([q, k, v], dim=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">        x = flash_attn.flash_attn_varlen_qkvpacked_func(</span><br><span class="line">            qkv.half(), cu_seqlens, max_seqlen=max_seqlen</span><br><span class="line">        )  <span class="comment"># FlashAttention 加速</span></span><br><span class="line">        <span class="keyword">return</span> self.proj(x)</span><br></pre></td></tr></table></figure>
 <p><strong>Variable-length sequence packing</strong>：不同場景（scene）的 patch tokens <strong>pack 到同一個序列中</strong>，用 <code>cu_seqlens</code>（cumulative sequence lengths）標記每個場景的邊界。這樣可以 GPU 并行處理多個場景，避免 padding 浪費記憶體。</p>
-<h3 id="計算複雜度的實際影響"><a href="#計算複雜度的實際影響" class="headerlink" title="計算複雜度的實際影響"></a>計算複雜度的實際影響</h3><p>批評者會問：<script type="math/tex">O(N^2)</script> 全域 attention 不會太慢嗎？論文和原始碼顯示這不是問題，原因有三：</p>
+<h3 id="計算複雜度的實際影響"><a href="#計算複雜度的實際影響" class="headerlink" title="計算複雜度的實際影響"></a>計算複雜度的實際影響</h3><p>批評者會問：$O(N^2)$ 全域 attention 不會太慢嗎？論文和原始碼顯示這不是問題，原因有三：</p>
 <ol>
 <li><strong>Patch Tokenization 大幅降低 N</strong>：例如一個房間場景約 10K points → 約 2000 tokens</li>
-<li><strong>FlashAttention</strong>：將 <script type="math/tex">O(N^2)</script> 記憶體降低到 <script type="math/tex">O(N)</script>，序列長度 2000、dim=768、12 heads 的 FlashAttention 記憶體約 48MB（標準 attention 約 192MB）</li>
+<li><strong>FlashAttention</strong>：將 $O(N^2)$ 記憶體降低到 $O(N)$，序列長度 2000、dim=768、12 heads 的 FlashAttention 記憶體約 48MB（標準 attention 約 192MB）</li>
 <li><strong>ViT 的驗證</strong>：ViT-B/16（196 tokens）和 ViT-L/16（1024 tokens）已證明 full attention 在這個量級完全夠用</li>
 </ol>
 <hr>
@@ -450,28 +450,6 @@
 </div>
 
 
-
-<script>
-window.MathJax = {
-  tex: {
-    inlineMath: [['<script type="math/tex">', '</script>'], ['\\(', '\\)']],
-    displayMath: [['<script type="math/tex"></script>', '<script type="math/tex"></script>'], ['\\[', '\\]']],
-    processEscapes: true
-  },
-  options: {
-    enableMenu: false
-  },
-  startup: {
-    ready: function() {
-      MathJax.startup.defaultReady();
-      MathJax.startup.promise.then(function() {
-        return MathJax.typesetPromise();
-      });
-    }
-  }
-};
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
 
 
 

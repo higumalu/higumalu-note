@@ -1010,7 +1010,7 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 </table>
 </div>
 <h3 id="6-4-性價比"><a href="#6-4-性價比" class="headerlink" title="6.4 性價比"></a>6.4 性價比</h3><p>超越評分，我們透過跨四個涵蓋 coding 和 agentic 任務的套件比較 score 與 per-task cost 來檢驗推理性價比：Kimi Code Bench 2.0、BrowseComp、GDPval-AA v2 和 AA-Briefcase。</p>
-<p>在 Kimi Code Bench 2.0 上，Kimi K3 以 Claude Fable 5 38% 的成本落後 4.0 分；在 high effort 下已可匹配 Claude Opus 4.8 max-effort 分數，成本約為三分之一。在 BrowseComp 上，Kimi K3 以 91.2% 最高分達成每任務 <script type="math/tex">2.03——是 GPT-5.6 Sol（90.4%）的一半成本，比 Claude 模型在其 max effort 便宜一個數量級。在 GDPval-AA v2 上，Kimi K3 以低 13% 的成本與 GPT-5.6 Sol 相差不到 50 Elo，比 Claude Fable 5 便宜 2.6 倍。在 AA-Briefcase 上，Kimi K3 提供僅低於 Claude Fable 5 的分數，成本約為後者的一半。</p>
+<p>在 Kimi Code Bench 2.0 上，Kimi K3 以 Claude Fable 5 38% 的成本落後 4.0 分；在 high effort 下已可匹配 Claude Opus 4.8 max-effort 分數，成本約為三分之一。在 BrowseComp 上，Kimi K3 以 91.2% 最高分達成每任務約 2.03 美元——是 GPT-5.6 Sol（90.4%）的一半成本，比 Claude 模型在其 max effort 便宜一個數量級。在 GDPval-AA v2 上，Kimi K3 以低 13% 的成本與 GPT-5.6 Sol 相差不到 50 Elo，比 Claude Fable 5 便宜 2.6 倍。在 AA-Briefcase 上，Kimi K3 提供僅低於 Claude Fable 5 的分數，成本約為後者的一半。</p>
 <p>總體而言，Kimi K3 在所有四個套件中處於或接近性價比前沿，以 Claude Fable 5 成本的一小部分提供接近頂級的分數。</p>
 <hr>
 <h2 id="7-案例研究（Case-Studies）"><a href="#7-案例研究（Case-Studies）" class="headerlink" title="7. 案例研究（Case Studies）"></a>7. 案例研究（Case Studies）</h2><p><img src="/higumalu-note/images/k3_tech_report/gpu-case-study.png" alt="GPU 內核優化案例"><br>圖 14：AttnRes 內核優化案例——橫軸為優化迭代輪次，縱軸為相較 FLA Triton Baseline 的加速百分比（%）。Kimi K3 從 283.6ms 降至 114.4ms（−55.1%），Claude Fable 5 降至 121.4ms（−57.1%），兩者並列第一</p>
@@ -1058,7 +1058,7 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <h2 id="9-結論（Conclusion）"><a href="#9-結論（Conclusion）" class="headerlink" title="9. 結論（Conclusion）"></a>9. 結論（Conclusion）</h2><p>我們提出了 Kimi K3，一個擁有原生視覺能力、100 萬 Token 上下文窗口的 2.8 兆參數專家混合模型，基於 Kimi Delta Attention 和 Attention Residuals 構建。作為全球首個開放 3T 級模型，Kimi K3 在長程 Coding、Agentic、知識、推理和視覺任務上達到前沿水準。儘管與最強私有模型的差距仍然存在，Kimi K3 以每個人都能觸及的成本建立了新的開放前沿。我們希望它能賦能更廣泛的社群在研究、部署和創新方面取得進展。</p>
 <hr>
 <h2 id="8-相關工作（Related-Work）"><a href="#8-相關工作（Related-Work）" class="headerlink" title="8. 相關工作（Related Work）"></a>8. 相關工作（Related Work）</h2><p>本節回顧與 Kimi K3 設計相關的先前工作，涵蓋注意力機制、MoE 架構、測試時 scaling 和基礎設施優化等領域。</p>
-<p><strong>注意力機制</strong>：標準 Transformer 的 softmax 注意力在序列長度上具有 </script>O(n^2)<script type="math/tex"> 複雜度。線性注意力 [142, 141] 將其降低到 </script>O(n)<script type="math/tex">，代價是引入局部性偏差。Mamba [49] 和 Gated Delta Networks [139] 引入選擇性狀態空間機制。KDA 在此基礎上增加了通道級遺忘門和下限有界衰減，實現硬體高效實現。</p>
+<p><strong>注意力機制</strong>：標準 Transformer 的 softmax 注意力在序列長度上具有 <script type="math/tex">O(n^2)</script> 複雜度。線性注意力 [142, 141] 將其降低到 <script type="math/tex">O(n)</script>，代價是引入局部性偏差。Mamba [49] 和 Gated Delta Networks [139] 引入選擇性狀態空間機制。KDA 在此基礎上增加了通道級遺忘門和下限有界衰減，實現硬體高效實現。</p>
 <p><strong>專家混合</strong>：MoE [33, 23] 通過稀疏激活減少計算成本。Switch Transformer [33] 使用簡單的 Top-1 路由，DeepSeekMoE [23] 引入了細粒度專家分割和共享專家。BASE Layers [68] 和 Expert Choice [117] 從最優傳輸角度重新定義路由。Kimi K3 的 Quantile Balancing 從最優平衡分配的對偶推导出，數學嚴謹且收斂快速。</p>
 <p><strong>測試時 Scaling</strong>：OpenAI o-series [85, 84]、Anthropic Extended Thinking [6, 7]、DeepSeek-R1 [41] 和 Kimi K1.5 [119] 展示了 RL 驅動推理能力提升的巨大潛力。Kimi K3 在此基礎上將測試時 scaling 擴展到百萬 Token 長度和多模態場景。</p>
 <hr>
@@ -1075,20 +1075,20 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p><strong>圖形與文檔</strong>：Zhen Fan、Yue Wang、Yuxuan Guo、Yicheng Han、Zhiyu Shen</p>
 <p><strong>領導與管理</strong>：Zhongzhi Yu、Jiaming Hong、Yao Fu</p>
 <p>作者名單按字母順序排列。通訊作者：Zhongzhi Yu、Yao Fu。月之暗面保留最終決定權。</p>
-<h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 </script>z<script type="math/tex">，</script>\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)<script type="math/tex">，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 </script>\beta_1, \beta_2 \to \infty<script type="math/tex">，SiTU-GLU 精確退化為 SwiGLU。</p>
-<p>由於 </script>|\tanh(z)| &lt; 1<script type="math/tex"> 且 </script>0 &lt; \text{Sigmoid}(z) &lt; 1<script type="math/tex">，每個輸出坐標滿足 </script>|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100<script type="math/tex">，輸出有嚴格上界。這種平滑約束在原點附近保留非零梯度，不同於硬截斷，訓練表現更好。</p>
-<h3 id="附錄-C：Quantile-Balancing-的推導"><a href="#附錄-C：Quantile-Balancing-的推導" class="headerlink" title="附錄 C：Quantile Balancing 的推導"></a>附錄 C：Quantile Balancing 的推導</h3><p>QB 從最優平衡分配問題推導而來。令 </script>s \in \mathbb{R}^{m \times n}<script type="math/tex"> 收集 </script>m<script type="math/tex"> 個 Token 對 </script>n<script type="math/tex"> 個專家的路由器分數，其中每個 Token 恰好選擇 </script>k<script type="math/tex"> 個專家，最大分數平衡分配為：</p>
-<script type="math/tex; mode=display">\max_{x_{i,j} \in \{0,1\}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}</script><p>將約束放寬到連續值後，通過對偶理論推導出封閉形式的最優解，交替求解 token 側閾值 </script>\alpha_i<script type="math/tex"> 和專家側閾值 </script>\beta_j<script type="math/tex">，兩者都是分位數形式，收斂快速且精確。</p>
-<h3 id="附錄-D：Histogram-Based-分位數估計"><a href="#附錄-D：Histogram-Based-分位數估計" class="headerlink" title="附錄 D：Histogram-Based 分位數估計"></a>附錄 D：Histogram-Based 分位數估計</h3><p>QB 更新（方程 14）需要對整個訓練步計算分位數：對 </script>n<script type="math/tex"> 個專家中的每一個，取 margin </script>s_{:,j} - \alpha<script type="math/tex"> 的 </script>(1 - k/n)<script type="math/tex">-分位數，其中 Token 數 </script>m<script type="math/tex"> 跨越數百萬，分散在數據並行 rank 和梯度累積步之間。</p>
+<h3 id="附錄-B：SiTU-GLU-設計細節"><a href="#附錄-B：SiTU-GLU-設計細節" class="headerlink" title="附錄 B：SiTU-GLU 設計細節"></a>附錄 B：SiTU-GLU 設計細節</h3><p>SiTU-GLU 的設計目標是約束 SwiGLU 乘積的輸出範圍，同時保留 Swish 的特徵——原點附近近似線性和負側趨於零。對於標量 <script type="math/tex">z</script>，<script type="math/tex">\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)</script>，因此 SiTU-GLU 在原點與 SwiGLU 一階匹配。隨 <script type="math/tex">\beta_1, \beta_2 \to \infty</script>，SiTU-GLU 精確退化為 SwiGLU。</p>
+<p>由於 <script type="math/tex">|\tanh(z)| &lt; 1</script> 且 <script type="math/tex">0 &lt; \text{Sigmoid}(z) &lt; 1</script>，每個輸出坐標滿足 <script type="math/tex">|\text{SiTU-GLU}(x)|_\infty \leq \beta_1 \beta_2 = 100</script>，輸出有嚴格上界。這種平滑約束在原點附近保留非零梯度，不同於硬截斷，訓練表現更好。</p>
+<h3 id="附錄-C：Quantile-Balancing-的推導"><a href="#附錄-C：Quantile-Balancing-的推導" class="headerlink" title="附錄 C：Quantile Balancing 的推導"></a>附錄 C：Quantile Balancing 的推導</h3><p>QB 從最優平衡分配問題推導而來。令 <script type="math/tex">s \in \mathbb{R}^{m \times n}</script> 收集 <script type="math/tex">m</script> 個 Token 對 <script type="math/tex">n</script> 個專家的路由器分數，其中每個 Token 恰好選擇 <script type="math/tex">k</script> 個專家，最大分數平衡分配為：</p>
+<script type="math/tex; mode=display">\max_{x_{i,j} \in \{0,1\}} \sum_{i,j} x_{i,j} s_{i,j} \quad \text{s.t.} \quad \sum_j x_{i,j} = k, \quad \sum_i x_{i,j} = \frac{mk}{n}</script><p>將約束放寬到連續值後，通過對偶理論推導出封閉形式的最優解，交替求解 token 側閾值 <script type="math/tex">\alpha_i</script> 和專家側閾值 <script type="math/tex">\beta_j</script>，兩者都是分位數形式，收斂快速且精確。</p>
+<h3 id="附錄-D：Histogram-Based-分位數估計"><a href="#附錄-D：Histogram-Based-分位數估計" class="headerlink" title="附錄 D：Histogram-Based 分位數估計"></a>附錄 D：Histogram-Based 分位數估計</h3><p>QB 更新（方程 14）需要對整個訓練步計算分位數：對 <script type="math/tex">n</script> 個專家中的每一個，取 margin <script type="math/tex">s_{:,j} - \alpha</script> 的 <script type="math/tex">(1 - k/n)</script>-分位數，其中 Token 數 <script type="math/tex">m</script> 跨越數百萬，分散在數據並行 rank 和梯度累積步之間。</p>
 <p>我們的關鍵觀察是：更新從不需要 margin 本身，只需要它們的逐專家分佈——這可以用直方圖以固定代價總結。具體來說：</p>
 <ul>
-<li><strong>Binning</strong>：將區間 </script>[b{\min} - 1, b{\max} + 1]<script type="math/tex"> 划分为 </script>B = 1000<script type="math/tex"> 個均勻 bin</li>
-<li><strong>Accumulation</strong>：每個 rank 在前向傳播期間 scatter-add 到每專家計數矩陣 </script>H \in \mathbb{N}^{n \times B}<script type="math/tex">，無需通信</li>
+<li><strong>Binning</strong>：將區間 <script type="math/tex">[b{\min} - 1, b{\max} + 1]</script> 划分为 <script type="math/tex">B = 1000</script> 個均勻 bin</li>
+<li><strong>Accumulation</strong>：每個 rank 在前向傳播期間 scatter-add 到每專家計數矩陣 <script type="math/tex">H \in \mathbb{N}^{n \times B}</script>，無需通信</li>
 <li><strong>All-reduce</strong>：步結束時一次整數 All-Reduce 求和局部計數</li>
-<li><strong>Quantile recovery</strong>：對每個專家，選擇第一個累積計數達到 </script>\lceil q \rceil<script type="math/tex"> 的 bin，線性插值恢復分位數</li>
+<li><strong>Quantile recovery</strong>：對每個專家，選擇第一個累積計數達到 <script type="math/tex">\lceil q \rceil</script> 的 bin，線性插值恢復分位數</li>
 </ul>
 <p>此估計器精確（誤差不超過 bin 寬度）、便宜（僅需一次整數 All-Reduce，代價不到原始 margin 通信的 1%），且估計正確量（計數可加，全球直方圖精確等於 Pooled 全域分佈，與 Token 分片方式無關）。</p>
-<h3 id="附錄-E：MoonEP-一般上界證明"><a href="#附錄-E：MoonEP-一般上界證明" class="headerlink" title="附錄 E：MoonEP 一般上界證明"></a>附錄 E：MoonEP 一般上界證明</h3><p>對給定路由器輸出 </script>I<script type="math/tex">，令 </script>M(I) = \min_P \max_r { m_r(P) }<script type="math/tex"> 為最優執行計劃下每個 EP rank 的最大冗餘專家數。定理 1：</script>M(I) \leq E/R<script type="math/tex">（</script>E<script type="math/tex"> 為每設備專家數，</script>R<script type="math/tex"> 為 EP ranks 數）。構造證明：反覆從超載 rank 向欠載 rank 遷移 Token 直到完美均衡，每次填補使一個欠載 rank 達到均衡且此後不再改變，過程在 </script>R-1<script type="math/tex"> 次內終止，且每個 rank 的遠程 Token 來自單一其他 rank，因此冗餘不超過 </script>E/R<script type="math/tex">。</p>
+<h3 id="附錄-E：MoonEP-一般上界證明"><a href="#附錄-E：MoonEP-一般上界證明" class="headerlink" title="附錄 E：MoonEP 一般上界證明"></a>附錄 E：MoonEP 一般上界證明</h3><p>對給定路由器輸出 <script type="math/tex">I</script>，令 <script type="math/tex">M(I) = \min_P \max_r { m_r(P) }</script> 為最優執行計劃下每個 EP rank 的最大冗餘專家數。定理 1：<script type="math/tex">M(I) \leq E/R</script>（<script type="math/tex">E</script> 為每設備專家數，<script type="math/tex">R</script> 為 EP ranks 數）。構造證明：反覆從超載 rank 向欠載 rank 遷移 Token 直到完美均衡，每次填補使一個欠載 rank 達到均衡且此後不再改變，過程在 <script type="math/tex">R-1</script> 次內終止，且每個 rank 的遠程 Token 來自單一其他 rank，因此冗餘不超過 <script type="math/tex">E/R</script>。</p>
 <h3 id="附錄-F：Chat-Template（XTML）"><a href="#附錄-F：Chat-Template（XTML）" class="headerlink" title="附錄 F：Chat Template（XTML）"></a>附錄 F：Chat Template（XTML）</h3><p>Kimi K3 的 Chat Template 重新設計為圍繞三個目標：</p>
 <ol>
 <li><strong>可擴展性</strong>：新能力通過向後兼容的消息格式引入，無需模板修訂</li>
@@ -1105,9 +1105,9 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p>以下概念說明基於 research 整理，幫助讀者理解技術背景。</p>
 </blockquote>
 <p><strong>¹ Delta Rule（Delta Rule 遞歸）</strong></p>
-<p>這裡的 Delta Rule 不是神經網絡中用於梯度下降的 delta rule。它來自於「線性注意力是某種快速權重記憶系統」的思想（Mackay, 1990; Schmidhuber, 1992）。本質上：狀態 </script>S_t<script type="math/tex"> 儲存「如何根據新的 Query 權重重新加權歷史 Values」，Delta Rule 的含義是「相對於前一個狀態的增量修改」，而不是「覆蓋」。通道級衰減 </script>\alpha_t<script type="math/tex"> 控制歷史信息保留多少，</script>\beta_t<script type="math/tex"> 控制新信息寫入強度。</p>
+<p>這裡的 Delta Rule 不是神經網絡中用於梯度下降的 delta rule。它來自於「線性注意力是某種快速權重記憶系統」的思想（Mackay, 1990; Schmidhuber, 1992）。本質上：狀態 <script type="math/tex">S_t</script> 儲存「如何根據新的 Query 權重重新加權歷史 Values」，Delta Rule 的含義是「相對於前一個狀態的增量修改」，而不是「覆蓋」。通道級衰減 <script type="math/tex">\alpha_t</script> 控制歷史信息保留多少，<script type="math/tex">\beta_t</script> 控制新信息寫入強度。</p>
 <p><strong>² Linear Attention vs Softmax Attention</strong></p>
-<p>標準 softmax attention 需要對所有先前 token 計算 attention score，複雜度 </script>O(n^2)<script type="math/tex">。Linear attention 將其重寫為遞歸形式，複雜度降到 </script>O(n)<script type="math/tex">。代價是：linear attention 是全局的（每個 token 可見所有歷史），但缺乏 softmax 的「選擇性」——它不能根據內容動態決定關注什麼。KDA 透過 gated delta mechanism 部分解決這個問題：</script>\beta_t<script type="math/tex"> 閘控允許模型根據輸入內容決定「寫入多少新信息」。</p>
+<p>標準 softmax attention 需要對所有先前 token 計算 attention score，複雜度 <script type="math/tex">O(n^2)</script>。Linear attention 將其重寫為遞歸形式，複雜度降到 <script type="math/tex">O(n)</script>。代價是：linear attention 是全局的（每個 token 可見所有歷史），但缺乏 softmax 的「選擇性」——它不能根據內容動態決定關注什麼。KDA 透過 gated delta mechanism 部分解決這個問題：<script type="math/tex">\beta_t</script> 閘控允許模型根據輸入內容決定「寫入多少新信息」。</p>
 <p><strong>³ MoE Load Balancing / Dead Experts</strong></p>
 <p>在 MoE 中，如果某些專家被選中的頻率遠高於其他專家，會造成：① 這些專家所在設備通信成為瓶頸；② 未被選中的專家（「dead experts」）長期缺乏訓練，權重退化。傳統輔助損失方法對不平衡加懲罰，但這直接干擾路由決策——損失函數的兩個目標（預測準確 + 負載均衡）相互矛盾，訓練動態複雜。輔助損失-free 方法（BASE Layers, Expert Choice, QB）則只修改路由偏置項，不改變 router 的梯度優化方向。</p>
 <p><strong>⁴ NoPE (No Position Encoding)</strong></p>
@@ -1126,8 +1126,8 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 <p><strong>⁸ Muon 優化器</strong></p>
 <p>Muon，全稱 <strong>MomentUm Orthogonalized by Newton-Schulz</strong>，由 Keller Jordan 在 2024 年提出。核心思想：</p>
 <ol>
-<li>先用 SGD-Momentum 生成梯度更新 </script>G<script type="math/tex"></li>
-<li>對 </script>G<script type="math/tex"> 應用 <strong>Newton-Schulz 迭代</strong>（矩陣正交化後處理步驟），使更新矩陣趨近正交</li>
+<li>先用 SGD-Momentum 生成梯度更新 <script type="math/tex">G</script></li>
+<li>對 <script type="math/tex">G</script> 應用 <strong>Newton-Schulz 迭代</strong>（矩陣正交化後處理步驟），使更新矩陣趨近正交</li>
 <li>正交化後的梯度應用於參數</li>
 </ol>
 <p>為什麼要正交化？因為非正交梯度更新會導致梯度方向之間的相互干涉，類似於病態條件數問題。Newton-Schulz 迭代是一種收斂快速的矩陣正交化方法（5 步迭代），使更新方向相互正交，改善收斂穩定性。</p>
@@ -1187,7 +1187,19 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 
     </div>
 </div>
-</body>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [["$","$"],["\\(","\\)"]], displayMath: [["$$","$$"],["\\[","\\]"]], processEscapes: true },
+  options: { enableMenu: false },
+  startup: {
+    ready: function() {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(function() { return MathJax.typesetPromise(); });
+    }
+  }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js" id="MathJax-script"></script></body>
 
 
 <script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
@@ -1253,28 +1265,6 @@ Kimi K3：開放前沿智能Kimi K3 技術報告Kimi 團隊
 </div>
 
 
-
-<script>
-window.MathJax = {
-  tex: {
-    inlineMath: [['</script>', '<script type="math/tex">'], ['\\(', '\\)']],
-    displayMath: [['</script><script type="math/tex">', '</script>$'], ['\\[', '\\]']],
-    processEscapes: true
-  },
-  options: {
-    enableMenu: false
-  },
-  startup: {
-    ready: function() {
-      MathJax.startup.defaultReady();
-      MathJax.startup.promise.then(function() {
-        return MathJax.typesetPromise();
-      });
-    }
-  }
-};
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
 
 
 
