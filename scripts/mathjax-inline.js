@@ -1,26 +1,34 @@
 'use strict';
-// Phase 1: Remove <em> remnants from markdown _..._ inside math expressions
-// Phase 2: Convert $...$ inline math to MathJax <script type="math/tex"> tags
-// Phase 3: Inject MathJax CDN + startup config + typeset at end of <body>
+/**
+ * Pipeline:
+ * 1) Clean <em> leftovers that markdown _..._ can leave inside math
+ * 2) Convert any remaining raw $...$ to MathJax 2 <script type="math/tex">
+ * 3) Inject MathJax 2 (required: kramed emits script[type=math/tex], which
+ *    MathJax 3 does NOT process; diaspora.js also uses MathJax.Hub)
+ */
 hexo.extend.filter.register('after_render:html', function(content) {
   if (!content) return content;
 
-  // === Phase 1: Remove <em> inside math ===
-  content = content.replace(/<em>([^<]*(?:<(?!\/?em>)[^<]*)*)<\/em>/g, '$1');
+  // === Phase 1: Remove <em> inside math script tags ===
+  content = content.replace(
+    /<script type="math\/tex(?:;\s*mode=display)?">([\s\S]*?)<\/script>/g,
+    function(full) {
+      return full.replace(/<\/?em>/g, '');
+    }
+  );
 
-  // === Phase 2: Convert $formula$ to <script type="math/tex"> (character-by-character) ===
+  // === Phase 2: Convert leftover $formula$ to <script type="math/tex"> ===
   if (content.includes('math/tex') || content.includes('$$')) {
     var result = '';
     var i = 0;
     var len = content.length;
-    var converted = 0;
     while (i < len) {
       if (content[i] === '$') {
         var j = i + 1;
         var found = false;
         while (j < len) {
-          if (content[j] === '$' && content[j-1] !== '\\') {
-            var inner = content.substring(i+1, j);
+          if (content[j] === '$' && content[j - 1] !== '\\') {
+            var inner = content.substring(i + 1, j);
             if (inner.includes('$$') || inner.startsWith('$')) {
               result += content[i];
               i++;
@@ -32,7 +40,6 @@ hexo.extend.filter.register('after_render:html', function(content) {
               result += '$' + inner + '$';
             } else {
               result += '<script type="math/tex">' + inner + '</script>';
-              converted++;
             }
             found = true;
             j++;
@@ -40,7 +47,10 @@ hexo.extend.filter.register('after_render:html', function(content) {
           }
           j++;
         }
-        if (found) { i = j; continue; }
+        if (found) {
+          i = j;
+          continue;
+        }
       }
       result += content[i];
       i++;
@@ -48,24 +58,24 @@ hexo.extend.filter.register('after_render:html', function(content) {
     content = result;
   }
 
-  // === Phase 3: Inject MathJax CDN + config + typeset at end of <body> ===
-  if (content.includes('math/tex')) {
+  // === Phase 3: Inject MathJax 2 (compatible with script[type=math/tex]) ===
+  if (content.includes('math/tex') && !content.includes('MathJax.js')) {
     var bodyEnd = content.toLowerCase().lastIndexOf('</body>');
     if (bodyEnd >= 0) {
       var mathjaxScript = [
-        '<script>',
-        'window.MathJax = {',
-        '  tex: { inlineMath: [["$","$"],["\\\\(","\\\\)"]], displayMath: [["$$","$$"],["\\\\[","\\\\]"]], processEscapes: true },',
-        '  options: { enableMenu: false },',
-        '  startup: {',
-        '    ready: function() {',
-        '      MathJax.startup.defaultReady();',
-        '      MathJax.startup.promise.then(function() { return MathJax.typesetPromise(); });',
-        '    }',
-        '  }',
-        '};',
+        '<script type="text/x-mathjax-config">',
+        'MathJax.Hub.Config({',
+        '  tex2jax: {',
+        '    inlineMath: [["$","$"],["\\\\(","\\\\)"]],',
+        '    displayMath: [["$$","$$"],["\\\\[","\\\\]"]],',
+        '    processEscapes: true',
+        '  },',
+        '  TeX: { extensions: ["AMSmath.js","AMSsymbols.js"] },',
+        '  showProcessingMessages: false,',
+        '  messageStyle: "none"',
+        '});',
         '</script>',
-        '<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js" id="MathJax-script"></script>'
+        '<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS_CHTML" id="MathJax-script"></script>'
       ].join('\n');
       content = content.slice(0, bodyEnd) + mathjaxScript + content.slice(bodyEnd);
     }
