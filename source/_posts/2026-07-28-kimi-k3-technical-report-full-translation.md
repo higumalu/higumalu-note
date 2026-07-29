@@ -79,17 +79,17 @@ Kimi K3 使用層級混合的線性注意力和全局注意力，結合 KDA [64]
 
 KDA 在 Delta Rule 遞歸 [106, 139] 的基礎上增加通道級遺忘門 [64]。考慮隱藏狀態序列 $x_t \in \mathbb{R}^d$，其中 $t$ 索引 Token 位置，$d$ 是模型隱維度。為清晰起見，我們先描述單個注意力頭，Query 和 Key 向量 $q_t, k_t \in \mathbb{R}^{d_k}$，Value 向量 $v_t \in \mathbb{R}^{d_v}$，以及遞歸狀態 $S_t \in \mathbb{R}^{d_k \times d_v}$。KDA 在 Delta Rule 更新前應用通道級衰減：
 
-$$S_t = (I - \beta_t k_t k_t^\top) \odot \text{Diag}(\alpha_t) \cdot S_{t-1} + \beta_t k_t v_t^\top, \quad \tilde{o}_t = S_t^\top q_t$$
+$$S_t = \bigl(I - \beta_t k_t k_t^\top\bigr)\operatorname{Diag}(\alpha_t)\,S_{t-1} + \beta_t k_t v_t^\top, \quad \tilde{o}_t = S_t^\top q_t$$
 
 其中 $\alpha_t \in (0, 1)^{d_k}$ 是通道級單步 retention factor，$\beta_t \in (0, 1)$ 控制 Delta Rule 寫入強度。
 
 跟隨 Kimi Linear [64]，KDA 將每頭量參數化為：
 
-$$q_t^h, k_t^h = \text{L2Norm}\left(\text{Swish}\left(\text{ShortConv}\left(W_t^{q/k} x_t\right)\right)\right) \in \mathbb{R}^{d_k}$$
+$$q_t^h, k_t^h = \text{L2Norm}\left(\text{Swish}\left(\text{ShortConv}\left(W_{q/k}^h x_t\right)\right)\right) \in \mathbb{R}^{d_k}$$
 
-$$v_t^h = \text{Swish}\left(\text{ShortConv}\left(W_t^v x_t\right)\right) \in \mathbb{R}^{d_v}$$
+$$v_t^h = \text{Swish}\left(\text{ShortConv}\left(W_v^h x_t\right)\right) \in \mathbb{R}^{d_v}$$
 
-$$\beta_t^h = \text{Sigmoid}\left(W_\beta x_t\right) \in (0, 1)$$
+$$\beta_t^h = \text{Sigmoid}\left(W_\beta^h x_t\right) \in (0, 1)$$
 
 $$z_t^h = W_\alpha^\uparrow W_\alpha^\downarrow x_t + b_\alpha^h \in \mathbb{R}^{d_k}$$
 
@@ -166,101 +166,143 @@ $$\alpha_{i \to l} = \frac{\phi(q_l, k_i)}{\sum_{j=0}^{l-1} \phi(q_l, k_j)}, \qu
 
 為減少此開銷，我們將 $L$ 層劃分為 $N$ 個 block，每個 block $S = L/N$ 層。Block $n$（層索引 $B_n$）內的層輸出通過求和歸約為單一表示 $b_n = \sum_{j \in B_n} f_j(h_j)$，其中 $b_n^i$ 表示 block 前 $i$ 層的部分和；設 $b_0 = h_1$，因此 Token Embedding 始終作為來源包含在內。跨 block，只對 $N$ 個 block 級表示應用完全注意力：對 block $n$ 的第 $i$ 層，Value 矩陣為：
 
-$$V = \begin{cases} [b_0, b_1, ..., b_{n-1}]^\top & i = 1 \text{（block 首層）} \\ [b_0, b_1, ..., b_{n-1}, b_{n-1}^i]^\top & i \geq 2 \text{（後續層）} \end{cases}$$
+$$V = \begin{cases} [b_0, b_1, ..., b_{n-1}]^\top & i = 1 \text{（block 首層）} \\ [b_0, b_1, ..., b_{n-1}, b_n^{i-1}]^\top & i \geq 2 \text{（後續層）} \end{cases}$$
+
+Keys 與注意力權重仍遵循式 (8)(9)。最終輸出層再聚合全部 $N$ 個 block 表示。在 Block AttnRes 下，內存與通信開銷從 $O(Ld)$ 降到 $O(Nd)$；此 block 結構也限制了推理時狀態規模，使跨 block 的並行結果能透過 online softmax [80] 與 block 內順序部分和更好地合併，顯著降低推理時間成本。
+
+經驗上，$N \approx 8$ 在各模型規模上已能收回大部分收益 [58]；對 Kimi K3，我們將層劃分為 8 個、每塊 12 層的 block（末塊可能不完整），若把 Embedding 層也計入則共 9 個 block。
 
 ---
 
 ### 2.3 Stable LatentMoE
 
-LatentMoE 在前饋網絡中引入潛路由，將 FFN 轉換為潛專家混合。路由的 Key-Value 表示被壓縮為低維向量，激活時通過上投影重建。具體來說，令 $x \in \mathbb{R}^d$ 為輸入，路由器首先計算：
+同時擴大專家池與每 Token 激活專家數，能擴展專家特化空間；但在常規 MoE 中，每個被選中的專家都接收完整 $d$ 維 Token 表示，因此通信與專家權重流量會隨路由重數一起增長。LatentMoE [32] 透過把完整模型寬度與路由專家寬度分離，使這種擴展可負擔：共享專家保留全寬路徑處理共通變換，而專門化的路由專家在寬度為 $\ell$ 的緊湊潛空間中運算。這使 Kimi K3 能將通道混合擴展到 896 個路由專家、每 Token 激活 16 個，對應稀疏度 56。
 
-$$s = \text{Softmax}(\text{Norm}(W_g x)) \in \mathbb{R}^n$$
+這種極度稀疏會放大原設計的兩種失效模式。第一，路由路徑把 $W_\downarrow$、門控多分支專家 FFN 與 $W_\uparrow$ 串成近四次連續矩陣乘法；此病態條件結構疊加 2.8 兆參數規模，會在路由分支產生內部激活爆炸。第二，均衡近 $10^3$ 個專家的負載，已超出既有無輔助損失方法能穩定更新偏置的制度。Stable LatentMoE 以三個組件應對這兩種失效：上投影前的 RMSNorm，以及用來抑制激活爆炸的 Sigmoid Tanh Unit GLU（SiTU-GLU），再加上用於負載均衡的 Quantile Balancing（QB）。
 
-其中 $n = 896$ 是路由專家數，Norm 是可學習的通道級 Normalization。為提高路由穩定性，門控分支計算：
+如圖 2 所示，該層遵循 DeepSeekMoE [23] 的共享／路由專家組織。對 $x \in \mathbb{R}^d$，共享專家直接處理 $x$；路由路徑則投影為 $z = W_\downarrow x \in \mathbb{R}^\ell$，將 $z$ 分派給被選專家，再透過 $W_\uparrow$ 把加權聚合映回 $\mathbb{R}^d$：
 
-$$\text{gate} = \text{Sigmoid}(W_g x) \in (0, 1)$$
+$$u = \sum_{i \in \mathcal{T}_k(x)} p_i\, E_i^{\mathrm{routed}}(W_\downarrow x), \qquad
+y = \sum_{j=1}^{N_s} E_j^{\mathrm{shared}}(x) + W_\uparrow\,\mathrm{RMSNorm}(u)
+\quad (11)$$
 
-最終權重為 $w = \text{gate} \odot s$。為處理路由中的不平衡，我們引入每專家偏置 $b \in \mathbb{R}^n$，並定義 Top-k 選擇和路由權重（依 Eq. 10）：
+其中 $u \in \mathbb{R}^\ell$ 是聚合後的路由表示，$E_j^{\mathrm{shared}}:\mathbb{R}^d\to\mathbb{R}^d$ 與 $E_i^{\mathrm{routed}}:\mathbb{R}^\ell\to\mathbb{R}^\ell$ 分別是共享與路由專家前饋網絡，$p_i$ 為下文 Quantile Balancing 定義的路由權重。Kimi K3 在每一層將全寬共享專家數固定為 $N_s = 2$。
 
-$$s_i = \text{Sigmoid}(W_g x_i), \quad \mathcal{T}_i = \text{argtop}_k(s_i + b), \quad p_{i,j} = \begin{cases} \dfrac{s_{i,j}}{\sum_{r \in \mathcal{T}_i} s_{i,r}} & j \in \mathcal{T}_i \\ 0 & \text{otherwise} \end{cases}$$
+#### 2.3.1 Normalized LatentMoE
 
-偏置 $b$ 從路由概率 $p_{i,j}$ 計算中省略，這樣它只調節 dispatch（Top-k 選了哪些專家）而不改變混合權重或直接干擾路由器的梯度優化。
+原始 LatentMoE 直接把 $W_\uparrow$ 作用於聚合路由表示 $u$，而其尺度會隨被選專家與路由權重變化。如式 (11) 所示，Kimi K3 改在專家聚合與上投影之間插入 RMSNorm [147]。這降低路由分支對尺度變動的敏感度，再與全寬共享分支合併。除穩定訓練外，額外的 RMSNorm 也一致地改善驗證損失與下游基準。
 
-#### 2.3.1 SiTU-GLU
+#### 2.3.2 Sigmoid Tanh Unit GLU（SiTU-GLU）
 
-在 FFN 投影之間，我們用 SiTU-GLU 取代標准 SwiGLU。SiTU-GLU 將 Swish 激活函數的 cap 替換為平滑的 Tanh cap：
+Gated Linear Unit（GLU）以 sigmoid 閘控線性 value 分支，計算 $\mathrm{Sigmoid}(W_g x) \odot W_u x$ [26]。SwiGLU 把 sigmoid 閘換成 $\mathrm{Swish}(x)=x\,\mathrm{Sigmoid}(x)$，在 Transformer 上表現強 [108]，其後成為 LLM 中廣泛採用的 FFN 設計；其經驗有效性的完整解釋仍未定論。
 
-$$\text{SiTU-GLU}(x) = \beta_1 \tanh\left(\frac{W_g x}{\beta_1}\right) \odot \beta_2 \tanh\left(\frac{W_u x}{\beta_2}\right)$$
+然而 SwiGLU 的兩個相乘因子都無界，同位置同時偏大時會產生激活離群值，並提高低精度算術的溢出風險。原始 GLU 的 sigmoid 閘避免了閘值無界增長，但無法保留 Swish 在正半軸近似線性的特性。這促使我們尋找一種既能控制大值增長、又能保留 SwiGLU 局部與正側響應特徵的激活；近期也有其他工作探索這類權衡的不同參數化 [52]。
 
-Gate branch 的 $\beta_1 = 4$，Up branch 的 $\beta_2 = 25$。由於 $|\tanh(z)| < 1$ 且 $0 < \text{Sigmoid}(z) < 1$，每個輸出坐標滿足 $\|\text{SiTU-GLU}(x)\|_\infty \leq \beta_1 \beta_2 = 100$，輸出有嚴格上界。在原點附近，$\beta \tanh(z/\beta) = z + O(z^3 / \beta^2)$，因此 SiTU-GLU 與 SwiGLU 一階匹配。隨 $\beta \to \infty$ 精確退化為 SwiGLU。
+為此，我們提出 Sigmoid Tanh Unit GLU（SiTU-GLU）。它對 Swish 閘的線性因子、以及 up 分支，分別施加平滑上蓋 $\mathrm{softcap}(x,\beta)=\beta\tanh(x/\beta)$：
 
-#### 2.3.2 Quantile Balancing
+$$\mathrm{SiTU\text{-}GLU}(x)=\Bigl[\beta_1\tanh\!\Bigl(\frac{W_g x}{\beta_1}\Bigr)\odot\mathrm{Sigmoid}(W_g x)\Bigr]\odot\Bigl[\beta_2\tanh\!\Bigl(\frac{W_u x}{\beta_2}\Bigr)\Bigr]
+\quad (12)$$
 
-隨著專家數增長到近千，均衡路由變得越來越重要。傳統輔助損失方法 [30] 在每個 Token 上增加一個負載不平衡罰項，但這會直接干擾路由決策與梯度優化。我們採用無輔助損失的路由均衡：對每個專家維護一個偏置項 $b_j$，根據目標加載 $q := mk/n$ 週期性更新（依 Eq. 14）：
+對 Kimi K3，我們取 gate 分支 $\beta_1=4$、up 分支 $\beta_2=25$。縮放 tanh 在原點附近近似線性、在大幅度處有界，使 SiTU-GLU 能保留 SwiGLU 的局部響應，同時約束乘積中的兩個因子。圖 4 在同一切片上比較 GLU、SwiGLU 與 SiTU-GLU 的分支定義與標量響應。§B 給出局部展開、極限情形、形式輸出上界，以及與硬裁剪的比較。
 
-$$b_j \leftarrow b_j - \eta \left( \frac{1}{m} \sum_{i=1}^{m} \mathbf{1}_{j \in \mathcal{T}_i} - \frac{k}{n} \right)$$
+#### 2.3.3 Quantile Balancing
 
-此更新將專家加載推向目標，類似於 SignSGD，但直接作用於偏置而非路由器參數。
+不同於基於輔助損失的路由 [33]，Kimi K3 採用無輔助損失路由 [30]。負載均衡的做法是：在用於 Top-$k$ 選擇的路由器分數上，加上專家特定偏置 $b_j$。對 Token $x_i$，路由器計算 $s_i=\mathrm{Sigmoid}(W_r x_i)$，並應用：
+
+$$\mathcal{T}_i=\mathrm{argtop}_k(s_i+b),\qquad
+p_{i,j}=\frac{s_{i,j}}{\sum_{r\in\mathcal{T}_i}s_{i,r}}\ \ (j\in\mathcal{T}_i)
+\quad (13)$$
+
+由於 $b$ 不進入 $p_{i,j}$，它只調節 dispatch，而不改變混合權重，也不干擾路由器的梯度優化。原方法以固定步長規則 $b_j^{(t+1)}=b_j^{(t)}+\gamma\,\mathrm{sign}(\bar{\ell}-\ell_j^{(t)})$ 更新 $b$ [30]，其中 $\gamma$ 需在慢適應與負載振盪之間折衷。隨著 LatentMoE 把每層路由專家池擴到 896，維持均衡負載變得更難；失衡會拖慢專家並行訓練，也可能讓部分專家訓練不足 [48]。
+
+為解決此限制，我們引入 Quantile Balancing（QB）：依匹配目標負載的路由器分數分位數來設定每個專家偏置 [112]。考慮一批 $m$ 個 Token、路由到 $n$ 個專家並做 Top-$k$ 選擇，則每專家目標負載為 $q:=mk/n$。QB 從單次前向傳播導出下一輪偏置。路由在偏置分數 $s_i+b^{(t)}$ 上改用 Top-$(k+1)$：前 $k$ 項是實際走的路由，第 $(k+1)$ 項則是專家要進入 Token $i$ 的 Top-$k$ 所必須超過的截斷 $\alpha_i^{(t)}$。從 Top-$(k+1)$ 取截斷，可避免另算 token 側分位數。接著在截斷固定時，選擇使專家 $j$ 達到目標負載的偏置；在候選偏置 $\tilde{b}_j^{(t+1)}$ 下，路由到專家 $j$ 的 Token 數為
+
+$$\sum_{i=1}^{m}\mathbf{1}\!\left[s_{i,j}+\tilde{b}_j^{(t+1)}>\alpha_i^{(t)}\right],$$
+
+它對閾值 $-\tilde{b}_j^{(t+1)}$ 單調遞減。在無平手下，令該計數等於 $q$，則 $-\tilde{b}_j^{(t+1)}$ 恰為 margin $s_{i,j}-\alpha_i^{(t)}$ 的第 $(q+1)$ 大者，從而使恰有 $q$ 個 margin 高於閾值。由於 $q/m=k/n$，這正是跨 Token margin 的 $(1-k/n)$-分位數，於是 QB 更新為：
+
+$$\tilde{b}_j^{(t+1)}\leftarrow -\mathrm{quantile}_{1-k/n}\bigl(s_{:,j}-\alpha^{(t)}\bigr),\qquad
+b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)\,\mathbf{1}
+\quad (14)$$
+
+margin 是從原始分數 $s_{i,j}$ 減去偏置後的截斷 $\alpha_i^{(t)}$，因此舊偏置只透過截斷進入更新；第二行再去掉一個不改變 Top-$k$ 選擇的公共偏移。為保證因果性，更新只在下一步生效 [30]，亦即一批數據絕不會用由自身導出的偏置來路由。圖 5 以 $m=8$、$n=4$、$k=1$（每專家目標 $q=2$）示意。推理時最終偏置凍結。均衡分配推導見 §C。
 
 ![Quantile Balancing](/higumalu-note/images/k3_tech_report/quantile-balancing.png)
-*圖 5：Quantile Balancing 示意（m=8 tokens, n=4 experts, k=1）。(a) 不均衡路由：初始加載 (4, 3, 1, 0)；(b) 分位數平衡：每列繪製偏差後的分數灰條，紅色虛線為偏差調整線；(c) 均衡路由：最終加載 (2, 2, 2, 2)*
+*圖 5：Quantile Balancing 示意（$m=8$ tokens，$n=4$ experts，$k=1$）。(a) 不均衡路由：負載 $(4,3,1,0)$；(b) 分位數平衡：灰條為當前偏置分數的 margin，紅虛線為偏置調整；(c) 均衡路由：最終負載 $(2,2,2,2)$*
 
-對於精確的偏差估計，我們從最優平衡分配問題的對偶推导出 Alternating Quantile Solver：交替求解 token 側閾值 $\alpha$ 和專家側閾值 $\beta$，每步封閉形式精確求解。實務上，用 1000 個 bin 的直方圖估計分位數，僅需一次整數 All-Reduce 通信，代價不到原始 margin 通信的 1%。
+**直方圖估計。** 在大規模下，式 (14) 的分位數橫跨整個全局 batch，margin 數量可達數百萬且分散在各 rank 與累積步，訓練時蒐集它們做精確分位數並不可行。我們改從每個專家 margin 的直方圖讀取分位數：一次 all-reduce 加總各 rank 的 bin 計數，再從合併計數還原分位數。由於計數可加，無論 Token 如何分片，直方圖都代表合併後的全局 batch；估計在 bin 寬度意義下反映整批分位數，而通信代價僅為每專家數百個 bin。這是我們實務採用的方法；細節與誤差界見 §D。
 
 ---
 
 ### 2.4 原生視覺
 
-Kimi K3 的視覺編碼器 MoonViT-V2 將圖像和視頻編碼為視覺 Token 序列。輕量級投影器將視覺特徵映射到與語言骨幹共享的 Embedding 空間，然後一起送入骨幹網絡處理。這種原生多模態設計使視覺理解與語言推理深度融合，而非事後拼接。
+Kimi K3 是原生多模態的：文本、圖像與視頻由單一共享骨幹在同一上下文中處理，沒有事後模態對齊階段。此設計是 §1 所述長程、vision-in-the-loop 行為的架構基礎。渲染輸出與其產生代碼同處一條 Token 流中；模型可寫代碼、檢視結果的截圖或視頻幀，並迭代 refinement 視覺產物——使用者介面、圖形、視頻——而無需跨模型交接。
 
-此視覺訓練配方基於 Kimi K2.5 [60, 62] 的整體設計構建：視覺輸入首先由 MoonViT-V2 編碼，然後由輕量級 MLP 投影器映射到共享語言空間。MoonViT-V2 是一個約 4 億參數的 27 層視覺 Transformer，採用 RMSNorm 並從其線性投影和注意力投影中移除所有偏置項——此設計從訓練初期就進一步穩定了跨模態表示融合。
+**MoonViT-V2。** 相對 Kimi K2.5 的關鍵分歧是：我們以 next-token prediction **從頭訓練** Kimi K3 的視覺編碼器 MoonViT-V2。既有做法（含 Kimi K2.5 自身）通常以 SigLIP 這類對比預訓練模型初始化視覺編碼器，假定預訓練視覺知識能給模型起跑優勢。我們偏離此做法，主因是訓練穩定性。當預訓練編碼器掛上 LLM 後，聯合優化變得不穩：SigLIP 初始化的 MoonViT-3D 梯度範數持續偏高且常尖峰，而 MoonViT-V2 在整個訓練過程保持穩定（圖 6）。以 next-token prediction 訓練，也讓編碼器表示直接由語言模型目標塑造，而非由偏愛全局語義、弱化細粒度文本與結構線索的對比損失塑造。值得注意的是，MoonViT-V2 在視覺評估上與 SigLIP 初始化基線相當，顯示在大規模多模態語言模型上，對比預訓練並非必要的初始化。
 
-圖像和視頻以完全共享的參數處理：注意力分為幀內空間和幀間時間兩遍，時間池化進一步壓縮 Token 維度。投影前，像素洗牌（pixel-shuffle）操作以 2×2 下採樣將 Token 數量減少到原來的四分之一，使最長 3584×3584 像素的輸入在百萬 Token 上下文窗口內仍然可負擔。
+**架構。** 此訓練配方建立在延續 Kimi K2.5 [60, 62] 整體設計的視覺通路上：視覺輸入先由 MoonViT-V2 編碼，再由輕量 MLP 投影器映入 LLM。MoonViT-V2 是約 0.4B 參數的 27 層視覺 Transformer，採用 RMSNorm，並從線性與注意力投影中移除所有偏置——此設計進一步穩定上述從頭優化。圖像與視頻以完全共享參數處理（同 MoonViT-3D）：注意力分解為幀內空間與幀間時間兩遍，時間池化再沿時間維壓縮 Token。投影前，以 $2\times2$ 下採樣的 pixel-shuffle 將視覺 Token 數減為四分之一，使最長 $3584\times3584$ 像素輸入在 1M Token 上下文內仍可負擔。
 
 ---
 
 ### 2.5 Per-Head Muon
 
-我們對注意力頭使用 Per-Head Muon 優化器。Muon（Matrix u for u, Newton-ish）是一種為 Transformer 設計的牛頓類優化器，在某些設置下收斂速度比 AdamW 快 [22]。Per-Head 版本對每個注意力頭維護單獨的學習率和狀態，進一步提升收斂穩定性。
+延續 Kimi K2，Kimi K3 對其矩陣參數採用 Muon [54] 作為優化器。對於注意力投影，我們進一步將其細化為 per-head 變體：不再對完整的 Q、K、V 投影矩陣施加 Newton–Schulz 正交化，而是沿 head 維度切分它們的動量矩陣，並對每個 head 的分塊分別做正交化。直觀上，全矩陣正交化把所有 head 視為單一耦合塊，因此梯度或動量尺度較大的 head 會主導共享更新方向，而尺度較小的 head 則得到歸一化不足的更新；per-head 正交化則能在各 head 之間均衡更新尺度。實務上，此設計帶來更均衡的跨 head 學習動態，並在更大規模下提升訓練穩定性。它也略微降低優化器開銷，因為對 tall 的 per-head 分塊做 Newton–Schulz 迭代，比對完整投影矩陣更便宜。
 
 ---
 
 ## 3. 預訓練（Pre-Training）
 
-### 3.1 數據配方
+### 3.1 預訓練數據
 
-Kimi K3 的預訓練數據包括多語言語料、專業領域文本（代碼、數學、科學論文）和網頁內容。關鍵改進包括：
-- **數據質量過濾**：多階段質量分類器去除低質量內容
-- **領域平衡**：確保數學、編程、推理密集內容的充分覆蓋
-- **去重**：大規模語義去重減少冗餘
+Kimi K3 在涵蓋四大文本領域——Web Text、Code、Mathematics、Knowledge——以及大規模視覺語料的精選語料上預訓練。視覺數據涵蓋 captions、交錯圖文文檔、OCR、感知、視頻與視覺 coding 數據。數據管線建立在 Kimi K2 [59] 之上，並在 Kimi K2.5 [60] 中進一步精煉。
 
-### 3.2 訓練穩定性
+**文本數據。** 每個領域以規則啟發式、分類器質量打分與去重共同過濾，領域特定採樣率由較小模型上的消融決定。延續 Kimi K2 [59] 的改寫配方，我們以風格與視角多樣的 prompting、分塊自回歸生成，以及相對源文件的保真度驗證，改寫知識與數學語料。
 
-2.8 兆參數規模的訓練面臨獨特挑戰：
-- **權重裁剪**：從 Kimi K2 沿用的權重裁剪機制防止梯度爆炸
-- **漸進式課程學習**：從短序列開始，逐步過渡到百萬 Token
-- **BF16/FP32 混合精度**：關鍵操作使用 FP32 防止累積誤差
+**視覺數據。** 視覺語料遵循 Kimi K2.5 [60] 的分類體系，結合開源集合與內部過濾、合成、去重管線。訓練期間，座標監督同時提供絕對與歸一化（$[0,1]$）格式，以支持精確且對解析度穩健的定位。除經典文字配圖外，我們大幅擴展程式化多模態數據，把代碼片段與其渲染視覺在 SVG、3D 資產、網頁、遊戲與 CAD 圖等領域特定格式中配對。
 
-### 3.3 擴展法則
+### 3.2 擴展法則
+
+前述架構、數據與訓練改進共同定義了新的模型家族。由於這些改變也改寫了最優訓練制度，我們進行專門的擴展法則研究，重調關鍵超參數，包括 batch size、學習率、tokens-per-parameter 比（TPP）與模型形狀。在 held-out OOD 驗證數據上，圖 7 的擴展法則曲線顯示，這些改進相對 Kimi K2 合計帶來約 **2.5×** 的整體擴展效率增益。表 1 提供 Kimi K2 與 Kimi K3 的詳細架構對照，標出促成此提升的結構變化。
+
+我們的擴展法則研究一致偏好 cosine decay 勝過 Warmup Stable Decay（WSD）[47]，因此採用 cosine decay 作為預設學習率日程。我們在固定最小學習率下比較兩者。儘管先前工作報告 WSD 可追平甚至勝過 cosine decay，我們觀察到兩種日程的最優超參數明顯不同：即使模型規模與訓練 Token 預算相同，最優峰值學習率與 batch size 也差異很大。因此，若用同一組超參數比較兩種日程，可能只因超參數更契合其中一方而產生不公平優勢。為確保公平，我們對每種日程各自做獨立擴展法則搜索；在各自最優超參數下，cosine decay 一致達到更低的最終損失。
 
 ![擴展法則](/higumalu-note/images/k3_tech_report/scaling-law.png)
 *圖 7：Kimi K2 和 Kimi K3 的擬合擴展法則曲線。Kimi K3 在相同 FLOPs 下達到更低驗證損失，相比 Kimi K2 提升 2.5× 擴展效率*
 
 | 參數 | Kimi K2 | Kimi K3 | 變化 |
 |------|---------|---------|------|
+| 架構 | MoE | MoE | – |
 | 層數 | 61 | 93 | ↑52% |
 | 總參數 | 1.04T | 2.78T | ↑167% |
 | 激活參數 | 32.6B | 104.2B | ↑220% |
-| Latent MoE 維度 | — | 3584 | 新增 |
+| Hidden Dimension | 7,168 | 7,168 | = |
+| Latent MoE 維度 | — | 3584（0.5×） | – |
+| 每專家 MoE Hidden | 2,048 | 3,072 | ↑50% |
+| 路由專家數 | 384 | 896 | ↑133% |
 | 每 Token 激活專家 | 8 | 16 | ↑100% |
-| 上下文長度 | 128K | 1M | ↑8× |
-| 注意力機制 | MLA | Hybrid KDA–MLA | 新架構 |
-| 激活函數 | SwiGLU | SiTU-GLU | 新函數 |
-| 視覺編碼器 | — | MoonViT-V2 (27層, patch=14) | 新增 |
+| 共享專家 | 1 | 2 | ↑100% |
+| Attention Heads | 64 | 96 | ↑50% |
+| Dense 層數 | 1 | 1 | = |
+| 詞表大小 | 160K | 160K | = |
+| 訓練上下文長度 | 128K | 1M | ↑8× |
+| 注意力機制 | MLA | Hybrid KDA–MLA | – |
+| 激活函數 | SwiGLU | SiTU-GLU | – |
+| Attention 層組成 | 61 MLA | 69 KDA + 24 MLA | – |
+| MTP 層數 | 1 | 1 | = |
+| ViT 總參數 | — | 401M | – |
+| ViT 層數 | — | 27 | – |
+| ViT Patch Size | — | 14 | – |
+| ViT Attention Heads | — | 12 | – |
+
+### 3.3 訓練配方
+
+Kimi K3 採用原生多模態訓練策略：語言與視覺從訓練一開始就聯合優化，而非事後把視覺編碼器嫁接到預訓練語言模型。在此範式下，視覺與文本 Token 交織於單一 next-token prediction 目標中，使共享骨幹從一開始就學習統一的多模態表示。
+
+我們以 Per-Head Muon 優化器（§2.5）搭配 Kimi K2 引入的權重裁剪機制優化模型，並以 QB（§2.3.3）做 MoE 負載均衡。學習率採用帶 **1%** 線性 warmup 的 cosine 日程；weight decay 全程設為 **0.1**。
+
+預訓練從 8K Token 上下文長度開始，之後在後續訓練階段擴展到 64K Token。
 
 ### 3.4 長上下文擴展
-
-Kimi K3 的預訓練從 8K Token 上下文長度開始，後在退火階段逐步擴展到 64K Token。
 
 **位置編碼**：Kimi K3 不使用任何顯式位置嵌入（NoPE），而是透過 KDA 的遞歸門控和衰減機制隱式編碼位置信息。因此，模型無需任何位置編碼修改（如 RoPE 重縮放或插值 [93]）即可直接外推到百萬 Token 上下文。
 
@@ -391,9 +433,9 @@ KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準
 
 ### 5.2.3 多模態編碼器優化（詳）
 
-**多模態編碼器中的動態 CP**：在長上下文多模態訓練中，大圖像和長視頻大幅增加視覺編碼器的計算時間，並導致設備間顯著負載不均衡。為此，我們將上下文並行擴展到此類大樣本。單個大圖像沿其空間維度分區到多個設備，並在每個頭內通過 gather-KV 跨 CP rank 計算注意力。此外，我們將每個 CP group 分為若干 sub-CP group，以負載均衡的方式將多個大圖像分佈在其間，防止通信比例隨規模增長。這同時減少了大視覺樣本的 prefill 延遲和設備間負載不均衡，使編碼器剩餘計算隱藏在流水線氣泡中。
+**多模態編碼器中的動態 CP**：在長上下文多模態訓練中，大圖像和長視頻大幅增加視覺編碼器的計算時間，並導致設備間顯著負載不均衡。為此，我們將上下文並行擴展到此類大樣本。單個大圖像沿 patch 維分區到多個設備，並透過 gather-KV 跨 CP rank 計算注意力。此外，我們將每個 CP group 分為若干 sub-CP group，以負載均衡方式把多個大圖像分佈其間，防止通信比例隨規模增長。這同時減少大視覺樣本的編碼器延遲與跨設備負載不均衡，使剩餘編碼器計算得以隱藏在流水線氣泡中。
 
-**PP 氣泡中的編碼器計算**：在 Kimi K2.5 中，我們引入了解耦編碼器進程（DEP）[60]，將視覺編碼器卸載到專用 GPU 工作者池，使編碼器和解碼器可在不同設備類型上執行。對於 Kimi K3，我們進一步擴展，在 Transformer 骨幹的通信階段將視覺編碼器計算調度到流水線並行（PP）氣泡中。這透過在骨幹本會停頓的 PP 氣泡間隔期間保持所有工作者高效運轉，來提高整體利用率。
+**PP 氣泡中的編碼器計算**：在 Kimi K2.5 中，我們引入 Decoupled Encoder Process（DEP）[60]，將 ViT 與文本訓練拆成不同階段，並跨 PP stage 平衡視覺前向／反向。我們觀察到，在 interleaved 1F1B 流水線日程下，前幾個 PP micro-batch 的文本前向都排在最開頭，而最後幾個 micro-batch 的文本反向要到最末尾才結束。因此我們進一步分解 ViT 計算 [34]：前幾個 PP micro-batch 的 ViT 前向同步提前執行，其餘前向排進流水線氣泡，反向同理。結果是大部分 ViT 計算隱藏在氣泡中，大幅消除視覺編碼器的有效開銷。
 
 ### 5.3 百萬 Token Agentic 強化學習
 
@@ -401,9 +443,13 @@ KDA 以固定大小遞歸狀態 $S \in \mathbb{R}^{d_k \times d_v}$ 替代標準
 
 ### 5.3.1 協作 RL 系統（詳）
 
-**外部 KV-Cache 保留**：當軌跡因 partial rollout 或環境暫停而中斷時，其 KV-Cache 在規模上太大而無法保存在 GPU 內存中。我們轉而將 KV-Cache 寫入外部存儲——NVMe SSD——並在軌跡恢復時重新加載。為最小化此 I/O 開銷，我們實現了一個壓縮層，以更緊湊的格式編碼 KV-Cache，在無明顯質量損失的情況下將傳輸時間減少一個數量級。
+**外部 KV-Cache pool。** 在 1M 上下文的多步 rollout 中，前綴 KV-Cache 未命中極為昂貴。Partial rollout 會在每次迭代開始時加劇此問題——上一輪許多未完成的長 prefill 請求同時湧入。推測解碼又在相對固定的工具調用間隔內加快請求周轉，增加前綴塊 churn。這些因素可能觸發搶占並降低緩存命中率，而這對長上下文 RL 至關重要。
 
-**自適應節流**：長程任務表現出高度可變的響應時間：網路搜索在幾秒內返回，而編譯可能需要數分鐘。我們實現自適應節流來管理整體 rollout 吞吐量：調度器監控飛行中請求組合，並動態調整啟動新軌跡的速率，在防止資源耗竭的同時最大化 GPU 利用率。
+因此，我們以 write-back 設計把前綴保留與 GPU 常駐解耦：活躍解碼塊留在 GPU KV-Cache；可復用的閒置前綴僅在被 GPU 驅逐時寫回 **CPU DRAM 中的外部 KV-Cache pool**，並在下次復用前預取回來。KDA 狀態與對應的 MLA KV-Cache 塊一同卸載／預取，保持生命週期對齊。相較 write-through，此策略只對離開活躍解碼路徑的前綴產生 CPU DRAM 與傳輸帶寬開銷，避免對仍在 GPU 上活躍的塊做冗餘 CPU 拷貝。
+
+為給外部 pool 留出足夠 DRAM，我們在訓練迭代結束後把訓練狀態（模型權重與優化器狀態）卸載到 **NVMe**；rollout 迭代結束後再釋放該 pool，以免與訓練工作負載爭用。
+
+**Rollout 自適應節流調度。** 在多步 rollout 中，上下文隨軌跡推進而增長，依整條軌跡平均長度設定固定並發既難估計，又會在早期過於保守；反之並發過高會在後期造成 KV-Cache 壓力並觸發搶占。我們因此在 LLM 請求調度層設計自適應節流，利用活躍請求數、排隊請求數與 KV-Cache 利用率等運行時信號，動態控制送入推理引擎的請求數。這使早期 rollout 保持高利用率，並在 KV-Cache 壓力上升時降低並發，無需手動調參即可同時避免欠飽和與過載。
 
 ### 5.3.2 沙盒基礎設施（詳）
 
