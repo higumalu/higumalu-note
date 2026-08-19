@@ -907,6 +907,553 @@
       </tags>
   </entry>
   <entry>
+    <title>為什麼我看好 DeepSeek Harness：從痛點到實際應用</title>
+    <url>/higumalu-note/2026-08-19-deepseek-harness/</url>
+    <content><![CDATA[<h1 id="為什麼我看好-DeepSeek-Harness：從痛點到實際應用"><a href="#為什麼我看好-DeepSeek-Harness：從痛點到實際應用" class="headerlink" title="為什麼我看好 DeepSeek Harness：從痛點到實際應用"></a>為什麼我看好 DeepSeek Harness：從痛點到實際應用</h1><h2 id="先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？"><a href="#先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？" class="headerlink" title="先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？"></a>先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？</h2><p>是 LLMWare 太封閉、RAG 流水線太脆弱、還是 LangChain 更新一次就壞一片 Plugin？</p>
+<p>DeepSeek 近期低調開源的 <strong><a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a></strong>（簡稱 <code>dsh</code>）——163k Stars、12,400+ commits——試圖回答一個更根本的問題：</p>
+<blockquote>
+<p><strong>如何讓 AI Agent 在真實世界穩定運作，而不是只會在 Demo 裡優雅運轉？</strong></p>
+</blockquote>
+<hr>
+<h2 id="一、現在的-Agent-開發有什麼問題？"><a href="#一、現在的-Agent-開發有什麼問題？" class="headerlink" title="一、現在的 Agent 開發有什麼問題？"></a>一、現在的 Agent 開發有什麼問題？</h2><h3 id="問題-1：能力與框架深度耦合"><a href="#問題-1：能力與框架深度耦合" class="headerlink" title="問題 1：能力與框架深度耦合"></a>問題 1：能力與框架深度耦合</h3><p>大多數 Agent 框架把「模型調用」「工具執行」「對話管理」「記憶體」全部寫死在一個 SDK 裡。想換一個 LLM Provider？重寫。想加一個 Memory 系統？改核心代碼。想在正式環境加入審批機制？得 hack。</p>
+<p>結果：<strong>實驗環境很美好，生產環境很悲慘</strong>。</p>
+<h3 id="問題-2：執行過程是黑箱"><a href="#問題-2：執行過程是黑箱" class="headerlink" title="問題 2：執行過程是黑箱"></a>問題 2：執行過程是黑箱</h3><p>當 Agent 執行了一連串 Tool Call，你知道它看到什麼、用過哪些資訊嗎？大多數框架的答案：「不知道，等它結束再看結果。」</p>
+<p>問題在於：當 Agent 在正式環境裡做出錯誤決策時，你沒有辦法回溯。它可能是吃了錯誤的上下文、可能是 prompt 被汙染、也可能 Tool 結果被錯誤解析。無法審計，就無法改善。</p>
+<h3 id="問題-3：測試和調試困難"><a href="#問題-3：測試和調試困難" class="headerlink" title="問題 3：測試和調試困難"></a>問題 3：測試和調試困難</h3><p>Agent 的輸出是非確定性的，如何測試？大多數框架沒有好的機制。要嘛降低到只測 prompt，要嘛就得跑 end-to-end 然後祈禱。代價高、反饋慢。</p>
+<hr>
+<h2 id="二、DeepSeek-Harness-的核心思路：「一切皆插件」"><a href="#二、DeepSeek-Harness-的核心思路：「一切皆插件」" class="headerlink" title="二、DeepSeek Harness 的核心思路：「一切皆插件」"></a>二、DeepSeek Harness 的核心思路：「一切皆插件」</h2><p>Harness 的底層由 <a href="https://github.com/cordiverse/cordis">Cordis</a> 框架驅動，核心哲學只有一句話：</p>
+<blockquote>
+<p><strong>Every capability is a plugin.</strong></p>
+</blockquote>
+<p>這不是行銷口號，而是架構事實。在 DSH 裡：</p>
+<ul>
+<li>模型調用 → 插件</li>
+<li>工具執行（bash、file、web search） → 插件</li>
+<li>對話管理（session、turn、step） → 插件</li>
+<li>記憶體系統 → 插件</li>
+<li>排程提醒 → 插件</li>
+<li>沙箱隔離 → 插件</li>
+<li>整個 UI → 插件</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">    subgraph Cordis Kernel</span><br><span class="line">        K[Kernel]</span><br><span class="line">    end</span><br><span class="line">    subgraph Plugins</span><br><span class="line">        M[Model&lt;br/&gt;Provider]</span><br><span class="line">        T[Tools]</span><br><span class="line">        S[Session&lt;br/&gt;Manager]</span><br><span class="line">        R[Memory&lt;br/&gt;System]</span><br><span class="line">        P[Planning&lt;br/&gt;Skills]</span><br><span class="line">    end</span><br><span class="line">    K --&gt; M</span><br><span class="line">    K --&gt; T</span><br><span class="line">    K --&gt; S</span><br><span class="line">    K --&gt; R</span><br><span class="line">    K --&gt; P</span><br></pre></td></tr></table></figure>
+<p>好處是什麼？</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>痛點</th>
+<th>DSH 解法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>想換模型 Provider</td>
+<td>替換一個插件</td>
+</tr>
+<tr>
+<td>想加 Memory</td>
+<td>插入一個插件</td>
+</tr>
+<tr>
+<td>想加審批環節</td>
+<td>插入一個插件</td>
+</tr>
+<tr>
+<td>想在正式環境隔離執行</td>
+<td>換一個沙箱插件</td>
+</tr>
+<tr>
+<td>想實驗新能力</td>
+<td>新增一個插件，不動核心</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>不需要 fork 框架，不需要等官方支援，自己動手豐衣足食。</strong></p>
+<hr>
+<h2 id="三、Cordis-的五個核心概念"><a href="#三、Cordis-的五個核心概念" class="headerlink" title="三、Cordis 的五個核心概念"></a>三、Cordis 的五個核心概念</h2><p>Cordis 是 DSH 的核心引擎，理解它的概念等於理解整個框架的設計邏輯：</p>
+<h3 id="1-Plugin-Service"><a href="#1-Plugin-Service" class="headerlink" title="1. Plugin = Service"></a>1. Plugin = Service</h3><p>插件就是一個帶生命周期的 Service對象，實現 <code>ctx.&lt;key&gt;</code> 接口。可以是簡單函數，也可以是完整的類。</p>
+<h3 id="2-Context-服務容器"><a href="#2-Context-服務容器" class="headerlink" title="2. Context = 服務容器"></a>2. Context = 服務容器</h3><p>每個 Service 佔據一個穩定的 <code>ctx.&lt;key&gt;</code> 位置，其他插件透過 key 查找服務，<strong>而非直接 import 實現</strong>。這就是依賴反轉。</p>
+<h3 id="3-inject-依賴聲明"><a href="#3-inject-依賴聲明" class="headerlink" title="3. inject = 依賴聲明"></a>3. inject = 依賴聲明</h3><p>插件宣告自己需要哪些服務，Cordis 自動等待這些服務就緒才啟動。<strong>啟動順序由依賴關係決定</strong>，不需要手動排程。</p>
+<h3 id="4-類型化事件"><a href="#4-類型化事件" class="headerlink" title="4. 類型化事件"></a>4. 類型化事件</h3><p>服務之間透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 四種模式通信。這不是簡單的事件總線，而是<strong>帶語義的分發策略</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// emit: 觀察，無返回值</span></span><br><span class="line"><span class="comment">// waterfall: 包裝請求，可短路</span></span><br><span class="line"><span class="comment">// parallel: 並行觀察</span></span><br><span class="line"><span class="comment">// serial: 依序觀察，累積結果</span></span><br></pre></td></tr></table></figure>
+<h3 id="5-可逆註冊（ctx-effect）"><a href="#5-可逆註冊（ctx-effect）" class="headerlink" title="5. 可逆註冊（ctx.effect）"></a>5. 可逆註冊（ctx.effect）</h3><p>所有注册都是副作用，teardown 時自動撤銷。記憶體不會洩漏。</p>
+<hr>
+<h2 id="四、解決了什麼問題？"><a href="#四、解決了什麼問題？" class="headerlink" title="四、解決了什麼問題？"></a>四、解決了什麼問題？</h2><h3 id="✅-問題-1-解決：深度可組合性"><a href="#✅-問題-1-解決：深度可組合性" class="headerlink" title="✅ 問題 1 解決：深度可組合性"></a>✅ 問題 1 解決：深度可組合性</h3><p>實際例子：MCP（Model Context Protocol）記憶體整合。</p>
+<p>DSH 內建 MCP Client 插件，只要一行配置就能把第三方記憶體系統接進來：</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 透過 MCP 接 Engram 記憶體</span></span><br><span class="line">npx @deepseek-ai/dsh web --patch <span class="string">&quot;examples/mcp-memory/engram.cordis.yml&quot;</span></span><br></pre></td></tr></table></figure>
+<p>三種記憶體系統（Memorix、MCP Reference Memory、Engram）任選，都是「插件替換」模式。<strong>不需要改 DSH 代碼，不需要等官方適配，自己配上去就能用。</strong></p>
+<h3 id="✅-問題-2-解決：完整軌跡審計"><a href="#✅-問題-2-解決：完整軌跡審計" class="headerlink" title="✅ 問題 2 解決：完整軌跡審計"></a>✅ 問題 2 解決：完整軌跡審計</h3><p>DSH 的 Session Log 是 append-only 的事件流，記錄：</p>
+<ul>
+<li>System prompt 每次組裝結果</li>
+<li>每次 Reasoning 過程</li>
+<li>每次 Tool Call 的輸入輸出</li>
+<li>Subagent 的調度與結果</li>
+<li>每次 Context 注入的內容</li>
+</ul>
+<p>在 Trajectory 視圖裡，你可以：</p>
+<ul>
+<li><strong>Resume</strong>：從任意中斷點恢復</li>
+<li><strong>Fork</strong>：複製對話分支</li>
+<li><strong>Search</strong>：搜尋歷史對話</li>
+<li><strong>Replay</strong>：重放整個執行過程</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Session Event Log (append-only):</span><br><span class="line">─────────────────────────────────────</span><br><span class="line">turn/start</span><br><span class="line">  step/start</span><br><span class="line">    system-prompt/assembled → &#123; full prompt content &#125;</span><br><span class="line">    agent/request → &#123; model, temperature, ... &#125;</span><br><span class="line">    llm/stream → &#123; chunks... &#125;</span><br><span class="line">    assistant/message → &#123; final message &#125;</span><br><span class="line">    tool/call → &#123; tool: &quot;bash&quot;, args: &quot;git status&quot; &#125;</span><br><span class="line">    tool/result → &#123; output: &quot;...&quot; &#125;</span><br><span class="line">  step/end</span><br><span class="line">turn/end</span><br></pre></td></tr></table></figure>
+<p><strong>當 Agent 出錯時，你有一條完整的因果鏈可以追查。</strong></p>
+<h3 id="✅-問題-3-解決：多種執行模式"><a href="#✅-問題-3-解決：多種執行模式" class="headerlink" title="✅ 問題 3 解決：多種執行模式"></a>✅ 問題 3 解決：多種執行模式</h3><p>DSH 內建四種模式，針對不同場景：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Standard</strong></td>
+<td>完整工具集：file edit、shell、web search、skills、planning、subagents、workflows</td>
+</tr>
+<tr>
+<td><strong>Code</strong></td>
+<td>把工具包裝成 SDK，讓模型自己寫 TypeScript 程序來組合多步操作</td>
+</tr>
+<tr>
+<td><strong>Minimal</strong></td>
+<td>極簡環境：只有 bash + file edit，用於基准測試模型能力</td>
+</tr>
+<tr>
+<td><strong>Creator</strong></td>
+<td>插件實驗室：即時檢查 Runtime、測試插件組合、創作新模式</td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│  Mode Picker                                │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  ○ Standard ─ Full coding agent             │</span><br><span class="line">│  ○ Code ─ Code Mode SDK orchestration       │</span><br><span class="line">│  ○ Minimal ─ Two-tool benchmark agent       │</span><br><span class="line">│  ○ Creator ─ Plugin lab &amp; preset authoring  │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<h3 id="✅-生產級能力：工具執行流水線"><a href="#✅-生產級能力：工具執行流水線" class="headerlink" title="✅ 生產級能力：工具執行流水線"></a>✅ 生產級能力：工具執行流水線</h3><p>DSH 的工具執行經過嚴格分層控制：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    pre[&quot;tools/pre-execute&quot;]</span><br><span class="line">    guards[&quot;Monotonic Guards&quot;]</span><br><span class="line">    approval[&quot;ctx.approval&lt;br/&gt;User Prompt&quot;]</span><br><span class="line">    around[&quot;tools/execute&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">    toolBody[&quot;Tool Body&quot;]</span><br><span class="line">    post[&quot;tools/post-execute&quot;]</span><br><span class="line">    finalize[&quot;finalizeContent&quot;]</span><br><span class="line">    </span><br><span class="line">    pre --&gt; guards --&gt; approval --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br><span class="line">    </span><br><span class="line">    pre --&gt;|deny| denied[skipped]</span><br><span class="line">    guards --&gt;|deny| denied</span><br><span class="line">    approval --&gt;|reject| denied</span><br></pre></td></tr></table></figure>
+<p>每層都可以包裝、改寫結果。<strong>鉤子（hooks）、審批（approval）、超時重試，全部是可插拔的插件，工具本身不需要知道這些邏輯。</strong></p>
+<h3 id="✅-安全能力：沙箱隔離"><a href="#✅-安全能力：沙箱隔離" class="headerlink" title="✅ 安全能力：沙箱隔離"></a>✅ 安全能力：沙箱隔離</h3><p>Harness 支援把工具執行放到隔離沙箱中，例如 <a href="https://e2b.dev/">E2B</a> 雲端沙箱。Local filesystem 和 subprocess 插件可以被一鍵替換為雲端沙箱：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># e2b.cordis.yml — 替換本地工具為雲端沙箱</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">insert:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">id:</span> <span class="string">e2b-sandbox</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">&#x27;@deepseek-ai/dsh-e2b&#x27;</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">sandboxTemplate:</span> <span class="string">standard</span></span><br></pre></td></tr></table></figure>
+<p><strong>本地開發、雲端執行，隔離級別可選。</strong></p>
+<hr>
+<h2 id="五、實際應用場景"><a href="#五、實際應用場景" class="headerlink" title="五、實際應用場景"></a>五、實際應用場景</h2><h3 id="場景-1：本地-Coding-Agent"><a href="#場景-1：本地-Coding-Agent" class="headerlink" title="場景 1：本地 Coding Agent"></a>場景 1：本地 Coding Agent</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 最簡單的使用方式</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指令列模式</span></span><br><span class="line">pnpm dsh --profile headless <span class="string">&quot;fix the failing test in this workspace&quot;</span></span><br></pre></td></tr></table></figure>
+<p>設定 <code>DEEPSEEK_API_KEY</code>，就能讓 Agent 幫你分析代碼庫、修復 Bug、寫測試。完整的事件日誌讓你清楚看到它為什麼這麼改。</p>
+<h3 id="場景-2：多輪對話-記憶跨-Session"><a href="#場景-2：多輪對話-記憶跨-Session" class="headerlink" title="場景 2：多輪對話 + 記憶跨 Session"></a>場景 2：多輪對話 + 記憶跨 Session</h3><p>透過 MCP Memory 插件，Agent 可以「記得」之前對話中的偏好設定：</p>
+<ol>
+<li>Session A：「幫我記住我的驗證飲料是 lapsang-black-tea」</li>
+<li>Session B：「我剛才的驗證飲料是什麼？」→ Agent 從記憶體系統查詢，返回正確答案</li>
+</ol>
+<p><strong>新的對話不需要重新設定前提，記憶持久化在外部系統。</strong></p>
+<h3 id="場景-3：排程提醒"><a href="#場景-3：排程提醒" class="headerlink" title="場景 3：排程提醒"></a>場景 3：排程提醒</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 啟用排程插件</span></span><br><span class="line">dsh web --patch examples/web-schedule/cordis.yml</span><br></pre></td></tr></table></figure>
+<p>Agent 可以創建、列舉、刪除提醒，且提醒綁定到對話 Session。離開對話後再回來，過期的提醒會自動觸發後續對話。</p>
+<h3 id="場景-4：企業內部的-Agent-流水線"><a href="#場景-4：企業內部的-Agent-流水線" class="headerlink" title="場景 4：企業內部的 Agent 流水線"></a>場景 4：企業內部的 Agent 流水線</h3><p>透過 API Gateway + Typert，Harness 提供完整的 Client-Server 類型安全 RPC：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Host 端：聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>構建時自動生成 Client 端的類型安全接口，確保前後端 API 不會因為簽名變更而悄悄 break。</p>
+<hr>
+<h2 id="六、橫向比較：DSH-vs-競爭者"><a href="#六、橫向比較：DSH-vs-競爭者" class="headerlink" title="六、橫向比較：DSH vs 競爭者"></a>六、橫向比較：DSH vs 競爭者</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>維度</th>
+<th>LangChain</th>
+<th>AutoGen</th>
+<th>DSH</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>插件系統</td>
+<td>有，但深度耦合</td>
+<td>有限</td>
+<td>一切皆插件</td>
+</tr>
+<tr>
+<td>執行審計</td>
+<td>日誌分散</td>
+<td>基本</td>
+<td>完整事件流</td>
+</tr>
+<tr>
+<td>工具流水線</td>
+<td>自己實現</td>
+<td>自己實現</td>
+<td>框架內建分層控制</td>
+</tr>
+<tr>
+<td>MCP 整合</td>
+<td>需第三方適配</td>
+<td>無</td>
+<td>官方支援</td>
+</tr>
+<tr>
+<td>沙箱隔離</td>
+<td>無</td>
+<td>無</td>
+<td>原生支援</td>
+</tr>
+<tr>
+<td>架構穩定性</td>
+<td>API 經常變更</td>
+<td>實驗性</td>
+<td>嚴格的 TypeScript 雙 Aggregate 設計</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DSH 的最大差異：<strong>它不只是讓 Agent 跑起來，而是讓 Agent 在複雜、多變的真實環境中「可維護、可審計、可擴展」。</strong></p>
+<hr>
+<h2 id="七、誰適合用-DSH？"><a href="#七、誰適合用-DSH？" class="headerlink" title="七、誰適合用 DSH？"></a>七、誰適合用 DSH？</h2><p><strong>適合：</strong></p>
+<ul>
+<li>需要在正式環境部署 Agent 的開發團隊</li>
+<li>想實驗新工具/新模型，不想動框架的人</li>
+<li>對執行過程有審計需求的合規場景</li>
+<li>需要深度客製化 Agent 行為的企業</li>
+</ul>
+<p><strong>不急於跟進：</strong></p>
+<ul>
+<li>純研究目的，只需要快速跑 Demo</li>
+<li>還在評估 Agent 架構，不知道自己需要什麼能力</li>
+</ul>
+<p>目前 DSH 仍在 <strong>developer preview</strong>（v0.1.0-rc.7），API 可能有不兼容變更。但對於有長期視角的團隊，這是一個值得投入的方向。</p>
+<hr>
+<h2 id="相關連結"><a href="#相關連結" class="headerlink" title="相關連結"></a>相關連結</h2><ul>
+<li><a href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a>（163k ⭐）</li>
+<li><a href="https://deepseek.com/harness">官方網站: deepseek.com/harness</a></li>
+<li><a href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
+<li><a href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
+<li><a href="https://github.com/topics/dsh-plugin">插件生態目錄</a></li>
+</ul>
+<hr>
+<p><em>本文同步發表於 <a href="https://higumalu.github.io/higumalu-note/">higumalu-note</a>。</em></p>
+]]></content>
+      <categories>
+        <category>技術專題</category>
+      </categories>
+      <tags>
+        <tag>AI</tag>
+        <tag>Agent</tag>
+        <tag>DeepSeek</tag>
+        <tag>開發框架</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</title>
+    <url>/higumalu-note/hermes-desktop-windows-install/</url>
+    <content><![CDATA[<h1 id="Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）"><a href="#Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）" class="headerlink" title="Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）"></a>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</h1><blockquote>
+<p>更新時間：2026-06-12｜適用版本：Hermes Agent v0.16.0｜來源：<a href="https://hermes-agent.nousresearch.com/desktop">Nous Research 官方</a></p>
+</blockquote>
+<hr>
+<h2 id="TL-DR-—-60-秒懶人包"><a href="#TL-DR-—-60-秒懶人包" class="headerlink" title="TL;DR — 60 秒懶人包"></a>TL;DR — 60 秒懶人包</h2><p><strong>Windows 10/11 用戶現在可以直接下載 <code>.exe</code> 安裝了！</strong></p>
+<ol>
+<li>去 <a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a> 下載 Windows 安裝包</li>
+<li>一路點「下一步」完成安裝</li>
+<li>啟動軟體，填入你的 LLM API Key</li>
+<li>開始跟你的 AI 助理聊天 🎉</li>
+</ol>
+<p>懶得動滑鼠？用 PowerShell 一行搞定（實驗性）：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="built_in">iex</span> (<span class="built_in">irm</span> https://hermes<span class="literal">-agent</span>.nousresearch.com/install.ps1)</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="Hermes-Desktop-是什麼？"><a href="#Hermes-Desktop-是什麼？" class="headerlink" title="Hermes Desktop 是什麼？"></a>Hermes Desktop 是什麼？</h2><p>Hermes Desktop 是 <a href="https://nousresearch.com">Nous Research</a> 官方推出的桌面客戶端，讓你不需要碰指令列，就能用上 Hermes Agent 的全部能力。</p>
+<p><strong>它不是另一套聊天機器人</strong> — 它就是你之前在終端機用 CLI 跑的 Hermes Agent，只是包了一層漂亮的 GUI 外殼。兩者共用同一套設定、記憶、技能、對話紀錄，隨時可以切換。</p>
+<h3 id="核心功能亮點"><a href="#核心功能亮點" class="headerlink" title="核心功能亮點"></a>核心功能亮點</h3><ul>
+<li><strong>即時串流對話</strong>：工具呼叫（查網頁、搜尋資料、操作檔案）全部即時顯示進度</li>
+<li><strong>MCP 支援</strong>：一鍵連接多個 MCP 伺服器，擴充你的 AI 能力</li>
+<li><strong>跨平台訊息整合</strong>：Telegram、Discord、Slack、WhatsApp、Signal 等 15+ 訊息平台同一個介面管理</li>
+<li><strong>自我進化學習迴圈</strong>：複雜任務完成後自動建立技能（Skill），下次遇過類似問題直接用</li>
+<li><strong>長期記憶</strong>：FTS5 搜尋 + LLM 摘要，跨 session 的脈絡自動記住</li>
+<li><strong>任何模型都能接</strong>：OpenAI、Claude、DeepSeek、Ollama 本地模型、OpenRouter 等</li>
+</ul>
+<blockquote>
+<p><strong>MIT 授權，完全開源</strong>，資料預設存在本機，隱私自己掌控。</p>
+</blockquote>
+<hr>
+<h2 id="三種-Windows-安裝方式"><a href="#三種-Windows-安裝方式" class="headerlink" title="三種 Windows 安裝方式"></a>三種 Windows 安裝方式</h2><h3 id="選項一：直接下載安裝（✅-推薦給大多數人）"><a href="#選項一：直接下載安裝（✅-推薦給大多數人）" class="headerlink" title="選項一：直接下載安裝（✅ 推薦給大多數人）"></a>選項一：直接下載安裝（✅ 推薦給大多數人）</h3><p>這是 2026 年 Hermes v0.16.0 新增的官方懶人功能，專為 Windows 用戶設計。</p>
+<p><strong>步驟：</strong></p>
+<ol>
+<li><p><strong>下載安裝檔</strong><br>前往官方下載頁：<br><a href="https://hermes-agent.nousresearch.com/desktop">https://hermes-agent.nousresearch.com/desktop</a></p>
+<p>點擊 Windows 區塊的「Download」按鈕，下載 <code>Hermes-Setup.exe</code>（約 113 MB）。</p>
+</li>
+<li><p><strong>執行安裝程式</strong><br>雙擊 <code>.exe</code> 檔，Windows SmartScreen 可能跳出警告，點「仍然執行」即可。<br>安裝路徑預設：<code>%LOCALAPPDATA%\hermes</code></p>
+</li>
+<li><p><strong>首次啟動設定</strong><br>啟動 Hermes Desktop 後，會引導你：</p>
+<ul>
+<li>選擇要<strong>本地模式</strong>（軟體自己裝 Hermes runtime）或<strong>遠端模式</strong>（連到已架好的 server）</li>
+<li>設定 LLM API Key（支援 Nous Portal、OpenRouter、OpenAI、Anthropic 等）</li>
+<li>設定訊息頻道（可略過，稍後再設定）</li>
+</ul>
+</li>
+<li><p><strong>完成，開始使用！</strong><br>安裝程式已幫你處理好所有依賴，包括 Python、Node.js、ffmpeg 等，不需要自己另外安裝。</p>
+</li>
+</ol>
+<hr>
+<h3 id="選項二：從原始碼編譯（進階玩家）"><a href="#選項二：從原始碼編譯（進階玩家）" class="headerlink" title="選項二：從原始碼編譯（進階玩家）"></a>選項二：從原始碼編譯（進階玩家）</h3><p>如果你想用最新的尚未發布功能，或者想要控制編譯過程，可以從 source 編譯。</p>
+<p><strong>事前準備：</strong></p>
+<ul>
+<li>Volta（Node.js 版本管理器）：<a href="https://volta.sh">volta.sh</a></li>
+<li>Git</li>
+<li>約 5–10 GB 磁碟空間</li>
+</ul>
+<p><strong>編譯步驟：</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 安裝 Volta（尚未安裝的話）</span></span><br><span class="line">winget install Volta</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 導向 Desktop 原始碼目錄</span></span><br><span class="line"><span class="built_in">cd</span> <span class="string">&quot;C:\Users\&lt;你的使用者名稱&gt;\AppData\Local\hermes\hermes-agent\apps\desktop&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在 package.json 加入 Volta 節點版本綁定</span></span><br><span class="line"><span class="comment">#    （編輯 package.json，加入以下內容到根層級）</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;volta&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;node&quot;</span>: <span class="string">&quot;22.22.3&quot;</span>,</span><br><span class="line">    <span class="string">&quot;npm&quot;</span>: <span class="string">&quot;10.9.0&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 安裝 Windows 原生 binding（編譯所需）</span></span><br><span class="line">npm install @rolldown/binding-win32-x64-msvc</span><br><span class="line">npm install @tailwindcss/oxide-win32-x64-msvc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 安裝專案依賴</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 建置 Electron 介面</span></span><br><span class="line">npm run build</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 打包成 Windows 安裝檔</span></span><br><span class="line">npm run dist:win</span><br></pre></td></tr></table></figure>
+<p>編譯完成後，輸出檔案在 <code>apps/desktop/release/</code> 目錄：</p>
+<ul>
+<li><code>Hermes-X.X.X-win-x64.exe</code> — NSIS 安裝程式（推薦）</li>
+<li><code>Hermes-X.X.X-win-x64.msi</code> — MSI 安裝程式</li>
+<li><code>win-unpacked/Hermes.exe</code> — 免安裝可攜版</li>
+</ul>
+<hr>
+<h3 id="選項三：WSL2-CLI-模式（傳統穩定路線）"><a href="#選項三：WSL2-CLI-模式（傳統穩定路線）" class="headerlink" title="選項三：WSL2 + CLI 模式（傳統穩定路線）"></a>選項三：WSL2 + CLI 模式（傳統穩定路線）</h3><p>官方對原生 Windows 的支援目前處於「公開預覽」階段（public preview），如果選項一下載後遇到問題，WSL2 是更穩定的替代方案。</p>
+<p><strong>適用情境：</strong> 追求最大穩定性、避免踩坑的用戶</p>
+<h4 id="步驟-1：啟用-WSL2"><a href="#步驟-1：啟用-WSL2" class="headerlink" title="步驟 1：啟用 WSL2"></a>步驟 1：啟用 WSL2</h4><p>以<strong>系統管理員身份</strong>開啟 PowerShell，執行：</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">wsl -<span class="literal">-install</span></span><br></pre></td></tr></table></figure>
+<p>安裝完成後<strong>重開機</strong>，WSL 會引導你設定 Ubuntu 使用者名稱和密碼。</p>
+<h4 id="步驟-2：安裝-Hermes-Agent"><a href="#步驟-2：安裝-Hermes-Agent" class="headerlink" title="步驟 2：安裝 Hermes Agent"></a>步驟 2：安裝 Hermes Agent</h4><p>在 Ubuntu（WLS2）終端機內執行官方安裝腳本：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash</span><br></pre></td></tr></table></figure>
+<p>腳本會自動幫你安裝所有東西（uv、Python 3.11、Node.js、ripgrep、ffmpeg 等），<strong>完全不需要 sudo</strong>，也不需要預先安裝任何軟體。</p>
+<h4 id="步驟-3：啟動並設定"><a href="#步驟-3：啟動並設定" class="headerlink" title="步驟 3：啟動並設定"></a>步驟 3：啟動並設定</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc      <span class="comment"># 載入環境</span></span><br><span class="line">hermes                <span class="comment"># 啟動互動式 CLI</span></span><br></pre></td></tr></table></figure>
+<h4 id="步驟-4：順帶安裝桌面-GUI（非必須）"><a href="#步驟-4：順帶安裝桌面-GUI（非必須）" class="headerlink" title="步驟 4：順帶安裝桌面 GUI（非必須）"></a>步驟 4：順帶安裝桌面 GUI（非必須）</h4><p>CLI 安裝完成後，若想要桌面版 GUI，可在 WSL2 內執行：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes desktop</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="安裝後的初始設定"><a href="#安裝後的初始設定" class="headerlink" title="安裝後的初始設定"></a>安裝後的初始設定</h2><h3 id="設定-LLM-API-Key"><a href="#設定-LLM-API-Key" class="headerlink" title="設定 LLM API Key"></a>設定 LLM API Key</h3><p>Hermes Desktop 安裝完後，需要告訴它要用哪個 AI 模型。支援的 provider：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>優點</th>
+<th>適合族群</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://portal.nousresearch.com">Nous Portal</a></td>
+<td>300+ 模型，整合最好</td>
+<td>想要完整功能的人</td>
+</tr>
+<tr>
+<td><a href="https://console.anthropic.com">Anthropic Claude</a></td>
+<td>工具呼叫最準確</td>
+<td>研究、分析用途</td>
+</tr>
+<tr>
+<td><a href="https://platform.openai.com">OpenAI</a></td>
+<td>生態成熟</td>
+<td>習慣 OpenAI 生態的人</td>
+</tr>
+<tr>
+<td><a href="https://ollama.com">Ollama</a>（本地）</td>
+<td>完全免費、離線可用</td>
+<td>注重隱私的人</td>
+</tr>
+<tr>
+<td><a href="https://platform.deepseek.com">DeepSeek</a></td>
+<td>成本低</td>
+<td>成本敏感型用戶</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>設定 API Key 的方式（CLI 模式）：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes config <span class="built_in">set</span> ANTHROPIC_API_KEY sk-ant-xxxxx</span><br><span class="line">hermes config <span class="built_in">set</span> model anthropic/claude-sonnet-4</span><br></pre></td></tr></table></figure>
+<p>在桌面版 GUI 內則是去 <strong>Settings → Providers</strong> 填入即可。</p>
+<h3 id="驗證安裝是否成功"><a href="#驗證安裝是否成功" class="headerlink" title="驗證安裝是否成功"></a>驗證安裝是否成功</h3><p>在 CLI 模式輸入：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
+<p>這會檢查所有依賴是否正確安裝、API Key 是否有效，出現 ✅ 就代表一切正常。</p>
+<hr>
+<h2 id="YouTube-影片資源"><a href="#YouTube-影片資源" class="headerlink" title="YouTube 影片資源"></a>YouTube 影片資源</h2><p>以下是社群中品質較好的 Hermes Agent 安裝教學影片，涵蓋不同切入點：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>標題</th>
+<th>語言</th>
+<th>內容</th>
+<th>連結</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hermes Agent 完整安裝指南</td>
+<td>英文</td>
+<td>涵蓋 Windows WSL2、macOS、API 設定</td>
+<td><a href="https://www.youtube.com/@grandlinuxchannel6399">Grand Linux</a></td>
+</tr>
+<tr>
+<td>Hermes Desktop 新功能展示</td>
+<td>英文</td>
+<td>v0.15.2 Desktop 串流對話、MCP 設定</td>
+<td><a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop-a-native-cross-platform-front-end-for-hermes-agent-v0-15-2-with-streaming-tool-output">MarkTechPost 報導</a></td>
+</tr>
+<tr>
+<td>Windows WSL2 完整架設教學</td>
+<td>英文</td>
+<td>OpenClaw Launch 整理的疑難排解樹</td>
+<td><a href="https://openclawlaunch.com/guides/hermes-agent-windows">openclawlaunch.com</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p>🔍 想找更多？去 YouTube 搜尋 <code>Hermes Agent install</code> 或 <code>Hermes Agent Windows WSL2</code>，新影片每週都有。</p>
+</blockquote>
+<hr>
+<h2 id="常見問題"><a href="#常見問題" class="headerlink" title="常見問題"></a>常見問題</h2><h3 id="Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？"><a href="#Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？" class="headerlink" title="Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？"></a>Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？</h3><p>這是 Windows SmartScreen，屬於正常現象。點「仍然執行」即可，Hermes 是 MIT 開源專案，原始碼公開可審計。</p>
+<h3 id="Q2：Native-Windows-安裝失敗怎麼辦？"><a href="#Q2：Native-Windows-安裝失敗怎麼辦？" class="headerlink" title="Q2：Native Windows 安裝失敗怎麼辦？"></a>Q2：Native Windows 安裝失敗怎麼辦？</h3><p>如果選項一（直接下載）有問題，強烈建議改走 <strong>WSL2 路線</strong>（選項三）。根據官方說法，WSL2 是經過最充分測試的路徑。</p>
+<h3 id="Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？"><a href="#Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？" class="headerlink" title="Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？"></a>Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？</h3><p>正常。WSL2 首次安裝需要下載 Ubuntu 映像，視網速約需 5–15 分鐘，請耐心等待，不要關閉終端機。</p>
+<h3 id="Q4：可以只裝-CLI，不裝桌面版嗎？"><a href="#Q4：可以只裝-CLI，不裝桌面版嗎？" class="headerlink" title="Q4：可以只裝 CLI，不裝桌面版嗎？"></a>Q4：可以只裝 CLI，不裝桌面版嗎？</h3><p>可以。WSL2 路線預設就是純 CLI，桌面 GUI 是可選的附加功能。</p>
+<h3 id="Q5：Hermes-Desktop-和-CLI-可以同時用嗎？"><a href="#Q5：Hermes-Desktop-和-CLI-可以同時用嗎？" class="headerlink" title="Q5：Hermes Desktop 和 CLI 可以同時用嗎？"></a>Q5：Hermes Desktop 和 CLI 可以同時用嗎？</h3><p>可以。兩者共用同一份設定（<code>~/.hermes/config.yaml</code>）和對話紀錄，切換時 session 無縫接軌。</p>
+<h3 id="Q6：安裝後-Agent-沒反應怎麼辦？"><a href="#Q6：安裝後-Agent-沒反應怎麼辦？" class="headerlink" title="Q6：安裝後 Agent 沒反應怎麼辦？"></a>Q6：安裝後 Agent 沒反應怎麼辦？</h3><p>檢查三件事：</p>
+<ol>
+<li>API Key 有沒有正確設定（<code>.env</code> 檔或 Settings 頁面）</li>
+<li>網路能不能連到你的 LLM provider</li>
+<li>執行 <code>hermes doctor</code> 看診斷輸出</li>
+</ol>
+<hr>
+<h2 id="官方資源整理"><a href="#官方資源整理" class="headerlink" title="官方資源整理"></a>官方資源整理</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>資源</th>
+<th>連結</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>官方網站</td>
+<td><a href="https://hermes-agent.nousresearch.com">hermes-agent.nousresearch.com</a></td>
+</tr>
+<tr>
+<td>官方桌面下載</td>
+<td><a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a></td>
+</tr>
+<tr>
+<td>官方文件</td>
+<td><a href="https://hermes-agent.nousresearch.com/docs">hermes-agent.nousresearch.com/docs</a></td>
+</tr>
+<tr>
+<td>GitHub 原始碼</td>
+<td><a href="https://github.com/NousResearch/hermes-agent">github.com/NousResearch/hermes-agent</a></td>
+</tr>
+<tr>
+<td>社群桌面版（非官方）</td>
+<td><a href="https://github.com/fathah/hermes-desktop">github.com/fathah/hermes-desktop</a></td>
+</tr>
+<tr>
+<td>Discord 社群</td>
+<td><a href="https://discord.gg/nousresearch">discord.gg/nousresearch</a></td>
+</tr>
+<tr>
+<td>Skills Hub</td>
+<td><a href="https://agentskills.io">agentskills.io</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p><strong>Windows 用戶的最好時機到了。</strong> 2026 年 Hermes v0.16.0 正式推出 <code>.exe</code> 安裝程式，不需要 WSL2、不需要指令列技術，60 秒下載、3 分鐘設定就能開始用。</p>
+<p>如果你是：</p>
+<ul>
+<li><strong>一般用戶</strong> → 直接下載 <code>.exe</code>，最省事</li>
+<li><strong>進階用戶 / 開發者</strong> → 從原始碼編譯，完全掌控</li>
+<li><strong>追求穩定性</strong> → WSL2 + CLI，最經過考驗的路徑</li>
+</ul>
+<p>有任何問題歡迎在 Discord 社群提問，或到 GitHub 開 Issue。祝安裝順利 🎉</p>
+<hr>
+<p><em>本文資料來源：官方文件、<a href="https://hermesatlas.com/guide/install">Hermes Atlas 安裝指南</a>、<a href="https://clawsimple.com/en/blog/hermes-agent-install-config-use-guide">ClawSimple 安裝文</a>、<a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop">MarkTechPost v0.16.0 報導</a>。</em></p>
+]]></content>
+      <categories>
+        <category>AI 工具</category>
+      </categories>
+      <tags>
+        <tag>Hermes Agent</tag>
+        <tag>AI</tag>
+        <tag>教學</tag>
+        <tag>Windows</tag>
+        <tag>桌面版</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
+    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
+<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
+<ul>
+<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
+<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
+<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
+</ul>
+<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
+<ul>
+<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
+<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
+<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
+<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
+<li><strong>範例腳本</strong> — 附有使用範例</li>
+</ul>
+<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
+<blockquote>
+<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
+</blockquote>
+<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
+<blockquote>
+<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
+</blockquote>
+<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
+<blockquote>
+<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;Initial commit — 專案起點&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-c8f78e6-Initial-commit---%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E/</url>
+    <content><![CDATA[<h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：<code>.gitignore</code>、<code>LICENSE</code>、<code>README.md</code>。</p>
+<p>我決定從零開始建立一個專案，選擇正確的工具和架構是很重要的第一步。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 files changed, 216 insertions(+)</span><br><span class="line">.gitignore</span><br><span class="line">LICENSE</span><br><span class="line">README.md</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 當時是什麼契機想要建立這個專案？</strong></p>
+<blockquote>
+<p>我把醫學影像操作變簡單——這是最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。我希望打造一個簡單的套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+</blockquote>
+<p><strong>Q2: 為什麼選擇這個專案結構？（src/ + example/ + test/）</strong></p>
+<blockquote>
+<p>主要是套件開發的慣例，沒有特別設計。src/ 內的架構是我希望根據 RT 每個流程的資料型態來分門別類：影像相關、RTSTRUCT 相關、DOSE 相關、影像配準相關——每個子領域一套對應的 function。</p>
+</blockquote>
+<p><strong>Q3: pyproject.toml 的設計有參考什麼嗎？</strong></p>
+<blockquote>
+<p>既然目標是降低操作難度，依賴套件的選擇就很明確：NumPy、SimpleITK 處理 3D 物件，pydicom 處理 DICOM 格式——都是領域內最主流、最多人用的工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c8f78e6">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Kimi K3 技術報告（全量翻譯 + 譯註）</title>
     <url>/higumalu-note/2026-07-28-kimi-k3-technical-report-full-translation/</url>
     <content><![CDATA[<blockquote>
@@ -2092,424 +2639,6 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
-    <title>DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</title>
-    <url>/higumalu-note/2026-08-19-deepseek-harness/</url>
-    <content><![CDATA[<h1 id="DeepSeek-Harness-深度解析：一切皆插件的-Agent-開發框架"><a href="#DeepSeek-Harness-深度解析：一切皆插件的-Agent-開發框架" class="headerlink" title="DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架"></a>DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>DeepSeek 近期在 AI 開源生態動作頻頻，除了大家熟知的 V3/R1 模型，還低調開源了一個相當有特色的專案——<strong>DeepSeek Harness（簡稱 <code>dsh</code>）</strong>。這是一個以插件化架構為核心的 Agent 開發框架，目前已有 <strong>163k Stars</strong>、<strong>12,400+ commits</strong>，成長速度驚人。</p>
-<blockquote>
-<p><a href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a></p>
-</blockquote>
-<hr>
-<h2 id="核心哲學：Everything-is-a-Plugin"><a href="#核心哲學：Everything-is-a-Plugin" class="headerlink" title="核心哲學：Everything is a Plugin"></a>核心哲學：Everything is a Plugin</h2><p>Harness 最大的特色就是「<strong>一切皆插件</strong>」（Everything is a Plugin）的設計理念。整個框架由 <a href="https://github.com/cordiverse/cordis">Cordis</a> 驅動，這是一個專為時空可組合性設計的框架，詳細設計見論文 <a href="https://github.com/cordiverse/paper"><em>A Programming Paradigm for Spatiotemporal Composability</em></a>。</p>
-<h3 id="Cordis-的五個核心概念"><a href="#Cordis-的五個核心概念" class="headerlink" title="Cordis 的五個核心概念"></a>Cordis 的五個核心概念</h3><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>概念</th>
-<th>說明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>插件（Plugin）</strong></td>
-<td>實現 Service 的對象，可帶 <code>inject</code> 和 <code>apply(ctx)</code> 欄位</td>
-</tr>
-<tr>
-<td><strong>上下文（Context）</strong></td>
-<td>服務的容器，佔據穩定的 <code>ctx.&lt;key&gt;</code> 位置</td>
-</tr>
-<tr>
-<td><strong>依賴注入（inject）</strong></td>
-<td>插件聲明所需服務，自動等待就緒後啟動</td>
-</tr>
-<tr>
-<td><strong>類型化事件</strong></td>
-<td>透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 分發</td>
-</tr>
-<tr>
-<td><strong>可逆註冊</strong></td>
-<td><code>ctx.effect()</code> 或 <code>ctx.on()</code> 安裝，teardown 時自動撤銷</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>這種設計讓每個功能模組（LLM、工具、會話管理）都是獨立的插件，開發者可以自由替換、組合，而不需動搖核心。</p>
-<hr>
-<h2 id="架構亮點"><a href="#架構亮點" class="headerlink" title="架構亮點"></a>架構亮點</h2><h3 id="1-嚴格的-TypeScript-雙-Aggregate-設計"><a href="#1-嚴格的-TypeScript-雙-Aggregate-設計" class="headerlink" title="1. 嚴格的 TypeScript 雙 Aggregate 設計"></a>1. 嚴格的 TypeScript 雙 Aggregate 設計</h3><p>Harness 的 TypeScript 專案分為 <strong>Host</strong> 和 <strong>Client</strong> 兩個隔離的 aggregate：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">packages/</span><br><span class="line">├── host/          # Node.js 端：業務邏輯、工具執行</span><br><span class="line">└── client/        # 瀏覽器端：UI、Web UI</span><br></pre></td></tr></table></figure>
-<p>這是因為 Cordis 的 <code>Context</code> 介面在兩側以不同服務做聲明合併，若放進同一個 <code>ts.Program</code> 會發生衝突。分開後各自編譯，確保類型安全。</p>
-<h3 id="2-API-Gateway-Typert-嚴格類型-RPC"><a href="#2-API-Gateway-Typert-嚴格類型-RPC" class="headerlink" title="2. API Gateway + Typert 嚴格類型 RPC"></a>2. API Gateway + Typert 嚴格類型 RPC</h3><p>Harness 提供了一套完整的 Client-Server 類型安全通信方案：</p>
-<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Host 端：業務服務聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>透過 Typert generator 在構建時分析 Remote 簽名，自動生成：</p>
-<ul>
-<li><strong>Host 反射產物</strong>：運行時類型描述符</li>
-<li><strong>Client 投影</strong>：嚴格類型的 Client 调用接口</li>
-</ul>
-<h3 id="3-工具執行流水線"><a href="#3-工具執行流水線" class="headerlink" title="3. 工具執行流水線"></a>3. 工具執行流水線</h3><p>工具從調用到完成經過嚴格的分層控制：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">  pre[&quot;tools/pre-execute waterfall&lt;br/&gt;hooks, permission, sandbox&quot;]</span><br><span class="line">  guards[&quot;Monotonic guards&lt;br/&gt;deny or abstain&quot;]</span><br><span class="line">  around[&quot;tools/execute waterfall&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">  toolBody[&quot;Tool execute() body&quot;]</span><br><span class="line">  post[&quot;tools/post-execute waterfall&lt;br/&gt;accept, block, replace, add context&quot;]</span><br><span class="line">  finalize[&quot;finalizeContent&quot;]</span><br><span class="line">  </span><br><span class="line">  pre --&gt; guards --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br></pre></td></tr></table></figure>
-<p>每層都可以改寫結果，支援鉤子（hooks）、審批（approval）、超時重試等策略，且無需讓工具本身耦合這些邏輯。</p>
-<h3 id="4-Agent-生命周期管理"><a href="#4-Agent-生命周期管理" class="headerlink" title="4. Agent 生命周期管理"></a>4. Agent 生命周期管理</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">  participant User</span><br><span class="line">  participant Driver</span><br><span class="line">  participant LLM</span><br><span class="line">  participant Tools</span><br><span class="line">  </span><br><span class="line">  User-&gt;&gt;Driver: queued work</span><br><span class="line">  Driver-&gt;&gt;Session: turn/start</span><br><span class="line">  Driver-&gt;&gt;Hooks: agent/pre-step waterfall</span><br><span class="line">  Driver-&gt;&gt;LLM: agent/request → llm/stream</span><br><span class="line">  LLM--&gt;&gt;Driver: StreamChunk*</span><br><span class="line">  Driver-&gt;&gt;Tools: classify pending call</span><br><span class="line">  loop barriers and pool</span><br><span class="line">    Driver-&gt;&gt;Tools: execute tool</span><br><span class="line">    Tools--&gt;&gt;Driver: tool/result</span><br><span class="line">  end</span><br><span class="line">  Driver-&gt;&gt;Session: step/end, turn/end</span><br></pre></td></tr></table></figure>
-<p>完整的對話、輪次（turn）、步驟（step）追蹤，所有事件都持久化到 <code>session/event</code> 中，可隨時回放。</p>
-<hr>
-<h2 id="快速上手"><a href="#快速上手" class="headerlink" title="快速上手"></a>快速上手</h2><h3 id="從-npm-運行（最簡方式）"><a href="#從-npm-運行（最簡方式）" class="headerlink" title="從 npm 運行（最簡方式）"></a>從 npm 運行（最簡方式）</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 安裝 Node.js 後直接運行</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br></pre></td></tr></table></figure>
-<p>啟動後訪問 <code>http://127.0.0.1:3080</code> 即可進入 Web UI。</p>
-<h3 id="從源碼運行"><a href="#從源碼運行" class="headerlink" title="從源碼運行"></a>從源碼運行</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/deepseek-ai/deepseek-harness.git</span><br><span class="line"><span class="built_in">cd</span> deepseek-harness</span><br><span class="line">pnpm install</span><br><span class="line">pnpm run build</span><br><span class="line">pnpm dsh web</span><br></pre></td></tr></table></figure>
-<h3 id="Headless-模式"><a href="#Headless-模式" class="headerlink" title="Headless 模式"></a>Headless 模式</h3><p>設定 <code>DEEPSEEK_API_KEY</code> 後，可運行純命令行 Agent：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pnpm dsh --profile headless <span class="string">&quot;summarize this workspace&quot;</span></span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="生態與擴展"><a href="#生態與擴展" class="headerlink" title="生態與擴展"></a>生態與擴展</h2><h3 id="插件系統"><a href="#插件系統" class="headerlink" title="插件系統"></a>插件系統</h3><p>官方支持 <code>@dsh-plugin</code> topic，任何人都可以發布自己的插件：</p>
-<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 插件結構示例</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">myPlugin</span>(<span class="params">ctx: Context</span>) </span>&#123;</span><br><span class="line">  ctx.effect(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 註冊工具、提示詞、事件監聽</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// teardown 時清理</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="開發者工具鏈"><a href="#開發者工具鏈" class="headerlink" title="開發者工具鏈"></a>開發者工具鏈</h3><ul>
-<li><strong>本地檢查</strong>：Lefthook 鉤子自動校驗代碼風格、翻譯配對</li>
-<li><strong>CI 門禁</strong>：類型檢查、構建、測試分為獨立 lane</li>
-<li><strong>文檔生成</strong>：<code>doc-sync</code> 自動同步英文↔中文文檔</li>
-</ul>
-<hr>
-<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>DeepSeek Harness 代表了新一代 Agent 框架的設計方向：</p>
-<ol>
-<li><strong>插件化優先</strong> — 功能替換不動核心，實驗新能力只需加插件</li>
-<li><strong>類型安全</strong> — 從 RPC 到工具 schema，全鏈路 TypeScript 保障</li>
-<li><strong>可審計性</strong> — 所有對話歷史、工具調用完整持久化</li>
-<li><strong>生產就緒</strong> — 嚴格的構建流水線、測試覆蓋、貢獻者指南</li>
-</ol>
-<p>目前仍在 <strong>developer preview</strong> 階段（v0.1.0-rc.7），API 可能有不兼容變更，但對於想深入理解 Agent 系統架構、或準備在生產環境構建可靠 AI 應用的開發者，這是一個值得關注的專案。</p>
-<blockquote>
-<p><strong>相關連結</strong></p>
-<ul>
-<li><a href="https://github.com/deepseek-ai/deepseek-harness">GitHub Repo</a></li>
-<li><a href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
-<li><a href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
-</ul>
-</blockquote>
-<hr>
-<p><em>本篇為技術介紹文，更多實戰開發心得待續。</em></p>
-]]></content>
-      <categories>
-        <category>技術專題</category>
-      </categories>
-      <tags>
-        <tag>AI</tag>
-        <tag>Agent</tag>
-        <tag>DeepSeek</tag>
-        <tag>TypeScript</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</title>
-    <url>/higumalu-note/hermes-desktop-windows-install/</url>
-    <content><![CDATA[<h1 id="Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）"><a href="#Windows-安裝-Hermes-Agent-桌面版：官方懶人指南（2026-最新）" class="headerlink" title="Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）"></a>Windows 安裝 Hermes Agent 桌面版：官方懶人指南（2026 最新）</h1><blockquote>
-<p>更新時間：2026-06-12｜適用版本：Hermes Agent v0.16.0｜來源：<a href="https://hermes-agent.nousresearch.com/desktop">Nous Research 官方</a></p>
-</blockquote>
-<hr>
-<h2 id="TL-DR-—-60-秒懶人包"><a href="#TL-DR-—-60-秒懶人包" class="headerlink" title="TL;DR — 60 秒懶人包"></a>TL;DR — 60 秒懶人包</h2><p><strong>Windows 10/11 用戶現在可以直接下載 <code>.exe</code> 安裝了！</strong></p>
-<ol>
-<li>去 <a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a> 下載 Windows 安裝包</li>
-<li>一路點「下一步」完成安裝</li>
-<li>啟動軟體，填入你的 LLM API Key</li>
-<li>開始跟你的 AI 助理聊天 🎉</li>
-</ol>
-<p>懶得動滑鼠？用 PowerShell 一行搞定（實驗性）：</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="built_in">iex</span> (<span class="built_in">irm</span> https://hermes<span class="literal">-agent</span>.nousresearch.com/install.ps1)</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="Hermes-Desktop-是什麼？"><a href="#Hermes-Desktop-是什麼？" class="headerlink" title="Hermes Desktop 是什麼？"></a>Hermes Desktop 是什麼？</h2><p>Hermes Desktop 是 <a href="https://nousresearch.com">Nous Research</a> 官方推出的桌面客戶端，讓你不需要碰指令列，就能用上 Hermes Agent 的全部能力。</p>
-<p><strong>它不是另一套聊天機器人</strong> — 它就是你之前在終端機用 CLI 跑的 Hermes Agent，只是包了一層漂亮的 GUI 外殼。兩者共用同一套設定、記憶、技能、對話紀錄，隨時可以切換。</p>
-<h3 id="核心功能亮點"><a href="#核心功能亮點" class="headerlink" title="核心功能亮點"></a>核心功能亮點</h3><ul>
-<li><strong>即時串流對話</strong>：工具呼叫（查網頁、搜尋資料、操作檔案）全部即時顯示進度</li>
-<li><strong>MCP 支援</strong>：一鍵連接多個 MCP 伺服器，擴充你的 AI 能力</li>
-<li><strong>跨平台訊息整合</strong>：Telegram、Discord、Slack、WhatsApp、Signal 等 15+ 訊息平台同一個介面管理</li>
-<li><strong>自我進化學習迴圈</strong>：複雜任務完成後自動建立技能（Skill），下次遇過類似問題直接用</li>
-<li><strong>長期記憶</strong>：FTS5 搜尋 + LLM 摘要，跨 session 的脈絡自動記住</li>
-<li><strong>任何模型都能接</strong>：OpenAI、Claude、DeepSeek、Ollama 本地模型、OpenRouter 等</li>
-</ul>
-<blockquote>
-<p><strong>MIT 授權，完全開源</strong>，資料預設存在本機，隱私自己掌控。</p>
-</blockquote>
-<hr>
-<h2 id="三種-Windows-安裝方式"><a href="#三種-Windows-安裝方式" class="headerlink" title="三種 Windows 安裝方式"></a>三種 Windows 安裝方式</h2><h3 id="選項一：直接下載安裝（✅-推薦給大多數人）"><a href="#選項一：直接下載安裝（✅-推薦給大多數人）" class="headerlink" title="選項一：直接下載安裝（✅ 推薦給大多數人）"></a>選項一：直接下載安裝（✅ 推薦給大多數人）</h3><p>這是 2026 年 Hermes v0.16.0 新增的官方懶人功能，專為 Windows 用戶設計。</p>
-<p><strong>步驟：</strong></p>
-<ol>
-<li><p><strong>下載安裝檔</strong><br>前往官方下載頁：<br><a href="https://hermes-agent.nousresearch.com/desktop">https://hermes-agent.nousresearch.com/desktop</a></p>
-<p>點擊 Windows 區塊的「Download」按鈕，下載 <code>Hermes-Setup.exe</code>（約 113 MB）。</p>
-</li>
-<li><p><strong>執行安裝程式</strong><br>雙擊 <code>.exe</code> 檔，Windows SmartScreen 可能跳出警告，點「仍然執行」即可。<br>安裝路徑預設：<code>%LOCALAPPDATA%\hermes</code></p>
-</li>
-<li><p><strong>首次啟動設定</strong><br>啟動 Hermes Desktop 後，會引導你：</p>
-<ul>
-<li>選擇要<strong>本地模式</strong>（軟體自己裝 Hermes runtime）或<strong>遠端模式</strong>（連到已架好的 server）</li>
-<li>設定 LLM API Key（支援 Nous Portal、OpenRouter、OpenAI、Anthropic 等）</li>
-<li>設定訊息頻道（可略過，稍後再設定）</li>
-</ul>
-</li>
-<li><p><strong>完成，開始使用！</strong><br>安裝程式已幫你處理好所有依賴，包括 Python、Node.js、ffmpeg 等，不需要自己另外安裝。</p>
-</li>
-</ol>
-<hr>
-<h3 id="選項二：從原始碼編譯（進階玩家）"><a href="#選項二：從原始碼編譯（進階玩家）" class="headerlink" title="選項二：從原始碼編譯（進階玩家）"></a>選項二：從原始碼編譯（進階玩家）</h3><p>如果你想用最新的尚未發布功能，或者想要控制編譯過程，可以從 source 編譯。</p>
-<p><strong>事前準備：</strong></p>
-<ul>
-<li>Volta（Node.js 版本管理器）：<a href="https://volta.sh">volta.sh</a></li>
-<li>Git</li>
-<li>約 5–10 GB 磁碟空間</li>
-</ul>
-<p><strong>編譯步驟：</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 1. 安裝 Volta（尚未安裝的話）</span></span><br><span class="line">winget install Volta</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 導向 Desktop 原始碼目錄</span></span><br><span class="line"><span class="built_in">cd</span> <span class="string">&quot;C:\Users\&lt;你的使用者名稱&gt;\AppData\Local\hermes\hermes-agent\apps\desktop&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 在 package.json 加入 Volta 節點版本綁定</span></span><br><span class="line"><span class="comment">#    （編輯 package.json，加入以下內容到根層級）</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;volta&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;node&quot;</span>: <span class="string">&quot;22.22.3&quot;</span>,</span><br><span class="line">    <span class="string">&quot;npm&quot;</span>: <span class="string">&quot;10.9.0&quot;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 安裝 Windows 原生 binding（編譯所需）</span></span><br><span class="line">npm install @rolldown/binding-win32-x64-msvc</span><br><span class="line">npm install @tailwindcss/oxide-win32-x64-msvc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 安裝專案依賴</span></span><br><span class="line">npm install</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. 建置 Electron 介面</span></span><br><span class="line">npm run build</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 打包成 Windows 安裝檔</span></span><br><span class="line">npm run dist:win</span><br></pre></td></tr></table></figure>
-<p>編譯完成後，輸出檔案在 <code>apps/desktop/release/</code> 目錄：</p>
-<ul>
-<li><code>Hermes-X.X.X-win-x64.exe</code> — NSIS 安裝程式（推薦）</li>
-<li><code>Hermes-X.X.X-win-x64.msi</code> — MSI 安裝程式</li>
-<li><code>win-unpacked/Hermes.exe</code> — 免安裝可攜版</li>
-</ul>
-<hr>
-<h3 id="選項三：WSL2-CLI-模式（傳統穩定路線）"><a href="#選項三：WSL2-CLI-模式（傳統穩定路線）" class="headerlink" title="選項三：WSL2 + CLI 模式（傳統穩定路線）"></a>選項三：WSL2 + CLI 模式（傳統穩定路線）</h3><p>官方對原生 Windows 的支援目前處於「公開預覽」階段（public preview），如果選項一下載後遇到問題，WSL2 是更穩定的替代方案。</p>
-<p><strong>適用情境：</strong> 追求最大穩定性、避免踩坑的用戶</p>
-<h4 id="步驟-1：啟用-WSL2"><a href="#步驟-1：啟用-WSL2" class="headerlink" title="步驟 1：啟用 WSL2"></a>步驟 1：啟用 WSL2</h4><p>以<strong>系統管理員身份</strong>開啟 PowerShell，執行：</p>
-<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line">wsl -<span class="literal">-install</span></span><br></pre></td></tr></table></figure>
-<p>安裝完成後<strong>重開機</strong>，WSL 會引導你設定 Ubuntu 使用者名稱和密碼。</p>
-<h4 id="步驟-2：安裝-Hermes-Agent"><a href="#步驟-2：安裝-Hermes-Agent" class="headerlink" title="步驟 2：安裝 Hermes Agent"></a>步驟 2：安裝 Hermes Agent</h4><p>在 Ubuntu（WLS2）終端機內執行官方安裝腳本：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash</span><br></pre></td></tr></table></figure>
-<p>腳本會自動幫你安裝所有東西（uv、Python 3.11、Node.js、ripgrep、ffmpeg 等），<strong>完全不需要 sudo</strong>，也不需要預先安裝任何軟體。</p>
-<h4 id="步驟-3：啟動並設定"><a href="#步驟-3：啟動並設定" class="headerlink" title="步驟 3：啟動並設定"></a>步驟 3：啟動並設定</h4><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">source</span> ~/.bashrc      <span class="comment"># 載入環境</span></span><br><span class="line">hermes                <span class="comment"># 啟動互動式 CLI</span></span><br></pre></td></tr></table></figure>
-<h4 id="步驟-4：順帶安裝桌面-GUI（非必須）"><a href="#步驟-4：順帶安裝桌面-GUI（非必須）" class="headerlink" title="步驟 4：順帶安裝桌面 GUI（非必須）"></a>步驟 4：順帶安裝桌面 GUI（非必須）</h4><p>CLI 安裝完成後，若想要桌面版 GUI，可在 WSL2 內執行：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes desktop</span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="安裝後的初始設定"><a href="#安裝後的初始設定" class="headerlink" title="安裝後的初始設定"></a>安裝後的初始設定</h2><h3 id="設定-LLM-API-Key"><a href="#設定-LLM-API-Key" class="headerlink" title="設定 LLM API Key"></a>設定 LLM API Key</h3><p>Hermes Desktop 安裝完後，需要告訴它要用哪個 AI 模型。支援的 provider：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>Provider</th>
-<th>優點</th>
-<th>適合族群</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://portal.nousresearch.com">Nous Portal</a></td>
-<td>300+ 模型，整合最好</td>
-<td>想要完整功能的人</td>
-</tr>
-<tr>
-<td><a href="https://console.anthropic.com">Anthropic Claude</a></td>
-<td>工具呼叫最準確</td>
-<td>研究、分析用途</td>
-</tr>
-<tr>
-<td><a href="https://platform.openai.com">OpenAI</a></td>
-<td>生態成熟</td>
-<td>習慣 OpenAI 生態的人</td>
-</tr>
-<tr>
-<td><a href="https://ollama.com">Ollama</a>（本地）</td>
-<td>完全免費、離線可用</td>
-<td>注重隱私的人</td>
-</tr>
-<tr>
-<td><a href="https://platform.deepseek.com">DeepSeek</a></td>
-<td>成本低</td>
-<td>成本敏感型用戶</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>設定 API Key 的方式（CLI 模式）：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes config <span class="built_in">set</span> ANTHROPIC_API_KEY sk-ant-xxxxx</span><br><span class="line">hermes config <span class="built_in">set</span> model anthropic/claude-sonnet-4</span><br></pre></td></tr></table></figure>
-<p>在桌面版 GUI 內則是去 <strong>Settings → Providers</strong> 填入即可。</p>
-<h3 id="驗證安裝是否成功"><a href="#驗證安裝是否成功" class="headerlink" title="驗證安裝是否成功"></a>驗證安裝是否成功</h3><p>在 CLI 模式輸入：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hermes doctor</span><br></pre></td></tr></table></figure>
-<p>這會檢查所有依賴是否正確安裝、API Key 是否有效，出現 ✅ 就代表一切正常。</p>
-<hr>
-<h2 id="YouTube-影片資源"><a href="#YouTube-影片資源" class="headerlink" title="YouTube 影片資源"></a>YouTube 影片資源</h2><p>以下是社群中品質較好的 Hermes Agent 安裝教學影片，涵蓋不同切入點：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>標題</th>
-<th>語言</th>
-<th>內容</th>
-<th>連結</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hermes Agent 完整安裝指南</td>
-<td>英文</td>
-<td>涵蓋 Windows WSL2、macOS、API 設定</td>
-<td><a href="https://www.youtube.com/@grandlinuxchannel6399">Grand Linux</a></td>
-</tr>
-<tr>
-<td>Hermes Desktop 新功能展示</td>
-<td>英文</td>
-<td>v0.15.2 Desktop 串流對話、MCP 設定</td>
-<td><a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop-a-native-cross-platform-front-end-for-hermes-agent-v0-15-2-with-streaming-tool-output">MarkTechPost 報導</a></td>
-</tr>
-<tr>
-<td>Windows WSL2 完整架設教學</td>
-<td>英文</td>
-<td>OpenClaw Launch 整理的疑難排解樹</td>
-<td><a href="https://openclawlaunch.com/guides/hermes-agent-windows">openclawlaunch.com</a></td>
-</tr>
-</tbody>
-</table>
-</div>
-<blockquote>
-<p>🔍 想找更多？去 YouTube 搜尋 <code>Hermes Agent install</code> 或 <code>Hermes Agent Windows WSL2</code>，新影片每週都有。</p>
-</blockquote>
-<hr>
-<h2 id="常見問題"><a href="#常見問題" class="headerlink" title="常見問題"></a>常見問題</h2><h3 id="Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？"><a href="#Q1：安裝時跳出「Windows-已保護你的電腦」怎麼辦？" class="headerlink" title="Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？"></a>Q1：安裝時跳出「Windows 已保護你的電腦」怎麼辦？</h3><p>這是 Windows SmartScreen，屬於正常現象。點「仍然執行」即可，Hermes 是 MIT 開源專案，原始碼公開可審計。</p>
-<h3 id="Q2：Native-Windows-安裝失敗怎麼辦？"><a href="#Q2：Native-Windows-安裝失敗怎麼辦？" class="headerlink" title="Q2：Native Windows 安裝失敗怎麼辦？"></a>Q2：Native Windows 安裝失敗怎麼辦？</h3><p>如果選項一（直接下載）有問題，強烈建議改走 <strong>WSL2 路線</strong>（選項三）。根據官方說法，WSL2 是經過最充分測試的路徑。</p>
-<h3 id="Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？"><a href="#Q3：WSL2-安裝卡在「正在安裝」很久，正常嗎？" class="headerlink" title="Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？"></a>Q3：WSL2 安裝卡在「正在安裝」很久，正常嗎？</h3><p>正常。WSL2 首次安裝需要下載 Ubuntu 映像，視網速約需 5–15 分鐘，請耐心等待，不要關閉終端機。</p>
-<h3 id="Q4：可以只裝-CLI，不裝桌面版嗎？"><a href="#Q4：可以只裝-CLI，不裝桌面版嗎？" class="headerlink" title="Q4：可以只裝 CLI，不裝桌面版嗎？"></a>Q4：可以只裝 CLI，不裝桌面版嗎？</h3><p>可以。WSL2 路線預設就是純 CLI，桌面 GUI 是可選的附加功能。</p>
-<h3 id="Q5：Hermes-Desktop-和-CLI-可以同時用嗎？"><a href="#Q5：Hermes-Desktop-和-CLI-可以同時用嗎？" class="headerlink" title="Q5：Hermes Desktop 和 CLI 可以同時用嗎？"></a>Q5：Hermes Desktop 和 CLI 可以同時用嗎？</h3><p>可以。兩者共用同一份設定（<code>~/.hermes/config.yaml</code>）和對話紀錄，切換時 session 無縫接軌。</p>
-<h3 id="Q6：安裝後-Agent-沒反應怎麼辦？"><a href="#Q6：安裝後-Agent-沒反應怎麼辦？" class="headerlink" title="Q6：安裝後 Agent 沒反應怎麼辦？"></a>Q6：安裝後 Agent 沒反應怎麼辦？</h3><p>檢查三件事：</p>
-<ol>
-<li>API Key 有沒有正確設定（<code>.env</code> 檔或 Settings 頁面）</li>
-<li>網路能不能連到你的 LLM provider</li>
-<li>執行 <code>hermes doctor</code> 看診斷輸出</li>
-</ol>
-<hr>
-<h2 id="官方資源整理"><a href="#官方資源整理" class="headerlink" title="官方資源整理"></a>官方資源整理</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>資源</th>
-<th>連結</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>官方網站</td>
-<td><a href="https://hermes-agent.nousresearch.com">hermes-agent.nousresearch.com</a></td>
-</tr>
-<tr>
-<td>官方桌面下載</td>
-<td><a href="https://hermes-agent.nousresearch.com/desktop">hermes-agent.nousresearch.com/desktop</a></td>
-</tr>
-<tr>
-<td>官方文件</td>
-<td><a href="https://hermes-agent.nousresearch.com/docs">hermes-agent.nousresearch.com/docs</a></td>
-</tr>
-<tr>
-<td>GitHub 原始碼</td>
-<td><a href="https://github.com/NousResearch/hermes-agent">github.com/NousResearch/hermes-agent</a></td>
-</tr>
-<tr>
-<td>社群桌面版（非官方）</td>
-<td><a href="https://github.com/fathah/hermes-desktop">github.com/fathah/hermes-desktop</a></td>
-</tr>
-<tr>
-<td>Discord 社群</td>
-<td><a href="https://discord.gg/nousresearch">discord.gg/nousresearch</a></td>
-</tr>
-<tr>
-<td>Skills Hub</td>
-<td><a href="https://agentskills.io">agentskills.io</a></td>
-</tr>
-</tbody>
-</table>
-</div>
-<hr>
-<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p><strong>Windows 用戶的最好時機到了。</strong> 2026 年 Hermes v0.16.0 正式推出 <code>.exe</code> 安裝程式，不需要 WSL2、不需要指令列技術，60 秒下載、3 分鐘設定就能開始用。</p>
-<p>如果你是：</p>
-<ul>
-<li><strong>一般用戶</strong> → 直接下載 <code>.exe</code>，最省事</li>
-<li><strong>進階用戶 / 開發者</strong> → 從原始碼編譯，完全掌控</li>
-<li><strong>追求穩定性</strong> → WSL2 + CLI，最經過考驗的路徑</li>
-</ul>
-<p>有任何問題歡迎在 Discord 社群提問，或到 GitHub 開 Issue。祝安裝順利 🎉</p>
-<hr>
-<p><em>本文資料來源：官方文件、<a href="https://hermesatlas.com/guide/install">Hermes Atlas 安裝指南</a>、<a href="https://clawsimple.com/en/blog/hermes-agent-install-config-use-guide">ClawSimple 安裝文</a>、<a href="https://www.marktechpost.com/2026/06/03/nous-research-releases-hermes-desktop">MarkTechPost v0.16.0 報導</a>。</em></p>
-]]></content>
-      <categories>
-        <category>AI 工具</category>
-      </categories>
-      <tags>
-        <tag>Hermes Agent</tag>
-        <tag>AI</tag>
-        <tag>教學</tag>
-        <tag>Windows</tag>
-        <tag>桌面版</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
-    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
-<hr>
-<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
-<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
-<ul>
-<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
-<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
-<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
-</ul>
-<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
-<ul>
-<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
-<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
-<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
-<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
-<li><strong>範例腳本</strong> — 附有使用範例</li>
-</ul>
-<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
-<blockquote>
-<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
-</blockquote>
-<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
-<blockquote>
-<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
-</blockquote>
-<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
-<blockquote>
-<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;Initial commit — 專案起點&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-06-16-c8f78e6-Initial-commit---%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E/</url>
-    <content><![CDATA[<h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：<code>.gitignore</code>、<code>LICENSE</code>、<code>README.md</code>。</p>
-<p>我決定從零開始建立一個專案，選擇正確的工具和架構是很重要的第一步。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 files changed, 216 insertions(+)</span><br><span class="line">.gitignore</span><br><span class="line">LICENSE</span><br><span class="line">README.md</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 當時是什麼契機想要建立這個專案？</strong></p>
-<blockquote>
-<p>我把醫學影像操作變簡單——這是最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。我希望打造一個簡單的套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
-</blockquote>
-<p><strong>Q2: 為什麼選擇這個專案結構？（src/ + example/ + test/）</strong></p>
-<blockquote>
-<p>主要是套件開發的慣例，沒有特別設計。src/ 內的架構是我希望根據 RT 每個流程的資料型態來分門別類：影像相關、RTSTRUCT 相關、DOSE 相關、影像配準相關——每個子領域一套對應的 function。</p>
-</blockquote>
-<p><strong>Q3: pyproject.toml 的設計有參考什麼嗎？</strong></p>
-<blockquote>
-<p>既然目標是降低操作難度，依賴套件的選擇就很明確：NumPy、SimpleITK 處理 3D 物件，pydicom 處理 DICOM 格式——都是領域內最主流、最多人用的工具。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c8f78e6">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>pydicomRT｜&quot;Registration 模組進場&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-08-18-6cc3899-Registration-%E6%A8%A1%E7%B5%84%E9%80%B2%E5%A0%B4/</url>
     <content><![CDATA[<h2 id="✨-Registration-模組進場"><a href="#✨-Registration-模組進場" class="headerlink" title="✨ Registration 模組進場"></a>✨ Registration 模組進場</h2><p><strong>Commit:</strong> <code>6cc3899</code><br><strong>日期：</strong> 2025-08-18</p>
@@ -2926,6 +3055,38 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
+    <title>pydicomRT｜&quot;🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2026-02-04-3fce17c-BSpline-%E4%BD%8D%E7%A7%BB%E5%A0%B4%E9%A1%9E%E5%9E%8B%E6%94%B9%E7%82%BA-Float64/</url>
+    <content><![CDATA[<h2 id="🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64"><a href="#🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64" class="headerlink" title="🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"></a>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</h2><p><strong>Commit:</strong> <code>3fce17c</code><br><strong>日期：</strong> 2026-02-04</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我將 BSpline 配準函數中的位移場（Displacement Field）類型從 <code>sitkVectorFloat32</code> 改為 <code>sitkVectorFloat64</code>。</p>
+<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat32,  <span class="comment"># 32位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat64,  <span class="comment"># 64位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p><strong>改進說明：</strong></p>
+<ol>
+<li><p><strong>提高精度</strong> — Float64 提供雙倍精度，避免在多次變換或累積誤差時造成影像品質下降。</p>
+</li>
+<li><p><strong>保持一致性</strong> — 大多數醫學影像使用 Float64 作為內部計算精度，升級後可避免不必要的精度轉換。</p>
+</li>
+<li><p><strong>更準確的變形映射</strong> — 特別是對於需要精細控制的 BSpline 變形，高精度位移場能更準確地描述組織變形。</p>
+</li>
+</ol>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/reg/method/bspline.py</span><br><span class="line">  - bspline_registration 函數位移場類型更新</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Float32 和 Float64 的差異在實際臨床應用中明顯嗎？</strong><br>老實說，在大多數情況下可能感覺不出來。但如果涉及到多次變形疊加或非常精細的劑量計算時，累積誤差的影響就不可忽視了。醫學領域對精度要求比較高，既然 SimpleITK 原生支援 Float64，我覺得用下去比較安心。</p>
+<p><strong>Q2: 這個改變會增加記憶體使用量嗎？影響有多大？</strong><br>會的，理論上記憶體用量會變成兩倍。不過實際影響還好——BSpline 本來就不是我主要的對位方法，平常主要還是用 Demons。再說，現代醫療影像的資料量那麼大，一張位移場多佔的記憶體相比之下不算什麼。</p>
+<p><strong>Q3: 為什麼 BSpline 特別需要高精度？其他配準方法（如 Demons）呢？</strong><br>BSpline 的變形控制點網格很細緻，對細節的表達能力更強。如果位移場精度不夠，那些精細的變形細節就會被吃掉，BSpline 的優勢就浪費掉了。Demons 的話，因為它的變形機制不太一樣，對精度的敏感度沒那麼高，我目前還是維持 Float32。</p>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3fce17c">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>pydicomRT｜&quot;🛠️ Image Series Loader — 錯誤處理改進&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2026-01-06-d03e995-Image-Series-Loader-%E9%8C%AF%E8%AA%A4%E8%99%95%E7%90%86%E6%94%B9%E9%80%B2/</url>
     <content><![CDATA[<h2 id="🛠️-Image-Series-Loader-—-錯誤處理改進"><a href="#🛠️-Image-Series-Loader-—-錯誤處理改進" class="headerlink" title="🛠️ Image Series Loader — 錯誤處理改進"></a>🛠️ Image Series Loader — 錯誤處理改進</h2><p><strong>Commit:</strong> <code>d03e995</code><br><strong>日期：</strong> 2026-01-06</p>
@@ -2957,38 +3118,6 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
 </blockquote>
 <hr>
 <p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d03e995">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2026-02-04-3fce17c-BSpline-%E4%BD%8D%E7%A7%BB%E5%A0%B4%E9%A1%9E%E5%9E%8B%E6%94%B9%E7%82%BA-Float64/</url>
-    <content><![CDATA[<h2 id="🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64"><a href="#🔧-BSpline-—-位移場類型從-VectorFloat32-改為-VectorFloat64" class="headerlink" title="🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64"></a>🔧 BSpline — 位移場類型從 VectorFloat32 改為 VectorFloat64</h2><p><strong>Commit:</strong> <code>3fce17c</code><br><strong>日期：</strong> 2026-02-04</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這次我將 BSpline 配準函數中的位移場（Displacement Field）類型從 <code>sitkVectorFloat32</code> 改為 <code>sitkVectorFloat64</code>。</p>
-<p><strong>修正內容：</strong><br><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 修正前</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat32,  <span class="comment"># 32位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 修正後</span></span><br><span class="line">dvf_image = sitk.TransformToDisplacementField(</span><br><span class="line">    output_transform,</span><br><span class="line">    sitk.sitkVectorFloat64,  <span class="comment"># 64位浮點數</span></span><br><span class="line">    ...</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
-<p><strong>改進說明：</strong></p>
-<ol>
-<li><p><strong>提高精度</strong> — Float64 提供雙倍精度，避免在多次變換或累積誤差時造成影像品質下降。</p>
-</li>
-<li><p><strong>保持一致性</strong> — 大多數醫學影像使用 Float64 作為內部計算精度，升級後可避免不必要的精度轉換。</p>
-</li>
-<li><p><strong>更準確的變形映射</strong> — 特別是對於需要精細控制的 BSpline 變形，高精度位移場能更準確地描述組織變形。</p>
-</li>
-</ol>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">src/pydicomrt/reg/method/bspline.py</span><br><span class="line">  - bspline_registration 函數位移場類型更新</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Float32 和 Float64 的差異在實際臨床應用中明顯嗎？</strong><br>老實說，在大多數情況下可能感覺不出來。但如果涉及到多次變形疊加或非常精細的劑量計算時，累積誤差的影響就不可忽視了。醫學領域對精度要求比較高，既然 SimpleITK 原生支援 Float64，我覺得用下去比較安心。</p>
-<p><strong>Q2: 這個改變會增加記憶體使用量嗎？影響有多大？</strong><br>會的，理論上記憶體用量會變成兩倍。不過實際影響還好——BSpline 本來就不是我主要的對位方法，平常主要還是用 Demons。再說，現代醫療影像的資料量那麼大，一張位移場多佔的記憶體相比之下不算什麼。</p>
-<p><strong>Q3: 為什麼 BSpline 特別需要高精度？其他配準方法（如 Demons）呢？</strong><br>BSpline 的變形控制點網格很細緻，對細節的表達能力更強。如果位移場精度不夠，那些精細的變形細節就會被吃掉，BSpline 的優勢就浪費掉了。Demons 的話，因為它的變形機制不太一樣，對精度的敏感度沒那麼高，我目前還是維持 Float32。</p>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/3fce17c">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>

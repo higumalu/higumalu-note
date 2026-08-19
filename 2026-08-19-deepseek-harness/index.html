@@ -5,12 +5,12 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架 - Higuma&#39;s Note</title>
+    <title>為什麼我看好 DeepSeek Harness：從痛點到實際應用 - Higuma&#39;s Note</title>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="google" content="notranslate" />
     <meta name="keywords" content="higumalu,"> 
-    <meta name="description" content="DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架前言DeepSeek 近期在 AI 開源生態動作頻頻，除了大家熟知的 V3/R1 模型，還低調開源了一個相當有特色的專案,"> 
+    <meta name="description" content="為什麼我看好 DeepSeek Harness：從痛點到實際應用先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？是 LLMWare 太封閉、RAG 流水線太脆弱、還是 LangChain,"> 
     <meta name="author" content="Higumalu"> 
     <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
     <link rel="icon" href="/higumalu-note/img/favicon.png"> 
@@ -28,7 +28,7 @@
     <div class="bar" style="width: 0;"></div>
     <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
     <div title="播放/暂停" class="iconfont icon-play"></div>
-    <h3 class="subtitle">DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</h3>
+    <h3 class="subtitle">為什麼我看好 DeepSeek Harness：從痛點到實際應用</h3>
     <div class="social">
         <div>
             <div class="share">
@@ -43,103 +43,232 @@
     <div class="section">
         <div class="article">
     <div class='main'>
-        <h1 class="title">DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</h1>
+        <h1 class="title">為什麼我看好 DeepSeek Harness：從痛點到實際應用</h1>
         <div class="stuff">
             <span>八月 19, 2026</span>
             
-  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/AI/" rel="tag">AI</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Agent/" rel="tag">Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/DeepSeek/" rel="tag">DeepSeek</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/AI/" rel="tag">AI</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Agent/" rel="tag">Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/DeepSeek/" rel="tag">DeepSeek</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E9%96%8B%E7%99%BC%E6%A1%86%E6%9E%B6/" rel="tag">開發框架</a></li></ul>
 
 
         </div>
         <div class="content markdown">
-            <h1 id="DeepSeek-Harness-深度解析：一切皆插件的-Agent-開發框架"><a href="#DeepSeek-Harness-深度解析：一切皆插件的-Agent-開發框架" class="headerlink" title="DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架"></a>DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>DeepSeek 近期在 AI 開源生態動作頻頻，除了大家熟知的 V3/R1 模型，還低調開源了一個相當有特色的專案——<strong>DeepSeek Harness（簡稱 <code>dsh</code>）</strong>。這是一個以插件化架構為核心的 Agent 開發框架，目前已有 <strong>163k Stars</strong>、<strong>12,400+ commits</strong>，成長速度驚人。</p>
+            <h1 id="為什麼我看好-DeepSeek-Harness：從痛點到實際應用"><a href="#為什麼我看好-DeepSeek-Harness：從痛點到實際應用" class="headerlink" title="為什麼我看好 DeepSeek Harness：從痛點到實際應用"></a>為什麼我看好 DeepSeek Harness：從痛點到實際應用</h1><h2 id="先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？"><a href="#先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？" class="headerlink" title="先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？"></a>先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？</h2><p>是 LLMWare 太封閉、RAG 流水線太脆弱、還是 LangChain 更新一次就壞一片 Plugin？</p>
+<p>DeepSeek 近期低調開源的 <strong><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a></strong>（簡稱 <code>dsh</code>）——163k Stars、12,400+ commits——試圖回答一個更根本的問題：</p>
 <blockquote>
-<p><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a></p>
+<p><strong>如何讓 AI Agent 在真實世界穩定運作，而不是只會在 Demo 裡優雅運轉？</strong></p>
 </blockquote>
 <hr>
-<h2 id="核心哲學：Everything-is-a-Plugin"><a href="#核心哲學：Everything-is-a-Plugin" class="headerlink" title="核心哲學：Everything is a Plugin"></a>核心哲學：Everything is a Plugin</h2><p>Harness 最大的特色就是「<strong>一切皆插件</strong>」（Everything is a Plugin）的設計理念。整個框架由 <a target="_blank" rel="noopener" href="https://github.com/cordiverse/cordis">Cordis</a> 驅動，這是一個專為時空可組合性設計的框架，詳細設計見論文 <a target="_blank" rel="noopener" href="https://github.com/cordiverse/paper"><em>A Programming Paradigm for Spatiotemporal Composability</em></a>。</p>
-<h3 id="Cordis-的五個核心概念"><a href="#Cordis-的五個核心概念" class="headerlink" title="Cordis 的五個核心概念"></a>Cordis 的五個核心概念</h3><div class="table-container">
+<h2 id="一、現在的-Agent-開發有什麼問題？"><a href="#一、現在的-Agent-開發有什麼問題？" class="headerlink" title="一、現在的 Agent 開發有什麼問題？"></a>一、現在的 Agent 開發有什麼問題？</h2><h3 id="問題-1：能力與框架深度耦合"><a href="#問題-1：能力與框架深度耦合" class="headerlink" title="問題 1：能力與框架深度耦合"></a>問題 1：能力與框架深度耦合</h3><p>大多數 Agent 框架把「模型調用」「工具執行」「對話管理」「記憶體」全部寫死在一個 SDK 裡。想換一個 LLM Provider？重寫。想加一個 Memory 系統？改核心代碼。想在正式環境加入審批機制？得 hack。</p>
+<p>結果：<strong>實驗環境很美好，生產環境很悲慘</strong>。</p>
+<h3 id="問題-2：執行過程是黑箱"><a href="#問題-2：執行過程是黑箱" class="headerlink" title="問題 2：執行過程是黑箱"></a>問題 2：執行過程是黑箱</h3><p>當 Agent 執行了一連串 Tool Call，你知道它看到什麼、用過哪些資訊嗎？大多數框架的答案：「不知道，等它結束再看結果。」</p>
+<p>問題在於：當 Agent 在正式環境裡做出錯誤決策時，你沒有辦法回溯。它可能是吃了錯誤的上下文、可能是 prompt 被汙染、也可能 Tool 結果被錯誤解析。無法審計，就無法改善。</p>
+<h3 id="問題-3：測試和調試困難"><a href="#問題-3：測試和調試困難" class="headerlink" title="問題 3：測試和調試困難"></a>問題 3：測試和調試困難</h3><p>Agent 的輸出是非確定性的，如何測試？大多數框架沒有好的機制。要嘛降低到只測 prompt，要嘛就得跑 end-to-end 然後祈禱。代價高、反饋慢。</p>
+<hr>
+<h2 id="二、DeepSeek-Harness-的核心思路：「一切皆插件」"><a href="#二、DeepSeek-Harness-的核心思路：「一切皆插件」" class="headerlink" title="二、DeepSeek Harness 的核心思路：「一切皆插件」"></a>二、DeepSeek Harness 的核心思路：「一切皆插件」</h2><p>Harness 的底層由 <a target="_blank" rel="noopener" href="https://github.com/cordiverse/cordis">Cordis</a> 框架驅動，核心哲學只有一句話：</p>
+<blockquote>
+<p><strong>Every capability is a plugin.</strong></p>
+</blockquote>
+<p>這不是行銷口號，而是架構事實。在 DSH 裡：</p>
+<ul>
+<li>模型調用 → 插件</li>
+<li>工具執行（bash、file、web search） → 插件</li>
+<li>對話管理（session、turn、step） → 插件</li>
+<li>記憶體系統 → 插件</li>
+<li>排程提醒 → 插件</li>
+<li>沙箱隔離 → 插件</li>
+<li>整個 UI → 插件</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">    subgraph Cordis Kernel</span><br><span class="line">        K[Kernel]</span><br><span class="line">    end</span><br><span class="line">    subgraph Plugins</span><br><span class="line">        M[Model&lt;br/&gt;Provider]</span><br><span class="line">        T[Tools]</span><br><span class="line">        S[Session&lt;br/&gt;Manager]</span><br><span class="line">        R[Memory&lt;br/&gt;System]</span><br><span class="line">        P[Planning&lt;br/&gt;Skills]</span><br><span class="line">    end</span><br><span class="line">    K --&gt; M</span><br><span class="line">    K --&gt; T</span><br><span class="line">    K --&gt; S</span><br><span class="line">    K --&gt; R</span><br><span class="line">    K --&gt; P</span><br></pre></td></tr></table></figure>
+<p>好處是什麼？</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th>概念</th>
-<th>說明</th>
+<th>痛點</th>
+<th>DSH 解法</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>插件（Plugin）</strong></td>
-<td>實現 Service 的對象，可帶 <code>inject</code> 和 <code>apply(ctx)</code> 欄位</td>
+<td>想換模型 Provider</td>
+<td>替換一個插件</td>
 </tr>
 <tr>
-<td><strong>上下文（Context）</strong></td>
-<td>服務的容器，佔據穩定的 <code>ctx.&lt;key&gt;</code> 位置</td>
+<td>想加 Memory</td>
+<td>插入一個插件</td>
 </tr>
 <tr>
-<td><strong>依賴注入（inject）</strong></td>
-<td>插件聲明所需服務，自動等待就緒後啟動</td>
+<td>想加審批環節</td>
+<td>插入一個插件</td>
 </tr>
 <tr>
-<td><strong>類型化事件</strong></td>
-<td>透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 分發</td>
+<td>想在正式環境隔離執行</td>
+<td>換一個沙箱插件</td>
 </tr>
 <tr>
-<td><strong>可逆註冊</strong></td>
-<td><code>ctx.effect()</code> 或 <code>ctx.on()</code> 安裝，teardown 時自動撤銷</td>
+<td>想實驗新能力</td>
+<td>新增一個插件，不動核心</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>這種設計讓每個功能模組（LLM、工具、會話管理）都是獨立的插件，開發者可以自由替換、組合，而不需動搖核心。</p>
+<p><strong>不需要 fork 框架，不需要等官方支援，自己動手豐衣足食。</strong></p>
 <hr>
-<h2 id="架構亮點"><a href="#架構亮點" class="headerlink" title="架構亮點"></a>架構亮點</h2><h3 id="1-嚴格的-TypeScript-雙-Aggregate-設計"><a href="#1-嚴格的-TypeScript-雙-Aggregate-設計" class="headerlink" title="1. 嚴格的 TypeScript 雙 Aggregate 設計"></a>1. 嚴格的 TypeScript 雙 Aggregate 設計</h3><p>Harness 的 TypeScript 專案分為 <strong>Host</strong> 和 <strong>Client</strong> 兩個隔離的 aggregate：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">packages/</span><br><span class="line">├── host/          # Node.js 端：業務邏輯、工具執行</span><br><span class="line">└── client/        # 瀏覽器端：UI、Web UI</span><br></pre></td></tr></table></figure>
-<p>這是因為 Cordis 的 <code>Context</code> 介面在兩側以不同服務做聲明合併，若放進同一個 <code>ts.Program</code> 會發生衝突。分開後各自編譯，確保類型安全。</p>
-<h3 id="2-API-Gateway-Typert-嚴格類型-RPC"><a href="#2-API-Gateway-Typert-嚴格類型-RPC" class="headerlink" title="2. API Gateway + Typert 嚴格類型 RPC"></a>2. API Gateway + Typert 嚴格類型 RPC</h3><p>Harness 提供了一套完整的 Client-Server 類型安全通信方案：</p>
-<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Host 端：業務服務聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>透過 Typert generator 在構建時分析 Remote 簽名，自動生成：</p>
+<h2 id="三、Cordis-的五個核心概念"><a href="#三、Cordis-的五個核心概念" class="headerlink" title="三、Cordis 的五個核心概念"></a>三、Cordis 的五個核心概念</h2><p>Cordis 是 DSH 的核心引擎，理解它的概念等於理解整個框架的設計邏輯：</p>
+<h3 id="1-Plugin-Service"><a href="#1-Plugin-Service" class="headerlink" title="1. Plugin = Service"></a>1. Plugin = Service</h3><p>插件就是一個帶生命周期的 Service對象，實現 <code>ctx.&lt;key&gt;</code> 接口。可以是簡單函數，也可以是完整的類。</p>
+<h3 id="2-Context-服務容器"><a href="#2-Context-服務容器" class="headerlink" title="2. Context = 服務容器"></a>2. Context = 服務容器</h3><p>每個 Service 佔據一個穩定的 <code>ctx.&lt;key&gt;</code> 位置，其他插件透過 key 查找服務，<strong>而非直接 import 實現</strong>。這就是依賴反轉。</p>
+<h3 id="3-inject-依賴聲明"><a href="#3-inject-依賴聲明" class="headerlink" title="3. inject = 依賴聲明"></a>3. inject = 依賴聲明</h3><p>插件宣告自己需要哪些服務，Cordis 自動等待這些服務就緒才啟動。<strong>啟動順序由依賴關係決定</strong>，不需要手動排程。</p>
+<h3 id="4-類型化事件"><a href="#4-類型化事件" class="headerlink" title="4. 類型化事件"></a>4. 類型化事件</h3><p>服務之間透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 四種模式通信。這不是簡單的事件總線，而是<strong>帶語義的分發策略</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// emit: 觀察，無返回值</span></span><br><span class="line"><span class="comment">// waterfall: 包裝請求，可短路</span></span><br><span class="line"><span class="comment">// parallel: 並行觀察</span></span><br><span class="line"><span class="comment">// serial: 依序觀察，累積結果</span></span><br></pre></td></tr></table></figure>
+<h3 id="5-可逆註冊（ctx-effect）"><a href="#5-可逆註冊（ctx-effect）" class="headerlink" title="5. 可逆註冊（ctx.effect）"></a>5. 可逆註冊（ctx.effect）</h3><p>所有注册都是副作用，teardown 時自動撤銷。記憶體不會洩漏。</p>
+<hr>
+<h2 id="四、解決了什麼問題？"><a href="#四、解決了什麼問題？" class="headerlink" title="四、解決了什麼問題？"></a>四、解決了什麼問題？</h2><h3 id="✅-問題-1-解決：深度可組合性"><a href="#✅-問題-1-解決：深度可組合性" class="headerlink" title="✅ 問題 1 解決：深度可組合性"></a>✅ 問題 1 解決：深度可組合性</h3><p>實際例子：MCP（Model Context Protocol）記憶體整合。</p>
+<p>DSH 內建 MCP Client 插件，只要一行配置就能把第三方記憶體系統接進來：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 透過 MCP 接 Engram 記憶體</span></span><br><span class="line">npx @deepseek-ai/dsh web --patch <span class="string">&quot;examples/mcp-memory/engram.cordis.yml&quot;</span></span><br></pre></td></tr></table></figure>
+<p>三種記憶體系統（Memorix、MCP Reference Memory、Engram）任選，都是「插件替換」模式。<strong>不需要改 DSH 代碼，不需要等官方適配，自己配上去就能用。</strong></p>
+<h3 id="✅-問題-2-解決：完整軌跡審計"><a href="#✅-問題-2-解決：完整軌跡審計" class="headerlink" title="✅ 問題 2 解決：完整軌跡審計"></a>✅ 問題 2 解決：完整軌跡審計</h3><p>DSH 的 Session Log 是 append-only 的事件流，記錄：</p>
 <ul>
-<li><strong>Host 反射產物</strong>：運行時類型描述符</li>
-<li><strong>Client 投影</strong>：嚴格類型的 Client 调用接口</li>
+<li>System prompt 每次組裝結果</li>
+<li>每次 Reasoning 過程</li>
+<li>每次 Tool Call 的輸入輸出</li>
+<li>Subagent 的調度與結果</li>
+<li>每次 Context 注入的內容</li>
 </ul>
-<h3 id="3-工具執行流水線"><a href="#3-工具執行流水線" class="headerlink" title="3. 工具執行流水線"></a>3. 工具執行流水線</h3><p>工具從調用到完成經過嚴格的分層控制：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">  pre[&quot;tools/pre-execute waterfall&lt;br/&gt;hooks, permission, sandbox&quot;]</span><br><span class="line">  guards[&quot;Monotonic guards&lt;br/&gt;deny or abstain&quot;]</span><br><span class="line">  around[&quot;tools/execute waterfall&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">  toolBody[&quot;Tool execute() body&quot;]</span><br><span class="line">  post[&quot;tools/post-execute waterfall&lt;br/&gt;accept, block, replace, add context&quot;]</span><br><span class="line">  finalize[&quot;finalizeContent&quot;]</span><br><span class="line">  </span><br><span class="line">  pre --&gt; guards --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br></pre></td></tr></table></figure>
-<p>每層都可以改寫結果，支援鉤子（hooks）、審批（approval）、超時重試等策略，且無需讓工具本身耦合這些邏輯。</p>
-<h3 id="4-Agent-生命周期管理"><a href="#4-Agent-生命周期管理" class="headerlink" title="4. Agent 生命周期管理"></a>4. Agent 生命周期管理</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">  participant User</span><br><span class="line">  participant Driver</span><br><span class="line">  participant LLM</span><br><span class="line">  participant Tools</span><br><span class="line">  </span><br><span class="line">  User-&gt;&gt;Driver: queued work</span><br><span class="line">  Driver-&gt;&gt;Session: turn/start</span><br><span class="line">  Driver-&gt;&gt;Hooks: agent/pre-step waterfall</span><br><span class="line">  Driver-&gt;&gt;LLM: agent/request → llm/stream</span><br><span class="line">  LLM--&gt;&gt;Driver: StreamChunk*</span><br><span class="line">  Driver-&gt;&gt;Tools: classify pending call</span><br><span class="line">  loop barriers and pool</span><br><span class="line">    Driver-&gt;&gt;Tools: execute tool</span><br><span class="line">    Tools--&gt;&gt;Driver: tool/result</span><br><span class="line">  end</span><br><span class="line">  Driver-&gt;&gt;Session: step/end, turn/end</span><br></pre></td></tr></table></figure>
-<p>完整的對話、輪次（turn）、步驟（step）追蹤，所有事件都持久化到 <code>session/event</code> 中，可隨時回放。</p>
-<hr>
-<h2 id="快速上手"><a href="#快速上手" class="headerlink" title="快速上手"></a>快速上手</h2><h3 id="從-npm-運行（最簡方式）"><a href="#從-npm-運行（最簡方式）" class="headerlink" title="從 npm 運行（最簡方式）"></a>從 npm 運行（最簡方式）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安裝 Node.js 後直接運行</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br></pre></td></tr></table></figure>
-<p>啟動後訪問 <code>http://127.0.0.1:3080</code> 即可進入 Web UI。</p>
-<h3 id="從源碼運行"><a href="#從源碼運行" class="headerlink" title="從源碼運行"></a>從源碼運行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/deepseek-ai/deepseek-harness.git</span><br><span class="line"><span class="built_in">cd</span> deepseek-harness</span><br><span class="line">pnpm install</span><br><span class="line">pnpm run build</span><br><span class="line">pnpm dsh web</span><br></pre></td></tr></table></figure>
-<h3 id="Headless-模式"><a href="#Headless-模式" class="headerlink" title="Headless 模式"></a>Headless 模式</h3><p>設定 <code>DEEPSEEK_API_KEY</code> 後，可運行純命令行 Agent：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pnpm dsh --profile headless <span class="string">&quot;summarize this workspace&quot;</span></span><br></pre></td></tr></table></figure>
-<hr>
-<h2 id="生態與擴展"><a href="#生態與擴展" class="headerlink" title="生態與擴展"></a>生態與擴展</h2><h3 id="插件系統"><a href="#插件系統" class="headerlink" title="插件系統"></a>插件系統</h3><p>官方支持 <code>@dsh-plugin</code> topic，任何人都可以發布自己的插件：</p>
-<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 插件結構示例</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">myPlugin</span>(<span class="params">ctx: Context</span>) </span>&#123;</span><br><span class="line">  ctx.effect(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 註冊工具、提示詞、事件監聽</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// teardown 時清理</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="開發者工具鏈"><a href="#開發者工具鏈" class="headerlink" title="開發者工具鏈"></a>開發者工具鏈</h3><ul>
-<li><strong>本地檢查</strong>：Lefthook 鉤子自動校驗代碼風格、翻譯配對</li>
-<li><strong>CI 門禁</strong>：類型檢查、構建、測試分為獨立 lane</li>
-<li><strong>文檔生成</strong>：<code>doc-sync</code> 自動同步英文↔中文文檔</li>
+<p>在 Trajectory 視圖裡，你可以：</p>
+<ul>
+<li><strong>Resume</strong>：從任意中斷點恢復</li>
+<li><strong>Fork</strong>：複製對話分支</li>
+<li><strong>Search</strong>：搜尋歷史對話</li>
+<li><strong>Replay</strong>：重放整個執行過程</li>
 </ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">Session Event Log (append-only):</span><br><span class="line">─────────────────────────────────────</span><br><span class="line">turn/start</span><br><span class="line">  step/start</span><br><span class="line">    system-prompt/assembled → &#123; full prompt content &#125;</span><br><span class="line">    agent/request → &#123; model, temperature, ... &#125;</span><br><span class="line">    llm/stream → &#123; chunks... &#125;</span><br><span class="line">    assistant/message → &#123; final message &#125;</span><br><span class="line">    tool/call → &#123; tool: &quot;bash&quot;, args: &quot;git status&quot; &#125;</span><br><span class="line">    tool/result → &#123; output: &quot;...&quot; &#125;</span><br><span class="line">  step/end</span><br><span class="line">turn/end</span><br></pre></td></tr></table></figure>
+<p><strong>當 Agent 出錯時，你有一條完整的因果鏈可以追查。</strong></p>
+<h3 id="✅-問題-3-解決：多種執行模式"><a href="#✅-問題-3-解決：多種執行模式" class="headerlink" title="✅ 問題 3 解決：多種執行模式"></a>✅ 問題 3 解決：多種執行模式</h3><p>DSH 內建四種模式，針對不同場景：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Standard</strong></td>
+<td>完整工具集：file edit、shell、web search、skills、planning、subagents、workflows</td>
+</tr>
+<tr>
+<td><strong>Code</strong></td>
+<td>把工具包裝成 SDK，讓模型自己寫 TypeScript 程序來組合多步操作</td>
+</tr>
+<tr>
+<td><strong>Minimal</strong></td>
+<td>極簡環境：只有 bash + file edit，用於基准測試模型能力</td>
+</tr>
+<tr>
+<td><strong>Creator</strong></td>
+<td>插件實驗室：即時檢查 Runtime、測試插件組合、創作新模式</td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│  Mode Picker                                │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  ○ Standard ─ Full coding agent             │</span><br><span class="line">│  ○ Code ─ Code Mode SDK orchestration       │</span><br><span class="line">│  ○ Minimal ─ Two-tool benchmark agent       │</span><br><span class="line">│  ○ Creator ─ Plugin lab &amp; preset authoring  │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<h3 id="✅-生產級能力：工具執行流水線"><a href="#✅-生產級能力：工具執行流水線" class="headerlink" title="✅ 生產級能力：工具執行流水線"></a>✅ 生產級能力：工具執行流水線</h3><p>DSH 的工具執行經過嚴格分層控制：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    pre[&quot;tools/pre-execute&quot;]</span><br><span class="line">    guards[&quot;Monotonic Guards&quot;]</span><br><span class="line">    approval[&quot;ctx.approval&lt;br/&gt;User Prompt&quot;]</span><br><span class="line">    around[&quot;tools/execute&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">    toolBody[&quot;Tool Body&quot;]</span><br><span class="line">    post[&quot;tools/post-execute&quot;]</span><br><span class="line">    finalize[&quot;finalizeContent&quot;]</span><br><span class="line">    </span><br><span class="line">    pre --&gt; guards --&gt; approval --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br><span class="line">    </span><br><span class="line">    pre --&gt;|deny| denied[skipped]</span><br><span class="line">    guards --&gt;|deny| denied</span><br><span class="line">    approval --&gt;|reject| denied</span><br></pre></td></tr></table></figure>
+<p>每層都可以包裝、改寫結果。<strong>鉤子（hooks）、審批（approval）、超時重試，全部是可插拔的插件，工具本身不需要知道這些邏輯。</strong></p>
+<h3 id="✅-安全能力：沙箱隔離"><a href="#✅-安全能力：沙箱隔離" class="headerlink" title="✅ 安全能力：沙箱隔離"></a>✅ 安全能力：沙箱隔離</h3><p>Harness 支援把工具執行放到隔離沙箱中，例如 <a target="_blank" rel="noopener" href="https://e2b.dev/">E2B</a> 雲端沙箱。Local filesystem 和 subprocess 插件可以被一鍵替換為雲端沙箱：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># e2b.cordis.yml — 替換本地工具為雲端沙箱</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">insert:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">id:</span> <span class="string">e2b-sandbox</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">&#x27;@deepseek-ai/dsh-e2b&#x27;</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">sandboxTemplate:</span> <span class="string">standard</span></span><br></pre></td></tr></table></figure>
+<p><strong>本地開發、雲端執行，隔離級別可選。</strong></p>
 <hr>
-<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>DeepSeek Harness 代表了新一代 Agent 框架的設計方向：</p>
+<h2 id="五、實際應用場景"><a href="#五、實際應用場景" class="headerlink" title="五、實際應用場景"></a>五、實際應用場景</h2><h3 id="場景-1：本地-Coding-Agent"><a href="#場景-1：本地-Coding-Agent" class="headerlink" title="場景 1：本地 Coding Agent"></a>場景 1：本地 Coding Agent</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 最簡單的使用方式</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指令列模式</span></span><br><span class="line">pnpm dsh --profile headless <span class="string">&quot;fix the failing test in this workspace&quot;</span></span><br></pre></td></tr></table></figure>
+<p>設定 <code>DEEPSEEK_API_KEY</code>，就能讓 Agent 幫你分析代碼庫、修復 Bug、寫測試。完整的事件日誌讓你清楚看到它為什麼這麼改。</p>
+<h3 id="場景-2：多輪對話-記憶跨-Session"><a href="#場景-2：多輪對話-記憶跨-Session" class="headerlink" title="場景 2：多輪對話 + 記憶跨 Session"></a>場景 2：多輪對話 + 記憶跨 Session</h3><p>透過 MCP Memory 插件，Agent 可以「記得」之前對話中的偏好設定：</p>
 <ol>
-<li><strong>插件化優先</strong> — 功能替換不動核心，實驗新能力只需加插件</li>
-<li><strong>類型安全</strong> — 從 RPC 到工具 schema，全鏈路 TypeScript 保障</li>
-<li><strong>可審計性</strong> — 所有對話歷史、工具調用完整持久化</li>
-<li><strong>生產就緒</strong> — 嚴格的構建流水線、測試覆蓋、貢獻者指南</li>
+<li>Session A：「幫我記住我的驗證飲料是 lapsang-black-tea」</li>
+<li>Session B：「我剛才的驗證飲料是什麼？」→ Agent 從記憶體系統查詢，返回正確答案</li>
 </ol>
-<p>目前仍在 <strong>developer preview</strong> 階段（v0.1.0-rc.7），API 可能有不兼容變更，但對於想深入理解 Agent 系統架構、或準備在生產環境構建可靠 AI 應用的開發者，這是一個值得關注的專案。</p>
-<blockquote>
-<p><strong>相關連結</strong></p>
-<ul>
-<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">GitHub Repo</a></li>
-<li><a target="_blank" rel="noopener" href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
-<li><a target="_blank" rel="noopener" href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
-</ul>
-</blockquote>
+<p><strong>新的對話不需要重新設定前提，記憶持久化在外部系統。</strong></p>
+<h3 id="場景-3：排程提醒"><a href="#場景-3：排程提醒" class="headerlink" title="場景 3：排程提醒"></a>場景 3：排程提醒</h3><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 啟用排程插件</span></span><br><span class="line">dsh web --patch examples/web-schedule/cordis.yml</span><br></pre></td></tr></table></figure>
+<p>Agent 可以創建、列舉、刪除提醒，且提醒綁定到對話 Session。離開對話後再回來，過期的提醒會自動觸發後續對話。</p>
+<h3 id="場景-4：企業內部的-Agent-流水線"><a href="#場景-4：企業內部的-Agent-流水線" class="headerlink" title="場景 4：企業內部的 Agent 流水線"></a>場景 4：企業內部的 Agent 流水線</h3><p>透過 API Gateway + Typert，Harness 提供完整的 Client-Server 類型安全 RPC：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Host 端：聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>構建時自動生成 Client 端的類型安全接口，確保前後端 API 不會因為簽名變更而悄悄 break。</p>
 <hr>
-<p><em>本篇為技術介紹文，更多實戰開發心得待續。</em></p>
+<h2 id="六、橫向比較：DSH-vs-競爭者"><a href="#六、橫向比較：DSH-vs-競爭者" class="headerlink" title="六、橫向比較：DSH vs 競爭者"></a>六、橫向比較：DSH vs 競爭者</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>維度</th>
+<th>LangChain</th>
+<th>AutoGen</th>
+<th>DSH</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>插件系統</td>
+<td>有，但深度耦合</td>
+<td>有限</td>
+<td>一切皆插件</td>
+</tr>
+<tr>
+<td>執行審計</td>
+<td>日誌分散</td>
+<td>基本</td>
+<td>完整事件流</td>
+</tr>
+<tr>
+<td>工具流水線</td>
+<td>自己實現</td>
+<td>自己實現</td>
+<td>框架內建分層控制</td>
+</tr>
+<tr>
+<td>MCP 整合</td>
+<td>需第三方適配</td>
+<td>無</td>
+<td>官方支援</td>
+</tr>
+<tr>
+<td>沙箱隔離</td>
+<td>無</td>
+<td>無</td>
+<td>原生支援</td>
+</tr>
+<tr>
+<td>架構穩定性</td>
+<td>API 經常變更</td>
+<td>實驗性</td>
+<td>嚴格的 TypeScript 雙 Aggregate 設計</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DSH 的最大差異：<strong>它不只是讓 Agent 跑起來，而是讓 Agent 在複雜、多變的真實環境中「可維護、可審計、可擴展」。</strong></p>
+<hr>
+<h2 id="七、誰適合用-DSH？"><a href="#七、誰適合用-DSH？" class="headerlink" title="七、誰適合用 DSH？"></a>七、誰適合用 DSH？</h2><p><strong>適合：</strong></p>
+<ul>
+<li>需要在正式環境部署 Agent 的開發團隊</li>
+<li>想實驗新工具/新模型，不想動框架的人</li>
+<li>對執行過程有審計需求的合規場景</li>
+<li>需要深度客製化 Agent 行為的企業</li>
+</ul>
+<p><strong>不急於跟進：</strong></p>
+<ul>
+<li>純研究目的，只需要快速跑 Demo</li>
+<li>還在評估 Agent 架構，不知道自己需要什麼能力</li>
+</ul>
+<p>目前 DSH 仍在 <strong>developer preview</strong>（v0.1.0-rc.7），API 可能有不兼容變更。但對於有長期視角的團隊，這是一個值得投入的方向。</p>
+<hr>
+<h2 id="相關連結"><a href="#相關連結" class="headerlink" title="相關連結"></a>相關連結</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a>（163k ⭐）</li>
+<li><a target="_blank" rel="noopener" href="https://deepseek.com/harness">官方網站: deepseek.com/harness</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
+<li><a target="_blank" rel="noopener" href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/topics/dsh-plugin">插件生態目錄</a></li>
+</ul>
+<hr>
+<p><em>本文同步發表於 <a href="https://higumalu.github.io/higumalu-note/">higumalu-note</a>。</em></p>
 
             <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
             <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
@@ -183,7 +312,7 @@
     </div>
     
         <div class='side'>
-			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#DeepSeek-Harness-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%9A%E4%B8%80%E5%88%87%E7%9A%86%E6%8F%92%E4%BB%B6%E7%9A%84-Agent-%E9%96%8B%E7%99%BC%E6%A1%86%E6%9E%B6"><span class="toc-number">1.</span> <span class="toc-text">DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%93%B2%E5%AD%B8%EF%BC%9AEverything-is-a-Plugin"><span class="toc-number">1.2.</span> <span class="toc-text">核心哲學：Everything is a Plugin</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Cordis-%E7%9A%84%E4%BA%94%E5%80%8B%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-number">1.2.1.</span> <span class="toc-text">Cordis 的五個核心概念</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%A7%8B%E4%BA%AE%E9%BB%9E"><span class="toc-number">1.3.</span> <span class="toc-text">架構亮點</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%9A%B4%E6%A0%BC%E7%9A%84-TypeScript-%E9%9B%99-Aggregate-%E8%A8%AD%E8%A8%88"><span class="toc-number">1.3.1.</span> <span class="toc-text">1. 嚴格的 TypeScript 雙 Aggregate 設計</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-API-Gateway-Typert-%E5%9A%B4%E6%A0%BC%E9%A1%9E%E5%9E%8B-RPC"><span class="toc-number">1.3.2.</span> <span class="toc-text">2. API Gateway + Typert 嚴格類型 RPC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B7%A5%E5%85%B7%E5%9F%B7%E8%A1%8C%E6%B5%81%E6%B0%B4%E7%B7%9A"><span class="toc-number">1.3.3.</span> <span class="toc-text">3. 工具執行流水線</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Agent-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86"><span class="toc-number">1.3.4.</span> <span class="toc-text">4. Agent 生命周期管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B"><span class="toc-number">1.4.</span> <span class="toc-text">快速上手</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%9E-npm-%E9%81%8B%E8%A1%8C%EF%BC%88%E6%9C%80%E7%B0%A1%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="toc-number">1.4.1.</span> <span class="toc-text">從 npm 運行（最簡方式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%9E%E6%BA%90%E7%A2%BC%E9%81%8B%E8%A1%8C"><span class="toc-number">1.4.2.</span> <span class="toc-text">從源碼運行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Headless-%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.3.</span> <span class="toc-text">Headless 模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%85%8B%E8%88%87%E6%93%B4%E5%B1%95"><span class="toc-number">1.5.</span> <span class="toc-text">生態與擴展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%B5%B1"><span class="toc-number">1.5.1.</span> <span class="toc-text">插件系統</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%96%8B%E7%99%BC%E8%80%85%E5%B7%A5%E5%85%B7%E9%8F%88"><span class="toc-number">1.5.2.</span> <span class="toc-text">開發者工具鏈</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B5%90%E8%AA%9E"><span class="toc-number">1.6.</span> <span class="toc-text">結語</span></a></li></ol></li></ol>	
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%82%BA%E4%BB%80%E9%BA%BC%E6%88%91%E7%9C%8B%E5%A5%BD-DeepSeek-Harness%EF%BC%9A%E5%BE%9E%E7%97%9B%E9%BB%9E%E5%88%B0%E5%AF%A6%E9%9A%9B%E6%87%89%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">為什麼我看好 DeepSeek Harness：從痛點到實際應用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%88%E5%95%8F%E4%B8%80%E5%80%8B%E5%95%8F%E9%A1%8C%EF%BC%9A%E4%BD%A0%E7%94%A8%E9%81%8E%E7%9A%84-Agent-%E6%A1%86%E6%9E%B6%EF%BC%8C%E6%9C%80%E5%A4%A7%E7%9A%84%E5%9B%B0%E6%93%BE%E6%98%AF%E4%BB%80%E9%BA%BC%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%8F%BE%E5%9C%A8%E7%9A%84-Agent-%E9%96%8B%E7%99%BC%E6%9C%89%E4%BB%80%E9%BA%BC%E5%95%8F%E9%A1%8C%EF%BC%9F"><span class="toc-number">1.2.</span> <span class="toc-text">一、現在的 Agent 開發有什麼問題？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%95%8F%E9%A1%8C-1%EF%BC%9A%E8%83%BD%E5%8A%9B%E8%88%87%E6%A1%86%E6%9E%B6%E6%B7%B1%E5%BA%A6%E8%80%A6%E5%90%88"><span class="toc-number">1.2.1.</span> <span class="toc-text">問題 1：能力與框架深度耦合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%95%8F%E9%A1%8C-2%EF%BC%9A%E5%9F%B7%E8%A1%8C%E9%81%8E%E7%A8%8B%E6%98%AF%E9%BB%91%E7%AE%B1"><span class="toc-number">1.2.2.</span> <span class="toc-text">問題 2：執行過程是黑箱</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%95%8F%E9%A1%8C-3%EF%BC%9A%E6%B8%AC%E8%A9%A6%E5%92%8C%E8%AA%BF%E8%A9%A6%E5%9B%B0%E9%9B%A3"><span class="toc-number">1.2.3.</span> <span class="toc-text">問題 3：測試和調試困難</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81DeepSeek-Harness-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E8%B7%AF%EF%BC%9A%E3%80%8C%E4%B8%80%E5%88%87%E7%9A%86%E6%8F%92%E4%BB%B6%E3%80%8D"><span class="toc-number">1.3.</span> <span class="toc-text">二、DeepSeek Harness 的核心思路：「一切皆插件」</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Cordis-%E7%9A%84%E4%BA%94%E5%80%8B%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-number">1.4.</span> <span class="toc-text">三、Cordis 的五個核心概念</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Plugin-Service"><span class="toc-number">1.4.1.</span> <span class="toc-text">1. Plugin &#x3D; Service</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Context-%E6%9C%8D%E5%8B%99%E5%AE%B9%E5%99%A8"><span class="toc-number">1.4.2.</span> <span class="toc-text">2. Context &#x3D; 服務容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-inject-%E4%BE%9D%E8%B3%B4%E8%81%B2%E6%98%8E"><span class="toc-number">1.4.3.</span> <span class="toc-text">3. inject &#x3D; 依賴聲明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E9%A1%9E%E5%9E%8B%E5%8C%96%E4%BA%8B%E4%BB%B6"><span class="toc-number">1.4.4.</span> <span class="toc-text">4. 類型化事件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E5%8F%AF%E9%80%86%E8%A8%BB%E5%86%8A%EF%BC%88ctx-effect%EF%BC%89"><span class="toc-number">1.4.5.</span> <span class="toc-text">5. 可逆註冊（ctx.effect）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%A7%A3%E6%B1%BA%E4%BA%86%E4%BB%80%E9%BA%BC%E5%95%8F%E9%A1%8C%EF%BC%9F"><span class="toc-number">1.5.</span> <span class="toc-text">四、解決了什麼問題？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%95%8F%E9%A1%8C-1-%E8%A7%A3%E6%B1%BA%EF%BC%9A%E6%B7%B1%E5%BA%A6%E5%8F%AF%E7%B5%84%E5%90%88%E6%80%A7"><span class="toc-number">1.5.1.</span> <span class="toc-text">✅ 問題 1 解決：深度可組合性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%95%8F%E9%A1%8C-2-%E8%A7%A3%E6%B1%BA%EF%BC%9A%E5%AE%8C%E6%95%B4%E8%BB%8C%E8%B7%A1%E5%AF%A9%E8%A8%88"><span class="toc-number">1.5.2.</span> <span class="toc-text">✅ 問題 2 解決：完整軌跡審計</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%95%8F%E9%A1%8C-3-%E8%A7%A3%E6%B1%BA%EF%BC%9A%E5%A4%9A%E7%A8%AE%E5%9F%B7%E8%A1%8C%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.5.3.</span> <span class="toc-text">✅ 問題 3 解決：多種執行模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E7%94%9F%E7%94%A2%E7%B4%9A%E8%83%BD%E5%8A%9B%EF%BC%9A%E5%B7%A5%E5%85%B7%E5%9F%B7%E8%A1%8C%E6%B5%81%E6%B0%B4%E7%B7%9A"><span class="toc-number">1.5.4.</span> <span class="toc-text">✅ 生產級能力：工具執行流水線</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%9C%85-%E5%AE%89%E5%85%A8%E8%83%BD%E5%8A%9B%EF%BC%9A%E6%B2%99%E7%AE%B1%E9%9A%94%E9%9B%A2"><span class="toc-number">1.5.5.</span> <span class="toc-text">✅ 安全能力：沙箱隔離</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%AF%A6%E9%9A%9B%E6%87%89%E7%94%A8%E5%A0%B4%E6%99%AF"><span class="toc-number">1.6.</span> <span class="toc-text">五、實際應用場景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%B4%E6%99%AF-1%EF%BC%9A%E6%9C%AC%E5%9C%B0-Coding-Agent"><span class="toc-number">1.6.1.</span> <span class="toc-text">場景 1：本地 Coding Agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%B4%E6%99%AF-2%EF%BC%9A%E5%A4%9A%E8%BC%AA%E5%B0%8D%E8%A9%B1-%E8%A8%98%E6%86%B6%E8%B7%A8-Session"><span class="toc-number">1.6.2.</span> <span class="toc-text">場景 2：多輪對話 + 記憶跨 Session</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%B4%E6%99%AF-3%EF%BC%9A%E6%8E%92%E7%A8%8B%E6%8F%90%E9%86%92"><span class="toc-number">1.6.3.</span> <span class="toc-text">場景 3：排程提醒</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%B4%E6%99%AF-4%EF%BC%9A%E4%BC%81%E6%A5%AD%E5%85%A7%E9%83%A8%E7%9A%84-Agent-%E6%B5%81%E6%B0%B4%E7%B7%9A"><span class="toc-number">1.6.4.</span> <span class="toc-text">場景 4：企業內部的 Agent 流水線</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%A9%AB%E5%90%91%E6%AF%94%E8%BC%83%EF%BC%9ADSH-vs-%E7%AB%B6%E7%88%AD%E8%80%85"><span class="toc-number">1.7.</span> <span class="toc-text">六、橫向比較：DSH vs 競爭者</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%AA%B0%E9%81%A9%E5%90%88%E7%94%A8-DSH%EF%BC%9F"><span class="toc-number">1.8.</span> <span class="toc-text">七、誰適合用 DSH？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%B8%E9%97%9C%E9%80%A3%E7%B5%90"><span class="toc-number">1.9.</span> <span class="toc-text">相關連結</span></a></li></ol></li></ol>	
         </div>
     
 </div>
