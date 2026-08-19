@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架前言DeepSeek 近期在 AI 開源生態動作頻頻，除了大家熟知的 V3/R1 模型，還低調開源了一個相當有特色的專案,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</h1>
+        <div class="stuff">
+            <span>八月 19, 2026</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/AI/" rel="tag">AI</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Agent/" rel="tag">Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/DeepSeek/" rel="tag">DeepSeek</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/TypeScript/" rel="tag">TypeScript</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h1 id="DeepSeek-Harness-深度解析：一切皆插件的-Agent-開發框架"><a href="#DeepSeek-Harness-深度解析：一切皆插件的-Agent-開發框架" class="headerlink" title="DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架"></a>DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>DeepSeek 近期在 AI 開源生態動作頻頻，除了大家熟知的 V3/R1 模型，還低調開源了一個相當有特色的專案——<strong>DeepSeek Harness（簡稱 <code>dsh</code>）</strong>。這是一個以插件化架構為核心的 Agent 開發框架，目前已有 <strong>163k Stars</strong>、<strong>12,400+ commits</strong>，成長速度驚人。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a></p>
+</blockquote>
+<hr>
+<h2 id="核心哲學：Everything-is-a-Plugin"><a href="#核心哲學：Everything-is-a-Plugin" class="headerlink" title="核心哲學：Everything is a Plugin"></a>核心哲學：Everything is a Plugin</h2><p>Harness 最大的特色就是「<strong>一切皆插件</strong>」（Everything is a Plugin）的設計理念。整個框架由 <a target="_blank" rel="noopener" href="https://github.com/cordiverse/cordis">Cordis</a> 驅動，這是一個專為時空可組合性設計的框架，詳細設計見論文 <a target="_blank" rel="noopener" href="https://github.com/cordiverse/paper"><em>A Programming Paradigm for Spatiotemporal Composability</em></a>。</p>
+<h3 id="Cordis-的五個核心概念"><a href="#Cordis-的五個核心概念" class="headerlink" title="Cordis 的五個核心概念"></a>Cordis 的五個核心概念</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>概念</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>插件（Plugin）</strong></td>
+<td>實現 Service 的對象，可帶 <code>inject</code> 和 <code>apply(ctx)</code> 欄位</td>
+</tr>
+<tr>
+<td><strong>上下文（Context）</strong></td>
+<td>服務的容器，佔據穩定的 <code>ctx.&lt;key&gt;</code> 位置</td>
+</tr>
+<tr>
+<td><strong>依賴注入（inject）</strong></td>
+<td>插件聲明所需服務，自動等待就緒後啟動</td>
+</tr>
+<tr>
+<td><strong>類型化事件</strong></td>
+<td>透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 分發</td>
+</tr>
+<tr>
+<td><strong>可逆註冊</strong></td>
+<td><code>ctx.effect()</code> 或 <code>ctx.on()</code> 安裝，teardown 時自動撤銷</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>這種設計讓每個功能模組（LLM、工具、會話管理）都是獨立的插件，開發者可以自由替換、組合，而不需動搖核心。</p>
+<hr>
+<h2 id="架構亮點"><a href="#架構亮點" class="headerlink" title="架構亮點"></a>架構亮點</h2><h3 id="1-嚴格的-TypeScript-雙-Aggregate-設計"><a href="#1-嚴格的-TypeScript-雙-Aggregate-設計" class="headerlink" title="1. 嚴格的 TypeScript 雙 Aggregate 設計"></a>1. 嚴格的 TypeScript 雙 Aggregate 設計</h3><p>Harness 的 TypeScript 專案分為 <strong>Host</strong> 和 <strong>Client</strong> 兩個隔離的 aggregate：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">packages/</span><br><span class="line">├── host/          # Node.js 端：業務邏輯、工具執行</span><br><span class="line">└── client/        # 瀏覽器端：UI、Web UI</span><br></pre></td></tr></table></figure>
+<p>這是因為 Cordis 的 <code>Context</code> 介面在兩側以不同服務做聲明合併，若放進同一個 <code>ts.Program</code> 會發生衝突。分開後各自編譯，確保類型安全。</p>
+<h3 id="2-API-Gateway-Typert-嚴格類型-RPC"><a href="#2-API-Gateway-Typert-嚴格類型-RPC" class="headerlink" title="2. API Gateway + Typert 嚴格類型 RPC"></a>2. API Gateway + Typert 嚴格類型 RPC</h3><p>Harness 提供了一套完整的 Client-Server 類型安全通信方案：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Host 端：業務服務聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>透過 Typert generator 在構建時分析 Remote 簽名，自動生成：</p>
+<ul>
+<li><strong>Host 反射產物</strong>：運行時類型描述符</li>
+<li><strong>Client 投影</strong>：嚴格類型的 Client 调用接口</li>
+</ul>
+<h3 id="3-工具執行流水線"><a href="#3-工具執行流水線" class="headerlink" title="3. 工具執行流水線"></a>3. 工具執行流水線</h3><p>工具從調用到完成經過嚴格的分層控制：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">  pre[&quot;tools/pre-execute waterfall&lt;br/&gt;hooks, permission, sandbox&quot;]</span><br><span class="line">  guards[&quot;Monotonic guards&lt;br/&gt;deny or abstain&quot;]</span><br><span class="line">  around[&quot;tools/execute waterfall&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">  toolBody[&quot;Tool execute() body&quot;]</span><br><span class="line">  post[&quot;tools/post-execute waterfall&lt;br/&gt;accept, block, replace, add context&quot;]</span><br><span class="line">  finalize[&quot;finalizeContent&quot;]</span><br><span class="line">  </span><br><span class="line">  pre --&gt; guards --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br></pre></td></tr></table></figure>
+<p>每層都可以改寫結果，支援鉤子（hooks）、審批（approval）、超時重試等策略，且無需讓工具本身耦合這些邏輯。</p>
+<h3 id="4-Agent-生命周期管理"><a href="#4-Agent-生命周期管理" class="headerlink" title="4. Agent 生命周期管理"></a>4. Agent 生命周期管理</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">sequenceDiagram</span><br><span class="line">  participant User</span><br><span class="line">  participant Driver</span><br><span class="line">  participant LLM</span><br><span class="line">  participant Tools</span><br><span class="line">  </span><br><span class="line">  User-&gt;&gt;Driver: queued work</span><br><span class="line">  Driver-&gt;&gt;Session: turn/start</span><br><span class="line">  Driver-&gt;&gt;Hooks: agent/pre-step waterfall</span><br><span class="line">  Driver-&gt;&gt;LLM: agent/request → llm/stream</span><br><span class="line">  LLM--&gt;&gt;Driver: StreamChunk*</span><br><span class="line">  Driver-&gt;&gt;Tools: classify pending call</span><br><span class="line">  loop barriers and pool</span><br><span class="line">    Driver-&gt;&gt;Tools: execute tool</span><br><span class="line">    Tools--&gt;&gt;Driver: tool/result</span><br><span class="line">  end</span><br><span class="line">  Driver-&gt;&gt;Session: step/end, turn/end</span><br></pre></td></tr></table></figure>
+<p>完整的對話、輪次（turn）、步驟（step）追蹤，所有事件都持久化到 <code>session/event</code> 中，可隨時回放。</p>
+<hr>
+<h2 id="快速上手"><a href="#快速上手" class="headerlink" title="快速上手"></a>快速上手</h2><h3 id="從-npm-運行（最簡方式）"><a href="#從-npm-運行（最簡方式）" class="headerlink" title="從 npm 運行（最簡方式）"></a>從 npm 運行（最簡方式）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 安裝 Node.js 後直接運行</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br></pre></td></tr></table></figure>
+<p>啟動後訪問 <code>http://127.0.0.1:3080</code> 即可進入 Web UI。</p>
+<h3 id="從源碼運行"><a href="#從源碼運行" class="headerlink" title="從源碼運行"></a>從源碼運行</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/deepseek-ai/deepseek-harness.git</span><br><span class="line"><span class="built_in">cd</span> deepseek-harness</span><br><span class="line">pnpm install</span><br><span class="line">pnpm run build</span><br><span class="line">pnpm dsh web</span><br></pre></td></tr></table></figure>
+<h3 id="Headless-模式"><a href="#Headless-模式" class="headerlink" title="Headless 模式"></a>Headless 模式</h3><p>設定 <code>DEEPSEEK_API_KEY</code> 後，可運行純命令行 Agent：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pnpm dsh --profile headless <span class="string">&quot;summarize this workspace&quot;</span></span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="生態與擴展"><a href="#生態與擴展" class="headerlink" title="生態與擴展"></a>生態與擴展</h2><h3 id="插件系統"><a href="#插件系統" class="headerlink" title="插件系統"></a>插件系統</h3><p>官方支持 <code>@dsh-plugin</code> topic，任何人都可以發布自己的插件：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 插件結構示例</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">myPlugin</span>(<span class="params">ctx: Context</span>) </span>&#123;</span><br><span class="line">  ctx.effect(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 註冊工具、提示詞、事件監聽</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function">() =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// teardown 時清理</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="開發者工具鏈"><a href="#開發者工具鏈" class="headerlink" title="開發者工具鏈"></a>開發者工具鏈</h3><ul>
+<li><strong>本地檢查</strong>：Lefthook 鉤子自動校驗代碼風格、翻譯配對</li>
+<li><strong>CI 門禁</strong>：類型檢查、構建、測試分為獨立 lane</li>
+<li><strong>文檔生成</strong>：<code>doc-sync</code> 自動同步英文↔中文文檔</li>
+</ul>
+<hr>
+<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>DeepSeek Harness 代表了新一代 Agent 框架的設計方向：</p>
+<ol>
+<li><strong>插件化優先</strong> — 功能替換不動核心，實驗新能力只需加插件</li>
+<li><strong>類型安全</strong> — 從 RPC 到工具 schema，全鏈路 TypeScript 保障</li>
+<li><strong>可審計性</strong> — 所有對話歷史、工具調用完整持久化</li>
+<li><strong>生產就緒</strong> — 嚴格的構建流水線、測試覆蓋、貢獻者指南</li>
+</ol>
+<p>目前仍在 <strong>developer preview</strong> 階段（v0.1.0-rc.7），API 可能有不兼容變更，但對於想深入理解 Agent 系統架構、或準備在生產環境構建可靠 AI 應用的開發者，這是一個值得關注的專案。</p>
+<blockquote>
+<p><strong>相關連結</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/deepseek-harness">GitHub Repo</a></li>
+<li><a target="_blank" rel="noopener" href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
+</ul>
+</blockquote>
+<hr>
+<p><em>本篇為技術介紹文，更多實戰開發心得待續。</em></p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#DeepSeek-Harness-%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%9A%E4%B8%80%E5%88%87%E7%9A%86%E6%8F%92%E4%BB%B6%E7%9A%84-Agent-%E9%96%8B%E7%99%BC%E6%A1%86%E6%9E%B6"><span class="toc-number">1.</span> <span class="toc-text">DeepSeek Harness 深度解析：一切皆插件的 Agent 開發框架</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%93%B2%E5%AD%B8%EF%BC%9AEverything-is-a-Plugin"><span class="toc-number">1.2.</span> <span class="toc-text">核心哲學：Everything is a Plugin</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Cordis-%E7%9A%84%E4%BA%94%E5%80%8B%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-number">1.2.1.</span> <span class="toc-text">Cordis 的五個核心概念</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%A7%8B%E4%BA%AE%E9%BB%9E"><span class="toc-number">1.3.</span> <span class="toc-text">架構亮點</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%9A%B4%E6%A0%BC%E7%9A%84-TypeScript-%E9%9B%99-Aggregate-%E8%A8%AD%E8%A8%88"><span class="toc-number">1.3.1.</span> <span class="toc-text">1. 嚴格的 TypeScript 雙 Aggregate 設計</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-API-Gateway-Typert-%E5%9A%B4%E6%A0%BC%E9%A1%9E%E5%9E%8B-RPC"><span class="toc-number">1.3.2.</span> <span class="toc-text">2. API Gateway + Typert 嚴格類型 RPC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B7%A5%E5%85%B7%E5%9F%B7%E8%A1%8C%E6%B5%81%E6%B0%B4%E7%B7%9A"><span class="toc-number">1.3.3.</span> <span class="toc-text">3. 工具執行流水線</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Agent-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86"><span class="toc-number">1.3.4.</span> <span class="toc-text">4. Agent 生命周期管理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B"><span class="toc-number">1.4.</span> <span class="toc-text">快速上手</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%9E-npm-%E9%81%8B%E8%A1%8C%EF%BC%88%E6%9C%80%E7%B0%A1%E6%96%B9%E5%BC%8F%EF%BC%89"><span class="toc-number">1.4.1.</span> <span class="toc-text">從 npm 運行（最簡方式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%9E%E6%BA%90%E7%A2%BC%E9%81%8B%E8%A1%8C"><span class="toc-number">1.4.2.</span> <span class="toc-text">從源碼運行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Headless-%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.4.3.</span> <span class="toc-text">Headless 模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%9F%E6%85%8B%E8%88%87%E6%93%B4%E5%B1%95"><span class="toc-number">1.5.</span> <span class="toc-text">生態與擴展</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E4%BB%B6%E7%B3%BB%E7%B5%B1"><span class="toc-number">1.5.1.</span> <span class="toc-text">插件系統</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%96%8B%E7%99%BC%E8%80%85%E5%B7%A5%E5%85%B7%E9%8F%88"><span class="toc-number">1.5.2.</span> <span class="toc-text">開發者工具鏈</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B5%90%E8%AA%9E"><span class="toc-number">1.6.</span> <span class="toc-text">結語</span></a></li></ol></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+</html>
