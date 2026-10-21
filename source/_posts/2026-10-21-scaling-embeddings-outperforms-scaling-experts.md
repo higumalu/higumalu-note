@@ -61,7 +61,7 @@ mathjax: true
 
 $$e_i = \frac{1}{N} \left( E_0(t_i) + \sum_{n=2}^N E_n(\mathcal{H}_n(t_{i-n+1}, \dots, t_i))  \right) ag{1}$$
 
-其中當 $j \le 0$ 時 $t_j = 0$。$E_0 \in \mathbb{R}^{V_0 imes D}$ 是隱維度為 $D$ 的原始基礎嵌入表，$E_n \in \mathbb{R}^{V_n imes D}$ 是擴展的嵌入表，$N$ 表示最高 N-gram 階數，$\mathcal{H}_n$ 表示雜湊映射函數。
+其中當 $j \le 0$ 時 $t_j = 0$。$E_0 \in \mathbb{R}^{V_0 	imes D}$ 是隱維度為 $D$ 的原始基礎嵌入表，$E_n \in \mathbb{R}^{V_n 	imes D}$ 是擴展的嵌入表，$N$ 表示最高 N-gram 階數，$\mathcal{H}_n$ 表示雜湊映射函數。
 
 我們採用**多項式滾動雜湊函數（Polynomial Rolling Hash Function）**：
 
@@ -71,7 +71,7 @@ $$\mathcal{H}_n(t_{i-n+1}, \dots, t_i) = \left( \sum_{j=0}^{n-1} t_{i-j} * V_0^j
 
 $$e_i = \frac{1}{(N-1)K + 1} \left( E_0(t_i) + \sum_{n=2}^N \sum_{k=1}^K W_{n,k} E_{n,k}(\mathcal{H}_{n,k}(t_{i-n+1}, \dots, t_i))  \right) ag{3}$$
 
-其中 $E_{n,k} \in \mathbb{R}^{V_{n,k} imes \frac{D}{(N-1)K}}$ 為子表，$W_{n,k} \in \mathbb{R}^{D imes \frac{D}{(N-1)K}}$ 為線性投影矩陣。
+其中 $E_{n,k} \in \mathbb{R}^{V_{n,k} 	imes \frac{D}{(N-1)K}}$ 為子表，$W_{n,k} \in \mathbb{R}^{D 	imes \frac{D}{(N-1)K}}$ 為線性投影矩陣。
 
 透過將子表的隱層大小設定為與子表數量成反比，該設計保證了 **N-gram 嵌入的參數量相對於 $N$ 和 $K$ 保持恆定（Invariant）**。
 
@@ -237,12 +237,12 @@ N-gram 嵌入機制有效將參數從 MoE 層重新分配到嵌入空間中。�
 ### 5.1 逐層嵌入（PLE）
 PLE 直接將 SwiGLU 模組中 Up-projection 矩陣的輸出替換為嵌入輸出。設 $x_i^{(l)}$ 為第 $l$ 層 FFN 模組的第 $i$ 個輸入向量，加入 PLE 的 FFN 輸出為：
 
-$$ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left( ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot E_0^{(l)}(t_i)  \right) ag{4}$$
+$$	ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left( 	ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot E_0^{(l)}(t_i)  \right) ag{4}$$
 
 ### 5.2 逐層 N-gram 嵌入（PLNE）
 我們提出 **Per-Layer N-gram Embedding (PLNE)**，將每層的基礎嵌入輸出替換為 N-gram 嵌入輸出：
 
-$$ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left( ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot e_i^{(l)}  \right) ag{5}$$
+$$	ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left( 	ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot e_i^{(l)}  \right) ag{5}$$
 
 其中 $e_i^{(l)}$ 依據公式 (3) 計算，使用各層專屬的嵌入表與投影矩陣。
 
