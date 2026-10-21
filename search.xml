@@ -1,92 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>搜尋系統建置記（一）—— SearXNG Docker 部署踩坑實錄</title>
-    <url>/higumalu-note/2026-05-22-hermes-search-system-searxng/</url>
-    <content><![CDATA[<h2 id="🚀-為什麼要折騰-SearXNG"><a href="#🚀-為什麼要折騰-SearXNG" class="headerlink" title="🚀 為什麼要折騰 SearXNG"></a>🚀 為什麼要折騰 SearXNG</h2><p>一開始用 Hermes 內建的搜尋，發現問題不少：</p>
-<ul>
-<li>Google 常常被 Bot 驗證擋住</li>
-<li>DuckDuckGo 有時候也掛</li>
-<li>Bing 的結果品質飄忽不定</li>
-</ul>
-<p>熊熊想要一個<strong>自己可控、隱私友好的搜尋引擎</strong>，剛好看到了 <strong>SearXNG</strong>——開源隱私搜尋聚合，可以同時查多個引擎、統一呈現結果，還支援 JSON API，正是 Hermes 需要的那種。</p>
-<p>不選 API 是因為 API 通常會有各種限制——次數配額、速率限制、付費牆——不適合拿來做大量研究。</p>
-<hr>
-<h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-<p>結果在 Windows 上跑不起來，原因有好幾個。</p>
-<blockquote>
-<p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
-<p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
-<p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
-</blockquote>
-<hr>
-<h2 id="⚙️-settings-yml-的隱形陷阱"><a href="#⚙️-settings-yml-的隱形陷阱" class="headerlink" title="⚙️ settings.yml 的隱形陷阱"></a>⚙️ settings.yml 的隱形陷阱</h2><p>SearXNG 的設定都集中在 <code>settings.yml</code>，一開始熊熊以為預設值就可以直接用，結果 JSON API 一直回 403。</p>
-<blockquote>
-<p>⚠️ <strong>坑 2：JSON API 格式被預設關閉</strong></p>
-<p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
-<p>需要在 <code>settings.yml</code> 裡手動加上：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
-<p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
-</blockquote>
-<hr>
-<h2 id="🕐-折騰了幾個晚上"><a href="#🕐-折騰了幾個晚上" class="headerlink" title="🕐 折騰了幾個晚上"></a>🕐 折騰了幾個晚上</h2><p>老實說，具體折騰了多久、哪幾個晚上，熊熊現在也想不起來了 😅</p>
-<p>只知道一開始 folder 是 4 月底就建好的，但 Docker 真正跑起來、port 和 JSON API 都搞定，是後來的事了。過程中一直懷疑是不是 Docker 起不起來、網路有沒有問題，最後才發現是這幾行設定沒開⋯⋯</p>
-<hr>
-<h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
-<p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
-<hr>
-<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>項目</th>
-<th>內容</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>SearXNG 版本</strong></td>
-<td>官方 latest</td>
-</tr>
-<tr>
-<td><strong>Port 對應</strong></td>
-<td>Docker 內 8080 → Host 18080</td>
-</tr>
-<tr>
-<td><strong>settings.yml</strong></td>
-<td>啟用 JSON API 格式</td>
-</tr>
-<tr>
-<td><strong>可用引擎</strong></td>
-<td>Google, Bing, DuckDuckGo, Brave 等</td>
-</tr>
-<tr>
-<td><strong>運行時間</strong></td>
-<td>21 小時以上（連續運行）</td>
-</tr>
-</tbody>
-</table>
-</div>
-<hr>
-<h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
-<p>整件事值得嗎？<strong>值得</strong>。</p>
-]]></content>
-      <categories>
-        <category>Hermes</category>
-        <category>開發日誌</category>
-      </categories>
-      <tags>
-        <tag>SearXNG</tag>
-        <tag>Docker</tag>
-        <tag>Hermes</tag>
-        <tag>搜尋系統</tag>
-        <tag>self-host</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>搜尋系統建置記（二）—— Crawl4AI + 順手修好的 SearXNG</title>
     <url>/higumalu-note/2026-05-23-hermes-search-system-crawl4ai/</url>
     <content><![CDATA[<h2 id="🦞-為什麼需要-Crawl4AI"><a href="#🦞-為什麼需要-Crawl4AI" class="headerlink" title="🦞 為什麼需要 Crawl4AI"></a>🦞 為什麼需要 Crawl4AI</h2><p>有了 SearXNG 找到目標網頁之後，下一個問題是：</p>
@@ -210,12 +124,98 @@
         <category>開發日誌</category>
       </categories>
       <tags>
+        <tag>Crawl4AI</tag>
+        <tag>Docker</tag>
+        <tag>Hermes</tag>
+        <tag>爬蟲</tag>
+        <tag>搜尋系統</tag>
+        <tag>self-host</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>搜尋系統建置記（一）—— SearXNG Docker 部署踩坑實錄</title>
+    <url>/higumalu-note/2026-05-22-hermes-search-system-searxng/</url>
+    <content><![CDATA[<h2 id="🚀-為什麼要折騰-SearXNG"><a href="#🚀-為什麼要折騰-SearXNG" class="headerlink" title="🚀 為什麼要折騰 SearXNG"></a>🚀 為什麼要折騰 SearXNG</h2><p>一開始用 Hermes 內建的搜尋，發現問題不少：</p>
+<ul>
+<li>Google 常常被 Bot 驗證擋住</li>
+<li>DuckDuckGo 有時候也掛</li>
+<li>Bing 的結果品質飄忽不定</li>
+</ul>
+<p>熊熊想要一個<strong>自己可控、隱私友好的搜尋引擎</strong>，剛好看到了 <strong>SearXNG</strong>——開源隱私搜尋聚合，可以同時查多個引擎、統一呈現結果，還支援 JSON API，正是 Hermes 需要的那種。</p>
+<p>不選 API 是因為 API 通常會有各種限制——次數配額、速率限制、付費牆——不適合拿來做大量研究。</p>
+<hr>
+<h2 id="🐳-Docker-在-Windows-上的-Port-坑"><a href="#🐳-Docker-在-Windows-上的-Port-坑" class="headerlink" title="🐳 Docker 在 Windows 上的 Port 坑"></a>🐳 Docker 在 Windows 上的 Port 坑</h2><p>SearXNG 官方推薦用 Docker 安裝，理論上很簡單：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull searxng/searxng</span><br><span class="line">docker run -d -p 8080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
+<p>結果在 Windows 上跑不起來，原因有好幾個。</p>
+<blockquote>
+<p>⚠️ <strong>坑 1：Port 8080 被佔用</strong></p>
+<p>Windows 10 很多服務預設就綁 8080，iis、SQL Server Reporting Services 都常佔著。熊熊最後決定把內部 8080 映射到 Host 的 <strong>18080</strong>，避開衝突：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d -p 18080:8080 searxng/searxng</span><br></pre></td></tr></table></figure>
+<p>這個 <code>18080</code> 後來一直跟著，每次改設定都要記得⋯⋯</p>
+</blockquote>
+<hr>
+<h2 id="⚙️-settings-yml-的隱形陷阱"><a href="#⚙️-settings-yml-的隱形陷阱" class="headerlink" title="⚙️ settings.yml 的隱形陷阱"></a>⚙️ settings.yml 的隱形陷阱</h2><p>SearXNG 的設定都集中在 <code>settings.yml</code>，一開始熊熊以為預設值就可以直接用，結果 JSON API 一直回 403。</p>
+<blockquote>
+<p>⚠️ <strong>坑 2：JSON API 格式被預設關閉</strong></p>
+<p>預設的 SearXNG 只允許 <code>html</code> 格式回應，用 <code>format=json</code> 參數去查直接噴 <strong>403 Forbidden</strong>。</p>
+<p>需要在 <code>settings.yml</code> 裡手動加上：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="attr">formats:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">html</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">json</span>    <span class="comment"># ← 要自己加這行</span></span><br></pre></td></tr></table></figure>
+<p>這個設定藏在文件很深的章節，不仔細看根本不知道⋯⋯</p>
+</blockquote>
+<hr>
+<h2 id="🕐-折騰了幾個晚上"><a href="#🕐-折騰了幾個晚上" class="headerlink" title="🕐 折騰了幾個晚上"></a>🕐 折騰了幾個晚上</h2><p>老實說，具體折騰了多久、哪幾個晚上，熊熊現在也想不起來了 😅</p>
+<p>只知道一開始 folder 是 4 月底就建好的，但 Docker 真正跑起來、port 和 JSON API 都搞定，是後來的事了。過程中一直懷疑是不是 Docker 起不起來、網路有沒有問題，最後才發現是這幾行設定沒開⋯⋯</p>
+<hr>
+<h2 id="🔗-串上-Hermes"><a href="#🔗-串上-Hermes" class="headerlink" title="🔗 串上 Hermes"></a>🔗 串上 Hermes</h2><p>設定好了之後，端點是：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://localhost:18080/search?q=&lt;query&gt;&amp;format=json&amp;limit=10</span><br></pre></td></tr></table></figure>
+<p>在 Hermes 的 <code>config.yaml</code> 裡設定 <code>search_backend</code> 指向這裡，之後 BFS Research 技能就能直接呼叫了。</p>
+<hr>
+<h2 id="📊-最終成果"><a href="#📊-最終成果" class="headerlink" title="📊 最終成果"></a>📊 最終成果</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>SearXNG 版本</strong></td>
+<td>官方 latest</td>
+</tr>
+<tr>
+<td><strong>Port 對應</strong></td>
+<td>Docker 內 8080 → Host 18080</td>
+</tr>
+<tr>
+<td><strong>settings.yml</strong></td>
+<td>啟用 JSON API 格式</td>
+</tr>
+<tr>
+<td><strong>可用引擎</strong></td>
+<td>Google, Bing, DuckDuckGo, Brave 等</td>
+</tr>
+<tr>
+<td><strong>運行時間</strong></td>
+<td>21 小時以上（連續運行）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h2><p>第一次用 Pipeline 做研究，其實是高於預期的。原本以為會再折騰一陣子，結果意外地順利。</p>
+<p>整件事值得嗎？<strong>值得</strong>。</p>
+]]></content>
+      <categories>
+        <category>Hermes</category>
+        <category>開發日誌</category>
+      </categories>
+      <tags>
         <tag>Docker</tag>
         <tag>Hermes</tag>
         <tag>搜尋系統</tag>
         <tag>self-host</tag>
-        <tag>Crawl4AI</tag>
-        <tag>爬蟲</tag>
+        <tag>SearXNG</tag>
       </tags>
   </entry>
   <entry>
@@ -2092,6 +2092,237 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
+    <title>為什麼我看好 DeepSeek Harness：從痛點到實際應用</title>
+    <url>/higumalu-note/2026-08-19-deepseek-harness/</url>
+    <content><![CDATA[<h1 id="為什麼我看好-DeepSeek-Harness：從痛點到實際應用"><a href="#為什麼我看好-DeepSeek-Harness：從痛點到實際應用" class="headerlink" title="為什麼我看好 DeepSeek Harness：從痛點到實際應用"></a>為什麼我看好 DeepSeek Harness：從痛點到實際應用</h1><h2 id="先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？"><a href="#先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？" class="headerlink" title="先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？"></a>先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？</h2><p>是 LLMWare 太封閉、RAG 流水線太脆弱、還是 LangChain 更新一次就壞一片 Plugin？</p>
+<p>DeepSeek 近期低調開源的 <strong><a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a></strong>（簡稱 <code>dsh</code>）——163k Stars、12,400+ commits——試圖回答一個更根本的問題：</p>
+<blockquote>
+<p><strong>如何讓 AI Agent 在真實世界穩定運作，而不是只會在 Demo 裡優雅運轉？</strong></p>
+</blockquote>
+<hr>
+<h2 id="一、現在的-Agent-開發有什麼問題？"><a href="#一、現在的-Agent-開發有什麼問題？" class="headerlink" title="一、現在的 Agent 開發有什麼問題？"></a>一、現在的 Agent 開發有什麼問題？</h2><h3 id="問題-1：能力與框架深度耦合"><a href="#問題-1：能力與框架深度耦合" class="headerlink" title="問題 1：能力與框架深度耦合"></a>問題 1：能力與框架深度耦合</h3><p>大多數 Agent 框架把「模型調用」「工具執行」「對話管理」「記憶體」全部寫死在一個 SDK 裡。想換一個 LLM Provider？重寫。想加一個 Memory 系統？改核心代碼。想在正式環境加入審批機制？得 hack。</p>
+<p>結果：<strong>實驗環境很美好，生產環境很悲慘</strong>。</p>
+<h3 id="問題-2：執行過程是黑箱"><a href="#問題-2：執行過程是黑箱" class="headerlink" title="問題 2：執行過程是黑箱"></a>問題 2：執行過程是黑箱</h3><p>當 Agent 執行了一連串 Tool Call，你知道它看到什麼、用過哪些資訊嗎？大多數框架的答案：「不知道，等它結束再看結果。」</p>
+<p>問題在於：當 Agent 在正式環境裡做出錯誤決策時，你沒有辦法回溯。它可能是吃了錯誤的上下文、可能是 prompt 被汙染、也可能 Tool 結果被錯誤解析。無法審計，就無法改善。</p>
+<h3 id="問題-3：測試和調試困難"><a href="#問題-3：測試和調試困難" class="headerlink" title="問題 3：測試和調試困難"></a>問題 3：測試和調試困難</h3><p>Agent 的輸出是非確定性的，如何測試？大多數框架沒有好的機制。要嘛降低到只測 prompt，要嘛就得跑 end-to-end 然後祈禱。代價高、反饋慢。</p>
+<hr>
+<h2 id="二、DeepSeek-Harness-的核心思路：「一切皆插件」"><a href="#二、DeepSeek-Harness-的核心思路：「一切皆插件」" class="headerlink" title="二、DeepSeek Harness 的核心思路：「一切皆插件」"></a>二、DeepSeek Harness 的核心思路：「一切皆插件」</h2><p>Harness 的底層由 <a href="https://github.com/cordiverse/cordis">Cordis</a> 框架驅動，核心哲學只有一句話：</p>
+<blockquote>
+<p><strong>Every capability is a plugin.</strong></p>
+</blockquote>
+<p>這不是行銷口號，而是架構事實。在 DSH 裡：</p>
+<ul>
+<li>模型調用 → 插件</li>
+<li>工具執行（bash、file、web search） → 插件</li>
+<li>對話管理（session、turn、step） → 插件</li>
+<li>記憶體系統 → 插件</li>
+<li>排程提醒 → 插件</li>
+<li>沙箱隔離 → 插件</li>
+<li>整個 UI → 插件</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">    subgraph Cordis Kernel</span><br><span class="line">        K[Kernel]</span><br><span class="line">    end</span><br><span class="line">    subgraph Plugins</span><br><span class="line">        M[Model&lt;br/&gt;Provider]</span><br><span class="line">        T[Tools]</span><br><span class="line">        S[Session&lt;br/&gt;Manager]</span><br><span class="line">        R[Memory&lt;br/&gt;System]</span><br><span class="line">        P[Planning&lt;br/&gt;Skills]</span><br><span class="line">    end</span><br><span class="line">    K --&gt; M</span><br><span class="line">    K --&gt; T</span><br><span class="line">    K --&gt; S</span><br><span class="line">    K --&gt; R</span><br><span class="line">    K --&gt; P</span><br></pre></td></tr></table></figure>
+<p>好處是什麼？</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>痛點</th>
+<th>DSH 解法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>想換模型 Provider</td>
+<td>替換一個插件</td>
+</tr>
+<tr>
+<td>想加 Memory</td>
+<td>插入一個插件</td>
+</tr>
+<tr>
+<td>想加審批環節</td>
+<td>插入一個插件</td>
+</tr>
+<tr>
+<td>想在正式環境隔離執行</td>
+<td>換一個沙箱插件</td>
+</tr>
+<tr>
+<td>想實驗新能力</td>
+<td>新增一個插件，不動核心</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>不需要 fork 框架，不需要等官方支援，自己動手豐衣足食。</strong></p>
+<hr>
+<h2 id="三、Cordis-的五個核心概念"><a href="#三、Cordis-的五個核心概念" class="headerlink" title="三、Cordis 的五個核心概念"></a>三、Cordis 的五個核心概念</h2><p>Cordis 是 DSH 的核心引擎，理解它的概念等於理解整個框架的設計邏輯：</p>
+<h3 id="1-Plugin-Service"><a href="#1-Plugin-Service" class="headerlink" title="1. Plugin = Service"></a>1. Plugin = Service</h3><p>插件就是一個帶生命周期的 Service對象，實現 <code>ctx.&lt;key&gt;</code> 接口。可以是簡單函數，也可以是完整的類。</p>
+<h3 id="2-Context-服務容器"><a href="#2-Context-服務容器" class="headerlink" title="2. Context = 服務容器"></a>2. Context = 服務容器</h3><p>每個 Service 佔據一個穩定的 <code>ctx.&lt;key&gt;</code> 位置，其他插件透過 key 查找服務，<strong>而非直接 import 實現</strong>。這就是依賴反轉。</p>
+<h3 id="3-inject-依賴聲明"><a href="#3-inject-依賴聲明" class="headerlink" title="3. inject = 依賴聲明"></a>3. inject = 依賴聲明</h3><p>插件宣告自己需要哪些服務，Cordis 自動等待這些服務就緒才啟動。<strong>啟動順序由依賴關係決定</strong>，不需要手動排程。</p>
+<h3 id="4-類型化事件"><a href="#4-類型化事件" class="headerlink" title="4. 類型化事件"></a>4. 類型化事件</h3><p>服務之間透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 四種模式通信。這不是簡單的事件總線，而是<strong>帶語義的分發策略</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// emit: 觀察，無返回值</span></span><br><span class="line"><span class="comment">// waterfall: 包裝請求，可短路</span></span><br><span class="line"><span class="comment">// parallel: 並行觀察</span></span><br><span class="line"><span class="comment">// serial: 依序觀察，累積結果</span></span><br></pre></td></tr></table></figure>
+<h3 id="5-可逆註冊（ctx-effect）"><a href="#5-可逆註冊（ctx-effect）" class="headerlink" title="5. 可逆註冊（ctx.effect）"></a>5. 可逆註冊（ctx.effect）</h3><p>所有注册都是副作用，teardown 時自動撤銷。記憶體不會洩漏。</p>
+<hr>
+<h2 id="四、解決了什麼問題？"><a href="#四、解決了什麼問題？" class="headerlink" title="四、解決了什麼問題？"></a>四、解決了什麼問題？</h2><h3 id="✅-問題-1-解決：深度可組合性"><a href="#✅-問題-1-解決：深度可組合性" class="headerlink" title="✅ 問題 1 解決：深度可組合性"></a>✅ 問題 1 解決：深度可組合性</h3><p>實際例子：MCP（Model Context Protocol）記憶體整合。</p>
+<p>DSH 內建 MCP Client 插件，只要一行配置就能把第三方記憶體系統接進來：</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 透過 MCP 接 Engram 記憶體</span></span><br><span class="line">npx @deepseek-ai/dsh web --patch <span class="string">&quot;examples/mcp-memory/engram.cordis.yml&quot;</span></span><br></pre></td></tr></table></figure>
+<p>三種記憶體系統（Memorix、MCP Reference Memory、Engram）任選，都是「插件替換」模式。<strong>不需要改 DSH 代碼，不需要等官方適配，自己配上去就能用。</strong></p>
+<h3 id="✅-問題-2-解決：完整軌跡審計"><a href="#✅-問題-2-解決：完整軌跡審計" class="headerlink" title="✅ 問題 2 解決：完整軌跡審計"></a>✅ 問題 2 解決：完整軌跡審計</h3><p>DSH 的 Session Log 是 append-only 的事件流，記錄：</p>
+<ul>
+<li>System prompt 每次組裝結果</li>
+<li>每次 Reasoning 過程</li>
+<li>每次 Tool Call 的輸入輸出</li>
+<li>Subagent 的調度與結果</li>
+<li>每次 Context 注入的內容</li>
+</ul>
+<p>在 Trajectory 視圖裡，你可以：</p>
+<ul>
+<li><strong>Resume</strong>：從任意中斷點恢復</li>
+<li><strong>Fork</strong>：複製對話分支</li>
+<li><strong>Search</strong>：搜尋歷史對話</li>
+<li><strong>Replay</strong>：重放整個執行過程</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Session Event Log (append-only):</span><br><span class="line">─────────────────────────────────────</span><br><span class="line">turn/start</span><br><span class="line">  step/start</span><br><span class="line">    system-prompt/assembled → &#123; full prompt content &#125;</span><br><span class="line">    agent/request → &#123; model, temperature, ... &#125;</span><br><span class="line">    llm/stream → &#123; chunks... &#125;</span><br><span class="line">    assistant/message → &#123; final message &#125;</span><br><span class="line">    tool/call → &#123; tool: &quot;bash&quot;, args: &quot;git status&quot; &#125;</span><br><span class="line">    tool/result → &#123; output: &quot;...&quot; &#125;</span><br><span class="line">  step/end</span><br><span class="line">turn/end</span><br></pre></td></tr></table></figure>
+<p><strong>當 Agent 出錯時，你有一條完整的因果鏈可以追查。</strong></p>
+<h3 id="✅-問題-3-解決：多種執行模式"><a href="#✅-問題-3-解決：多種執行模式" class="headerlink" title="✅ 問題 3 解決：多種執行模式"></a>✅ 問題 3 解決：多種執行模式</h3><p>DSH 內建四種模式，針對不同場景：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Standard</strong></td>
+<td>完整工具集：file edit、shell、web search、skills、planning、subagents、workflows</td>
+</tr>
+<tr>
+<td><strong>Code</strong></td>
+<td>把工具包裝成 SDK，讓模型自己寫 TypeScript 程序來組合多步操作</td>
+</tr>
+<tr>
+<td><strong>Minimal</strong></td>
+<td>極簡環境：只有 bash + file edit，用於基准測試模型能力</td>
+</tr>
+<tr>
+<td><strong>Creator</strong></td>
+<td>插件實驗室：即時檢查 Runtime、測試插件組合、創作新模式</td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│  Mode Picker                                │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  ○ Standard ─ Full coding agent             │</span><br><span class="line">│  ○ Code ─ Code Mode SDK orchestration       │</span><br><span class="line">│  ○ Minimal ─ Two-tool benchmark agent       │</span><br><span class="line">│  ○ Creator ─ Plugin lab &amp; preset authoring  │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<h3 id="✅-生產級能力：工具執行流水線"><a href="#✅-生產級能力：工具執行流水線" class="headerlink" title="✅ 生產級能力：工具執行流水線"></a>✅ 生產級能力：工具執行流水線</h3><p>DSH 的工具執行經過嚴格分層控制：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    pre[&quot;tools/pre-execute&quot;]</span><br><span class="line">    guards[&quot;Monotonic Guards&quot;]</span><br><span class="line">    approval[&quot;ctx.approval&lt;br/&gt;User Prompt&quot;]</span><br><span class="line">    around[&quot;tools/execute&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">    toolBody[&quot;Tool Body&quot;]</span><br><span class="line">    post[&quot;tools/post-execute&quot;]</span><br><span class="line">    finalize[&quot;finalizeContent&quot;]</span><br><span class="line">    </span><br><span class="line">    pre --&gt; guards --&gt; approval --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br><span class="line">    </span><br><span class="line">    pre --&gt;|deny| denied[skipped]</span><br><span class="line">    guards --&gt;|deny| denied</span><br><span class="line">    approval --&gt;|reject| denied</span><br></pre></td></tr></table></figure>
+<p>每層都可以包裝、改寫結果。<strong>鉤子（hooks）、審批（approval）、超時重試，全部是可插拔的插件，工具本身不需要知道這些邏輯。</strong></p>
+<h3 id="✅-安全能力：沙箱隔離"><a href="#✅-安全能力：沙箱隔離" class="headerlink" title="✅ 安全能力：沙箱隔離"></a>✅ 安全能力：沙箱隔離</h3><p>Harness 支援把工具執行放到隔離沙箱中，例如 <a href="https://e2b.dev/">E2B</a> 雲端沙箱。Local filesystem 和 subprocess 插件可以被一鍵替換為雲端沙箱：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># e2b.cordis.yml — 替換本地工具為雲端沙箱</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">insert:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">id:</span> <span class="string">e2b-sandbox</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">&#x27;@deepseek-ai/dsh-e2b&#x27;</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">sandboxTemplate:</span> <span class="string">standard</span></span><br></pre></td></tr></table></figure>
+<p><strong>本地開發、雲端執行，隔離級別可選。</strong></p>
+<hr>
+<h2 id="五、實際應用場景"><a href="#五、實際應用場景" class="headerlink" title="五、實際應用場景"></a>五、實際應用場景</h2><h3 id="場景-1：本地-Coding-Agent"><a href="#場景-1：本地-Coding-Agent" class="headerlink" title="場景 1：本地 Coding Agent"></a>場景 1：本地 Coding Agent</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 最簡單的使用方式</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指令列模式</span></span><br><span class="line">pnpm dsh --profile headless <span class="string">&quot;fix the failing test in this workspace&quot;</span></span><br></pre></td></tr></table></figure>
+<p>設定 <code>DEEPSEEK_API_KEY</code>，就能讓 Agent 幫你分析代碼庫、修復 Bug、寫測試。完整的事件日誌讓你清楚看到它為什麼這麼改。</p>
+<h3 id="場景-2：多輪對話-記憶跨-Session"><a href="#場景-2：多輪對話-記憶跨-Session" class="headerlink" title="場景 2：多輪對話 + 記憶跨 Session"></a>場景 2：多輪對話 + 記憶跨 Session</h3><p>透過 MCP Memory 插件，Agent 可以「記得」之前對話中的偏好設定：</p>
+<ol>
+<li>Session A：「幫我記住我的驗證飲料是 lapsang-black-tea」</li>
+<li>Session B：「我剛才的驗證飲料是什麼？」→ Agent 從記憶體系統查詢，返回正確答案</li>
+</ol>
+<p><strong>新的對話不需要重新設定前提，記憶持久化在外部系統。</strong></p>
+<h3 id="場景-3：排程提醒"><a href="#場景-3：排程提醒" class="headerlink" title="場景 3：排程提醒"></a>場景 3：排程提醒</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 啟用排程插件</span></span><br><span class="line">dsh web --patch examples/web-schedule/cordis.yml</span><br></pre></td></tr></table></figure>
+<p>Agent 可以創建、列舉、刪除提醒，且提醒綁定到對話 Session。離開對話後再回來，過期的提醒會自動觸發後續對話。</p>
+<h3 id="場景-4：企業內部的-Agent-流水線"><a href="#場景-4：企業內部的-Agent-流水線" class="headerlink" title="場景 4：企業內部的 Agent 流水線"></a>場景 4：企業內部的 Agent 流水線</h3><p>透過 API Gateway + Typert，Harness 提供完整的 Client-Server 類型安全 RPC：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Host 端：聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>構建時自動生成 Client 端的類型安全接口，確保前後端 API 不會因為簽名變更而悄悄 break。</p>
+<hr>
+<h2 id="六、橫向比較：DSH-vs-競爭者"><a href="#六、橫向比較：DSH-vs-競爭者" class="headerlink" title="六、橫向比較：DSH vs 競爭者"></a>六、橫向比較：DSH vs 競爭者</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>維度</th>
+<th>LangChain</th>
+<th>AutoGen</th>
+<th>DSH</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>插件系統</td>
+<td>有，但深度耦合</td>
+<td>有限</td>
+<td>一切皆插件</td>
+</tr>
+<tr>
+<td>執行審計</td>
+<td>日誌分散</td>
+<td>基本</td>
+<td>完整事件流</td>
+</tr>
+<tr>
+<td>工具流水線</td>
+<td>自己實現</td>
+<td>自己實現</td>
+<td>框架內建分層控制</td>
+</tr>
+<tr>
+<td>MCP 整合</td>
+<td>需第三方適配</td>
+<td>無</td>
+<td>官方支援</td>
+</tr>
+<tr>
+<td>沙箱隔離</td>
+<td>無</td>
+<td>無</td>
+<td>原生支援</td>
+</tr>
+<tr>
+<td>架構穩定性</td>
+<td>API 經常變更</td>
+<td>實驗性</td>
+<td>嚴格的 TypeScript 雙 Aggregate 設計</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DSH 的最大差異：<strong>它不只是讓 Agent 跑起來，而是讓 Agent 在複雜、多變的真實環境中「可維護、可審計、可擴展」。</strong></p>
+<hr>
+<h2 id="七、誰適合用-DSH？"><a href="#七、誰適合用-DSH？" class="headerlink" title="七、誰適合用 DSH？"></a>七、誰適合用 DSH？</h2><p><strong>適合：</strong></p>
+<ul>
+<li>需要在正式環境部署 Agent 的開發團隊</li>
+<li>想實驗新工具/新模型，不想動框架的人</li>
+<li>對執行過程有審計需求的合規場景</li>
+<li>需要深度客製化 Agent 行為的企業</li>
+</ul>
+<p><strong>不急於跟進：</strong></p>
+<ul>
+<li>純研究目的，只需要快速跑 Demo</li>
+<li>還在評估 Agent 架構，不知道自己需要什麼能力</li>
+</ul>
+<p>目前 DSH 仍在 <strong>developer preview</strong>（v0.1.0-rc.7），API 可能有不兼容變更。但對於有長期視角的團隊，這是一個值得投入的方向。</p>
+<hr>
+<h2 id="相關連結"><a href="#相關連結" class="headerlink" title="相關連結"></a>相關連結</h2><ul>
+<li><a href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a>（163k ⭐）</li>
+<li><a href="https://deepseek.com/harness">官方網站: deepseek.com/harness</a></li>
+<li><a href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
+<li><a href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
+<li><a href="https://github.com/topics/dsh-plugin">插件生態目錄</a></li>
+</ul>
+<hr>
+<p><em>本文同步發表於 <a href="https://higumalu.github.io/higumalu-note/">higumalu-note</a>。</em></p>
+]]></content>
+      <categories>
+        <category>技術專題</category>
+      </categories>
+      <tags>
+        <tag>AI</tag>
+        <tag>Agent</tag>
+        <tag>DeepSeek</tag>
+        <tag>開發框架</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>美團 LongCat 團隊技術報告翻譯：擴展嵌入層在語言模型中超越擴展專家（Scaling Embeddings Outperforms Scaling Experts in Language Models）</title>
     <url>/higumalu-note/2026-10-21-scaling-embeddings-outperforms-scaling-experts/</url>
     <content><![CDATA[<blockquote>
@@ -2127,10 +2358,10 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
 <hr>
 <h2 id="2-N-gram-嵌入層（N-gram-Embedding-Layer）"><a href="#2-N-gram-嵌入層（N-gram-Embedding-Layer）" class="headerlink" title="2. N-gram 嵌入層（N-gram Embedding Layer）"></a>2. N-gram 嵌入層（N-gram Embedding Layer）</h2><p>為了擴展嵌入參數，我們採納了 Clark et al. (2022); Huang et al. (2025); Pagnoni et al. (2025) 提出的 N-gram Embedding，透過擴展無詞表（vocabulary-free）的 N-gram 嵌入表來增強嵌入模組的表徵能力。</p>
 <p>具體而言，對於序列中的第 <script type="math/tex">i</script> 個 Token <script type="math/tex">t_i</script>，增強後的嵌入 <script type="math/tex">e_i</script> 計算如下：</p>
-<script type="math/tex; mode=display">e_i = \frac{1}{N} \left( E_0(t_i) + \sum_{n=2}^N E_n(\mathcal{H}_n(t_{i-n+1}, \dots, t_i))  \right) ag{1}</script><p>其中當 <script type="math/tex">j \le 0</script> 時 <script type="math/tex">t_j = 0</script>。<script type="math/tex">E_0 \in \mathbb{R}^{V_0     imes D}</script> 是隱維度為 <script type="math/tex">D</script> 的原始基礎嵌入表，<script type="math/tex">E_n \in \mathbb{R}^{V_n     imes D}</script> 是擴展的嵌入表，<script type="math/tex">N</script> 表示最高 N-gram 階數，<script type="math/tex">\mathcal{H}_n</script> 表示雜湊映射函數。</p>
+<script type="math/tex; mode=display">e_i = \frac{1}{N} \left( E_0(t_i) + \sum_{n=2}^N E_n(\mathcal{H}_n(t_{i-n+1}, \dots, t_i))  \right)     ag{1}</script><p>其中當 <script type="math/tex">j \le 0</script> 時 <script type="math/tex">t_j = 0</script>。<script type="math/tex">E_0 \in \mathbb{R}^{V_0     imes D}</script> 是隱維度為 <script type="math/tex">D</script> 的原始基礎嵌入表，<script type="math/tex">E_n \in \mathbb{R}^{V_n     imes D}</script> 是擴展的嵌入表，<script type="math/tex">N</script> 表示最高 N-gram 階數，<script type="math/tex">\mathcal{H}_n</script> 表示雜湊映射函數。</p>
 <p>我們採用<strong>多項式滾動雜湊函數（Polynomial Rolling Hash Function）</strong>：</p>
-<script type="math/tex; mode=display">\mathcal{H}_n(t_{i-n+1}, \dots, t_i) = \left( \sum_{j=0}^{n-1} t_{i-j} * V_0^j  \right) \% V_n ag{2}</script><p>為了進一步提升模型的表達能力並減少雜湊衝突，Clark et al. (2022); Huang et al. (2025) 將每個 N-gram 嵌入表分解為 <script type="math/tex">K</script> 個具有不同詞表大小的子表（sub-tables）。Huang et al. (2025) 進一步引入額外的線性投影將輸出映射回原始嵌入空間。N-gram 嵌入的最終形式（在 Huang et al., 2025 中亦被稱為 Over-Encoding）如圖 1 所示，可寫為：</p>
-<script type="math/tex; mode=display">e_i = \frac{1}{(N-1)K + 1} \left( E_0(t_i) + \sum_{n=2}^N \sum_{k=1}^K W_{n,k} E_{n,k}(\mathcal{H}_{n,k}(t_{i-n+1}, \dots, t_i))  \right) ag{3}</script><p>其中 <script type="math/tex">E_{n,k} \in \mathbb{R}^{V_{n,k}     imes \frac{D}{(N-1)K}}</script> 為子表，<script type="math/tex">W_{n,k} \in \mathbb{R}^{D     imes \frac{D}{(N-1)K}}</script> 為線性投影矩陣。</p>
+<script type="math/tex; mode=display">\mathcal{H}_n(t_{i-n+1}, \dots, t_i) = \left( \sum_{j=0}^{n-1} t_{i-j} * V_0^j  \right) \% V_n     ag{2}</script><p>為了進一步提升模型的表達能力並減少雜湊衝突，Clark et al. (2022); Huang et al. (2025) 將每個 N-gram 嵌入表分解為 <script type="math/tex">K</script> 個具有不同詞表大小的子表（sub-tables）。Huang et al. (2025) 進一步引入額外的線性投影將輸出映射回原始嵌入空間。N-gram 嵌入的最終形式（在 Huang et al., 2025 中亦被稱為 Over-Encoding）如圖 1 所示，可寫為：</p>
+<script type="math/tex; mode=display">e_i = \frac{1}{(N-1)K + 1} \left( E_0(t_i) + \sum_{n=2}^N \sum_{k=1}^K W_{n,k} E_{n,k}(\mathcal{H}_{n,k}(t_{i-n+1}, \dots, t_i))  \right)     ag{3}</script><p>其中 <script type="math/tex">E_{n,k} \in \mathbb{R}^{V_{n,k}     imes \frac{D}{(N-1)K}}</script> 為子表，<script type="math/tex">W_{n,k} \in \mathbb{R}^{D     imes \frac{D}{(N-1)K}}</script> 為線性投影矩陣。</p>
 <p>透過將子表的隱層大小設定為與子表數量成反比，該設計保證了 <strong>N-gram 嵌入的參數量相對於 <script type="math/tex">N</script> 和 <script type="math/tex">K</script> 保持恆定（Invariant）</strong>。</p>
 <p><img src="/higumalu-note/images/scaling_embeddings/NE-overview.svg" alt="N-gram 嵌入層架構"><br><em>圖 1：N-gram 嵌入層架構（Huang et al., 2025）。每個 Token 的嵌入表徵由 N-gram 嵌入分支進行增強。</em></p>
 <hr>
@@ -2232,8 +2463,8 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
 <hr>
 <h2 id="5-與逐層嵌入（Per-Layer-Embedding）的整合探討"><a href="#5-與逐層嵌入（Per-Layer-Embedding）的整合探討" class="headerlink" title="5. 與逐層嵌入（Per-Layer Embedding）的整合探討"></a>5. 與逐層嵌入（Per-Layer Embedding）的整合探討</h2><p>本節對比 N-gram Embedding 與 Google DeepMind 提出的逐層嵌入（PLE），並介紹兩者的整合嘗試。</p>
 <h3 id="5-1-逐層嵌入（PLE）"><a href="#5-1-逐層嵌入（PLE）" class="headerlink" title="5.1 逐層嵌入（PLE）"></a>5.1 逐層嵌入（PLE）</h3><p>PLE 直接將 SwiGLU 模組中 Up-projection 矩陣的輸出替換為嵌入輸出。設 <script type="math/tex">x_i^{(l)}</script> 為第 <script type="math/tex">l</script> 層 FFN 模組的第 <script type="math/tex">i</script> 個輸入向量，加入 PLE 的 FFN 輸出為：</p>
-<script type="math/tex; mode=display">ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left(     ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot E_0^{(l)}(t_i)  \right) ag{4}</script><h3 id="5-2-逐層-N-gram-嵌入（PLNE）"><a href="#5-2-逐層-N-gram-嵌入（PLNE）" class="headerlink" title="5.2 逐層 N-gram 嵌入（PLNE）"></a>5.2 逐層 N-gram 嵌入（PLNE）</h3><p>我們提出 <strong>Per-Layer N-gram Embedding (PLNE)</strong>，將每層的基礎嵌入輸出替換為 N-gram 嵌入輸出：</p>
-<script type="math/tex; mode=display">ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left(     ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot e_i^{(l)}  \right) ag{5}</script><p>其中 <script type="math/tex">e_i^{(l)}</script> 依據公式 (3) 計算，使用各層專屬的嵌入表與投影矩陣。</p>
+<script type="math/tex; mode=display">ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left(     ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot E_0^{(l)}(t_i)  \right)     ag{4}</script><h3 id="5-2-逐層-N-gram-嵌入（PLNE）"><a href="#5-2-逐層-N-gram-嵌入（PLNE）" class="headerlink" title="5.2 逐層 N-gram 嵌入（PLNE）"></a>5.2 逐層 N-gram 嵌入（PLNE）</h3><p>我們提出 <strong>Per-Layer N-gram Embedding (PLNE)</strong>，將每層的基礎嵌入輸出替換為 N-gram 嵌入輸出：</p>
+<script type="math/tex; mode=display">ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left(     ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot e_i^{(l)}  \right)     ag{5}</script><p>其中 <script type="math/tex">e_i^{(l)}</script> 依據公式 (3) 計算，使用各層專屬的嵌入表與投影矩陣。</p>
 <h3 id="5-3-實證對比"><a href="#5-3-實證對比" class="headerlink" title="5.3 實證對比"></a>5.3 實證對比</h3><p><img src="/higumalu-note/images/scaling_embeddings/loss-ple_n.svg" alt="NE、PLE 與 PLNE 損失對比"><br><em>圖 9：790M 激活參數設定下 N-gram 嵌入（NE）、PLE 與 PLNE 的損失對比。</em></p>
 <p>圖 9 顯示，PLE 的表現劣於 N-gram Embedding，而 PLNE 相對 NE 僅取得微幅改善。我們將前者歸因於 N-gram 嵌入相比標準嵌入具備更優越的學習效率。</p>
 <p>然而，在後續增加模型寬度或深度的實驗中，PLNE 未能展現出持續的優勢，在多數場景下僅與 NE 持平。考慮到 PLNE 由於每層增加大量投影矩陣而實質增加了激活參數量，<strong>我們最終在更大規模的實驗中未採用 PLNE</strong>。</p>
@@ -2562,237 +2793,6 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
         <tag>稀疏架構</tag>
         <tag>投機解碼</tag>
         <tag>論文翻譯</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>為什麼我看好 DeepSeek Harness：從痛點到實際應用</title>
-    <url>/higumalu-note/2026-08-19-deepseek-harness/</url>
-    <content><![CDATA[<h1 id="為什麼我看好-DeepSeek-Harness：從痛點到實際應用"><a href="#為什麼我看好-DeepSeek-Harness：從痛點到實際應用" class="headerlink" title="為什麼我看好 DeepSeek Harness：從痛點到實際應用"></a>為什麼我看好 DeepSeek Harness：從痛點到實際應用</h1><h2 id="先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？"><a href="#先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？" class="headerlink" title="先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？"></a>先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？</h2><p>是 LLMWare 太封閉、RAG 流水線太脆弱、還是 LangChain 更新一次就壞一片 Plugin？</p>
-<p>DeepSeek 近期低調開源的 <strong><a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a></strong>（簡稱 <code>dsh</code>）——163k Stars、12,400+ commits——試圖回答一個更根本的問題：</p>
-<blockquote>
-<p><strong>如何讓 AI Agent 在真實世界穩定運作，而不是只會在 Demo 裡優雅運轉？</strong></p>
-</blockquote>
-<hr>
-<h2 id="一、現在的-Agent-開發有什麼問題？"><a href="#一、現在的-Agent-開發有什麼問題？" class="headerlink" title="一、現在的 Agent 開發有什麼問題？"></a>一、現在的 Agent 開發有什麼問題？</h2><h3 id="問題-1：能力與框架深度耦合"><a href="#問題-1：能力與框架深度耦合" class="headerlink" title="問題 1：能力與框架深度耦合"></a>問題 1：能力與框架深度耦合</h3><p>大多數 Agent 框架把「模型調用」「工具執行」「對話管理」「記憶體」全部寫死在一個 SDK 裡。想換一個 LLM Provider？重寫。想加一個 Memory 系統？改核心代碼。想在正式環境加入審批機制？得 hack。</p>
-<p>結果：<strong>實驗環境很美好，生產環境很悲慘</strong>。</p>
-<h3 id="問題-2：執行過程是黑箱"><a href="#問題-2：執行過程是黑箱" class="headerlink" title="問題 2：執行過程是黑箱"></a>問題 2：執行過程是黑箱</h3><p>當 Agent 執行了一連串 Tool Call，你知道它看到什麼、用過哪些資訊嗎？大多數框架的答案：「不知道，等它結束再看結果。」</p>
-<p>問題在於：當 Agent 在正式環境裡做出錯誤決策時，你沒有辦法回溯。它可能是吃了錯誤的上下文、可能是 prompt 被汙染、也可能 Tool 結果被錯誤解析。無法審計，就無法改善。</p>
-<h3 id="問題-3：測試和調試困難"><a href="#問題-3：測試和調試困難" class="headerlink" title="問題 3：測試和調試困難"></a>問題 3：測試和調試困難</h3><p>Agent 的輸出是非確定性的，如何測試？大多數框架沒有好的機制。要嘛降低到只測 prompt，要嘛就得跑 end-to-end 然後祈禱。代價高、反饋慢。</p>
-<hr>
-<h2 id="二、DeepSeek-Harness-的核心思路：「一切皆插件」"><a href="#二、DeepSeek-Harness-的核心思路：「一切皆插件」" class="headerlink" title="二、DeepSeek Harness 的核心思路：「一切皆插件」"></a>二、DeepSeek Harness 的核心思路：「一切皆插件」</h2><p>Harness 的底層由 <a href="https://github.com/cordiverse/cordis">Cordis</a> 框架驅動，核心哲學只有一句話：</p>
-<blockquote>
-<p><strong>Every capability is a plugin.</strong></p>
-</blockquote>
-<p>這不是行銷口號，而是架構事實。在 DSH 裡：</p>
-<ul>
-<li>模型調用 → 插件</li>
-<li>工具執行（bash、file、web search） → 插件</li>
-<li>對話管理（session、turn、step） → 插件</li>
-<li>記憶體系統 → 插件</li>
-<li>排程提醒 → 插件</li>
-<li>沙箱隔離 → 插件</li>
-<li>整個 UI → 插件</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">    subgraph Cordis Kernel</span><br><span class="line">        K[Kernel]</span><br><span class="line">    end</span><br><span class="line">    subgraph Plugins</span><br><span class="line">        M[Model&lt;br/&gt;Provider]</span><br><span class="line">        T[Tools]</span><br><span class="line">        S[Session&lt;br/&gt;Manager]</span><br><span class="line">        R[Memory&lt;br/&gt;System]</span><br><span class="line">        P[Planning&lt;br/&gt;Skills]</span><br><span class="line">    end</span><br><span class="line">    K --&gt; M</span><br><span class="line">    K --&gt; T</span><br><span class="line">    K --&gt; S</span><br><span class="line">    K --&gt; R</span><br><span class="line">    K --&gt; P</span><br></pre></td></tr></table></figure>
-<p>好處是什麼？</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>痛點</th>
-<th>DSH 解法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>想換模型 Provider</td>
-<td>替換一個插件</td>
-</tr>
-<tr>
-<td>想加 Memory</td>
-<td>插入一個插件</td>
-</tr>
-<tr>
-<td>想加審批環節</td>
-<td>插入一個插件</td>
-</tr>
-<tr>
-<td>想在正式環境隔離執行</td>
-<td>換一個沙箱插件</td>
-</tr>
-<tr>
-<td>想實驗新能力</td>
-<td>新增一個插件，不動核心</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p><strong>不需要 fork 框架，不需要等官方支援，自己動手豐衣足食。</strong></p>
-<hr>
-<h2 id="三、Cordis-的五個核心概念"><a href="#三、Cordis-的五個核心概念" class="headerlink" title="三、Cordis 的五個核心概念"></a>三、Cordis 的五個核心概念</h2><p>Cordis 是 DSH 的核心引擎，理解它的概念等於理解整個框架的設計邏輯：</p>
-<h3 id="1-Plugin-Service"><a href="#1-Plugin-Service" class="headerlink" title="1. Plugin = Service"></a>1. Plugin = Service</h3><p>插件就是一個帶生命周期的 Service對象，實現 <code>ctx.&lt;key&gt;</code> 接口。可以是簡單函數，也可以是完整的類。</p>
-<h3 id="2-Context-服務容器"><a href="#2-Context-服務容器" class="headerlink" title="2. Context = 服務容器"></a>2. Context = 服務容器</h3><p>每個 Service 佔據一個穩定的 <code>ctx.&lt;key&gt;</code> 位置，其他插件透過 key 查找服務，<strong>而非直接 import 實現</strong>。這就是依賴反轉。</p>
-<h3 id="3-inject-依賴聲明"><a href="#3-inject-依賴聲明" class="headerlink" title="3. inject = 依賴聲明"></a>3. inject = 依賴聲明</h3><p>插件宣告自己需要哪些服務，Cordis 自動等待這些服務就緒才啟動。<strong>啟動順序由依賴關係決定</strong>，不需要手動排程。</p>
-<h3 id="4-類型化事件"><a href="#4-類型化事件" class="headerlink" title="4. 類型化事件"></a>4. 類型化事件</h3><p>服務之間透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 四種模式通信。這不是簡單的事件總線，而是<strong>帶語義的分發策略</strong>：</p>
-<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// emit: 觀察，無返回值</span></span><br><span class="line"><span class="comment">// waterfall: 包裝請求，可短路</span></span><br><span class="line"><span class="comment">// parallel: 並行觀察</span></span><br><span class="line"><span class="comment">// serial: 依序觀察，累積結果</span></span><br></pre></td></tr></table></figure>
-<h3 id="5-可逆註冊（ctx-effect）"><a href="#5-可逆註冊（ctx-effect）" class="headerlink" title="5. 可逆註冊（ctx.effect）"></a>5. 可逆註冊（ctx.effect）</h3><p>所有注册都是副作用，teardown 時自動撤銷。記憶體不會洩漏。</p>
-<hr>
-<h2 id="四、解決了什麼問題？"><a href="#四、解決了什麼問題？" class="headerlink" title="四、解決了什麼問題？"></a>四、解決了什麼問題？</h2><h3 id="✅-問題-1-解決：深度可組合性"><a href="#✅-問題-1-解決：深度可組合性" class="headerlink" title="✅ 問題 1 解決：深度可組合性"></a>✅ 問題 1 解決：深度可組合性</h3><p>實際例子：MCP（Model Context Protocol）記憶體整合。</p>
-<p>DSH 內建 MCP Client 插件，只要一行配置就能把第三方記憶體系統接進來：</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 透過 MCP 接 Engram 記憶體</span></span><br><span class="line">npx @deepseek-ai/dsh web --patch <span class="string">&quot;examples/mcp-memory/engram.cordis.yml&quot;</span></span><br></pre></td></tr></table></figure>
-<p>三種記憶體系統（Memorix、MCP Reference Memory、Engram）任選，都是「插件替換」模式。<strong>不需要改 DSH 代碼，不需要等官方適配，自己配上去就能用。</strong></p>
-<h3 id="✅-問題-2-解決：完整軌跡審計"><a href="#✅-問題-2-解決：完整軌跡審計" class="headerlink" title="✅ 問題 2 解決：完整軌跡審計"></a>✅ 問題 2 解決：完整軌跡審計</h3><p>DSH 的 Session Log 是 append-only 的事件流，記錄：</p>
-<ul>
-<li>System prompt 每次組裝結果</li>
-<li>每次 Reasoning 過程</li>
-<li>每次 Tool Call 的輸入輸出</li>
-<li>Subagent 的調度與結果</li>
-<li>每次 Context 注入的內容</li>
-</ul>
-<p>在 Trajectory 視圖裡，你可以：</p>
-<ul>
-<li><strong>Resume</strong>：從任意中斷點恢復</li>
-<li><strong>Fork</strong>：複製對話分支</li>
-<li><strong>Search</strong>：搜尋歷史對話</li>
-<li><strong>Replay</strong>：重放整個執行過程</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Session Event Log (append-only):</span><br><span class="line">─────────────────────────────────────</span><br><span class="line">turn/start</span><br><span class="line">  step/start</span><br><span class="line">    system-prompt/assembled → &#123; full prompt content &#125;</span><br><span class="line">    agent/request → &#123; model, temperature, ... &#125;</span><br><span class="line">    llm/stream → &#123; chunks... &#125;</span><br><span class="line">    assistant/message → &#123; final message &#125;</span><br><span class="line">    tool/call → &#123; tool: &quot;bash&quot;, args: &quot;git status&quot; &#125;</span><br><span class="line">    tool/result → &#123; output: &quot;...&quot; &#125;</span><br><span class="line">  step/end</span><br><span class="line">turn/end</span><br></pre></td></tr></table></figure>
-<p><strong>當 Agent 出錯時，你有一條完整的因果鏈可以追查。</strong></p>
-<h3 id="✅-問題-3-解決：多種執行模式"><a href="#✅-問題-3-解決：多種執行模式" class="headerlink" title="✅ 問題 3 解決：多種執行模式"></a>✅ 問題 3 解決：多種執行模式</h3><p>DSH 內建四種模式，針對不同場景：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>模式</th>
-<th>用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Standard</strong></td>
-<td>完整工具集：file edit、shell、web search、skills、planning、subagents、workflows</td>
-</tr>
-<tr>
-<td><strong>Code</strong></td>
-<td>把工具包裝成 SDK，讓模型自己寫 TypeScript 程序來組合多步操作</td>
-</tr>
-<tr>
-<td><strong>Minimal</strong></td>
-<td>極簡環境：只有 bash + file edit，用於基准測試模型能力</td>
-</tr>
-<tr>
-<td><strong>Creator</strong></td>
-<td>插件實驗室：即時檢查 Runtime、測試插件組合、創作新模式</td>
-</tr>
-</tbody>
-</table>
-</div>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│  Mode Picker                                │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  ○ Standard ─ Full coding agent             │</span><br><span class="line">│  ○ Code ─ Code Mode SDK orchestration       │</span><br><span class="line">│  ○ Minimal ─ Two-tool benchmark agent       │</span><br><span class="line">│  ○ Creator ─ Plugin lab &amp; preset authoring  │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
-<h3 id="✅-生產級能力：工具執行流水線"><a href="#✅-生產級能力：工具執行流水線" class="headerlink" title="✅ 生產級能力：工具執行流水線"></a>✅ 生產級能力：工具執行流水線</h3><p>DSH 的工具執行經過嚴格分層控制：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    pre[&quot;tools/pre-execute&quot;]</span><br><span class="line">    guards[&quot;Monotonic Guards&quot;]</span><br><span class="line">    approval[&quot;ctx.approval&lt;br/&gt;User Prompt&quot;]</span><br><span class="line">    around[&quot;tools/execute&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">    toolBody[&quot;Tool Body&quot;]</span><br><span class="line">    post[&quot;tools/post-execute&quot;]</span><br><span class="line">    finalize[&quot;finalizeContent&quot;]</span><br><span class="line">    </span><br><span class="line">    pre --&gt; guards --&gt; approval --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br><span class="line">    </span><br><span class="line">    pre --&gt;|deny| denied[skipped]</span><br><span class="line">    guards --&gt;|deny| denied</span><br><span class="line">    approval --&gt;|reject| denied</span><br></pre></td></tr></table></figure>
-<p>每層都可以包裝、改寫結果。<strong>鉤子（hooks）、審批（approval）、超時重試，全部是可插拔的插件，工具本身不需要知道這些邏輯。</strong></p>
-<h3 id="✅-安全能力：沙箱隔離"><a href="#✅-安全能力：沙箱隔離" class="headerlink" title="✅ 安全能力：沙箱隔離"></a>✅ 安全能力：沙箱隔離</h3><p>Harness 支援把工具執行放到隔離沙箱中，例如 <a href="https://e2b.dev/">E2B</a> 雲端沙箱。Local filesystem 和 subprocess 插件可以被一鍵替換為雲端沙箱：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># e2b.cordis.yml — 替換本地工具為雲端沙箱</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">insert:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">id:</span> <span class="string">e2b-sandbox</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">&#x27;@deepseek-ai/dsh-e2b&#x27;</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">sandboxTemplate:</span> <span class="string">standard</span></span><br></pre></td></tr></table></figure>
-<p><strong>本地開發、雲端執行，隔離級別可選。</strong></p>
-<hr>
-<h2 id="五、實際應用場景"><a href="#五、實際應用場景" class="headerlink" title="五、實際應用場景"></a>五、實際應用場景</h2><h3 id="場景-1：本地-Coding-Agent"><a href="#場景-1：本地-Coding-Agent" class="headerlink" title="場景 1：本地 Coding Agent"></a>場景 1：本地 Coding Agent</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 最簡單的使用方式</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指令列模式</span></span><br><span class="line">pnpm dsh --profile headless <span class="string">&quot;fix the failing test in this workspace&quot;</span></span><br></pre></td></tr></table></figure>
-<p>設定 <code>DEEPSEEK_API_KEY</code>，就能讓 Agent 幫你分析代碼庫、修復 Bug、寫測試。完整的事件日誌讓你清楚看到它為什麼這麼改。</p>
-<h3 id="場景-2：多輪對話-記憶跨-Session"><a href="#場景-2：多輪對話-記憶跨-Session" class="headerlink" title="場景 2：多輪對話 + 記憶跨 Session"></a>場景 2：多輪對話 + 記憶跨 Session</h3><p>透過 MCP Memory 插件，Agent 可以「記得」之前對話中的偏好設定：</p>
-<ol>
-<li>Session A：「幫我記住我的驗證飲料是 lapsang-black-tea」</li>
-<li>Session B：「我剛才的驗證飲料是什麼？」→ Agent 從記憶體系統查詢，返回正確答案</li>
-</ol>
-<p><strong>新的對話不需要重新設定前提，記憶持久化在外部系統。</strong></p>
-<h3 id="場景-3：排程提醒"><a href="#場景-3：排程提醒" class="headerlink" title="場景 3：排程提醒"></a>場景 3：排程提醒</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 啟用排程插件</span></span><br><span class="line">dsh web --patch examples/web-schedule/cordis.yml</span><br></pre></td></tr></table></figure>
-<p>Agent 可以創建、列舉、刪除提醒，且提醒綁定到對話 Session。離開對話後再回來，過期的提醒會自動觸發後續對話。</p>
-<h3 id="場景-4：企業內部的-Agent-流水線"><a href="#場景-4：企業內部的-Agent-流水線" class="headerlink" title="場景 4：企業內部的 Agent 流水線"></a>場景 4：企業內部的 Agent 流水線</h3><p>透過 API Gateway + Typert，Harness 提供完整的 Client-Server 類型安全 RPC：</p>
-<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Host 端：聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>構建時自動生成 Client 端的類型安全接口，確保前後端 API 不會因為簽名變更而悄悄 break。</p>
-<hr>
-<h2 id="六、橫向比較：DSH-vs-競爭者"><a href="#六、橫向比較：DSH-vs-競爭者" class="headerlink" title="六、橫向比較：DSH vs 競爭者"></a>六、橫向比較：DSH vs 競爭者</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>維度</th>
-<th>LangChain</th>
-<th>AutoGen</th>
-<th>DSH</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>插件系統</td>
-<td>有，但深度耦合</td>
-<td>有限</td>
-<td>一切皆插件</td>
-</tr>
-<tr>
-<td>執行審計</td>
-<td>日誌分散</td>
-<td>基本</td>
-<td>完整事件流</td>
-</tr>
-<tr>
-<td>工具流水線</td>
-<td>自己實現</td>
-<td>自己實現</td>
-<td>框架內建分層控制</td>
-</tr>
-<tr>
-<td>MCP 整合</td>
-<td>需第三方適配</td>
-<td>無</td>
-<td>官方支援</td>
-</tr>
-<tr>
-<td>沙箱隔離</td>
-<td>無</td>
-<td>無</td>
-<td>原生支援</td>
-</tr>
-<tr>
-<td>架構穩定性</td>
-<td>API 經常變更</td>
-<td>實驗性</td>
-<td>嚴格的 TypeScript 雙 Aggregate 設計</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>DSH 的最大差異：<strong>它不只是讓 Agent 跑起來，而是讓 Agent 在複雜、多變的真實環境中「可維護、可審計、可擴展」。</strong></p>
-<hr>
-<h2 id="七、誰適合用-DSH？"><a href="#七、誰適合用-DSH？" class="headerlink" title="七、誰適合用 DSH？"></a>七、誰適合用 DSH？</h2><p><strong>適合：</strong></p>
-<ul>
-<li>需要在正式環境部署 Agent 的開發團隊</li>
-<li>想實驗新工具/新模型，不想動框架的人</li>
-<li>對執行過程有審計需求的合規場景</li>
-<li>需要深度客製化 Agent 行為的企業</li>
-</ul>
-<p><strong>不急於跟進：</strong></p>
-<ul>
-<li>純研究目的，只需要快速跑 Demo</li>
-<li>還在評估 Agent 架構，不知道自己需要什麼能力</li>
-</ul>
-<p>目前 DSH 仍在 <strong>developer preview</strong>（v0.1.0-rc.7），API 可能有不兼容變更。但對於有長期視角的團隊，這是一個值得投入的方向。</p>
-<hr>
-<h2 id="相關連結"><a href="#相關連結" class="headerlink" title="相關連結"></a>相關連結</h2><ul>
-<li><a href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a>（163k ⭐）</li>
-<li><a href="https://deepseek.com/harness">官方網站: deepseek.com/harness</a></li>
-<li><a href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
-<li><a href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
-<li><a href="https://github.com/topics/dsh-plugin">插件生態目錄</a></li>
-</ul>
-<hr>
-<p><em>本文同步發表於 <a href="https://higumalu.github.io/higumalu-note/">higumalu-note</a>。</em></p>
-]]></content>
-      <categories>
-        <category>技術專題</category>
-      </categories>
-      <tags>
-        <tag>AI</tag>
-        <tag>Agent</tag>
-        <tag>DeepSeek</tag>
-        <tag>開發框架</tag>
       </tags>
   </entry>
   <entry>
