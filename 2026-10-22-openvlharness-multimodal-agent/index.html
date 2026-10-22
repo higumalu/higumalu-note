@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+<html lang="zh-tw" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UCLA 開源 OpenVLHarness 深度解析：多模態記憶＋視覺空間代碼化推理，讓 MLLM 跨越「純內部思考」瓶頸 - Higuma&#39;s Note</title>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="higumalu,"> 
+    <meta name="description" content="
+論文標題：OpenVLHarness: Real World Visual Agentic Tool-Use with Multimodal Memory作者：Yu Zhou, Cheng-Fu ,"> 
+    <meta name="author" content="Higumalu"> 
+    <link rel="alternative" href="atom.xml" title="Higuma&#39;s Note" type="application/atom+xml"> 
+    <link rel="icon" href="/higumalu-note/img/favicon.png"> 
+    
+    
+<link rel="stylesheet" href="/higumalu-note/css/diaspora.css">
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="loading">
+    <span id="config-title" style="display:none">Higuma&#39;s Note</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="https://higumalu.github.io/higumalu-note"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">UCLA 開源 OpenVLHarness 深度解析：多模態記憶＋視覺空間代碼化推理，讓 MLLM 跨越「純內部思考」瓶頸</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="獲取QRcode" class="iconfont icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">UCLA 開源 OpenVLHarness 深度解析：多模態記憶＋視覺空間代碼化推理，讓 MLLM 跨越「純內部思考」瓶頸</h1>
+        <div class="stuff">
+            <span>十月 22, 2026</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/Agent/" rel="tag">Agent</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/MLLM/" rel="tag">MLLM</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/OpenVLHarness/" rel="tag">OpenVLHarness</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/UCLA/" rel="tag">UCLA</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E5%85%B7%E8%BA%AB%E6%99%BA%E8%83%BD/" rel="tag">具身智能</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E5%A4%9A%E6%A8%A1%E6%85%8B/" rel="tag">多模態</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E8%A6%96%E8%A6%BA%E6%8E%A8%E7%90%86/" rel="tag">視覺推理</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/higumalu-note/tags/%E8%AB%96%E6%96%87%E8%A7%A3%E8%AE%80/" rel="tag">論文解讀</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <blockquote>
+<p><strong>論文標題</strong>：OpenVLHarness: Real World Visual Agentic Tool-Use with Multimodal Memory<br><strong>作者</strong>：Yu Zhou, Cheng-Fu Yang, Rui Sun, Di Wu, Sibo Peng, Mingyang Zhang, Zhen Yang, Ruiyi Zhang, Nanyun Peng, Zhe Gan, Kai-Wei Chang<br><strong>機構</strong>：UCLA NLP 等研究團隊<br><strong>發布日期</strong>：2026 年 10 月<br><strong>論文連結</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2610.26860">arXiv:2610.26860</a><br><strong>開源專案</strong>：<a target="_blank" rel="noopener" href="https://github.com/uclanlp/OpenVLHarness">GitHub - uclanlp/OpenVLHarness</a><br><strong>專案首頁</strong>：<a target="_blank" rel="noopener" href="https://openvlharness.github.io/">openvlharness.github.io</a><br><strong>線上體驗與資料集</strong>：<a target="_blank" rel="noopener" href="https://huggingface.co/spaces/uclanlp/OpenVLHarness">Hugging Face Space</a> / <a target="_blank" rel="noopener" href="https://huggingface.co/datasets/uclanlp/OpenVLHarness-Evaluation-Datasets">Evaluation Datasets</a></p>
+</blockquote>
+<hr>
+<h2 id="前言：當我們把「思考算力」無止境堆給視覺模型，會發生什麼？"><a href="#前言：當我們把「思考算力」無止境堆給視覺模型，會發生什麼？" class="headerlink" title="前言：當我們把「思考算力」無止境堆給視覺模型，會發生什麼？"></a>前言：當我們把「思考算力」無止境堆給視覺模型，會發生什麼？</h2><p>在大型語言模型（LLM）的世界中，自從具備長鏈條反思（Test-Time Compute / Reasoning Effort）的推測架構問世以來，「遇事不決開 High Thinking」似乎成了通用解法。</p>
+<p>然而，當這套思路直接搬到<strong>多模態視覺推理（Multimodal Visual Reasoning）</strong>時，現實卻給了我們一記警鐘。</p>
+<p>在現實真實世界的視覺任務中：</p>
+<ul>
+<li>兩輛車在空間中到底誰離相機更近？距離差多少公分？</li>
+<li>遠處路標模糊不清的小字到底寫什麼？</li>
+<li>畫面角落那個罕見的機械零件型號是什麼？</li>
+<li>圖中有幾十顆細小的螺栓，有沒有漏掉哪一顆？</li>
+</ul>
+<p>這些問題，<strong>光靠模型關起門來在內部神經網絡權重裡「反思」（Thinking）一萬個 Token，是根本推理不出來的</strong>。因為像素解析度有限、模型欠缺度量級深度感應、視覺細節會隨下採樣丟失，而且模型內部也沒有連網的百科與以圖搜圖庫。</p>
+<p>UCLA NLP 團隊在最新的重磅論文 <strong>《OpenVLHarness: Real World Visual Agentic Tool-Use with Multimodal Memory》</strong> 中，透過橫跨 4 大領域、22 個基準測試的嚴格受控實驗，揭示了一個關鍵結論：</p>
+<blockquote>
+<p><strong>「僅僅增加基礎視覺模型的推理算力預算（Inference Budget），在許多視覺任務上帶來的提升非常微弱；真正決定視覺智慧上限的，是『主動感知證據獲取』與『跨步驟的多模態記憶累積』。」</strong></p>
+</blockquote>
+<p>為此，他們開源了 <strong>OpenVLHarness</strong>——一個<strong>完全免微調（Training-free）</strong>、即插即用、賦予任何 MLLM 具備多模態記憶與代碼化空間推理能力的強大視覺 Agent 框架。</p>
+<hr>
+<h2 id="一、核心架構：OpenVLHarness-的三大支柱"><a href="#一、核心架構：OpenVLHarness-的三大支柱" class="headerlink" title="一、核心架構：OpenVLHarness 的三大支柱"></a>一、核心架構：OpenVLHarness 的三大支柱</h2><p>OpenVLHarness 的核心理念，是將多模態大模型從一個「被動的看圖說話者」，轉變為一個<strong>能夠在視覺空間中思考、量測、求證與編程的「視覺偵探」</strong>。</p>
+<p>架構主要由三大核心層次構成：</p>
+<h3 id="1-能力層（Capability-Layer）與-9-大異質感知工具"><a href="#1-能力層（Capability-Layer）與-9-大異質感知工具" class="headerlink" title="1. 能力層（Capability Layer）與 9 大異質感知工具"></a>1. 能力層（Capability Layer）與 9 大異質感知工具</h3><p>OpenVLHarness 整合了當前開源界與業界頂尖的感知模組，並透過任務級（Task-level）介面將其輸出轉換成 MLLM「讀得懂、用得上」的結構化證據（Rendered Evidence、標註疊加圖、精簡數值）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">能力 (Capability)</th>
+<th style="text-align:left">具體功能與交付成果</th>
+<th style="text-align:left">預設後端服務</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Visual Grounding</strong></td>
+<td style="text-align:left">透過自然語言定位目標物體，輸出精準邊界框（BBox）、遮罩（Mask）與標註合成圖</td>
+<td style="text-align:left"><strong>SAM 3</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>OCR</strong></td>
+<td style="text-align:left">圖像任意區域文字提取與版面分析</td>
+<td style="text-align:left"><strong>PaddleOCR-VL</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Depth Estimation</strong></td>
+<td style="text-align:left">像素級單目深度估計，保留精確度量浮點數組與熱力視覺圖</td>
+<td style="text-align:left"><strong>Depth Anything 3</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Camera Trajectory</strong></td>
+<td style="text-align:left">多圖/時序圖像間的相機移動軌跡與 3D 姿態估計</td>
+<td style="text-align:left"><strong>Depth Anything 3</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Zoom-in</strong></td>
+<td style="text-align:left">動態裁切局部感興趣區域，保留原始高解析度細節進行重驗證</td>
+<td style="text-align:left">內建圖像裁切流</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Text Search</strong></td>
+<td style="text-align:left">聯網搜尋事實資訊、新聞、規格數據並由輔助模型即時摘要</td>
+<td style="text-align:left"><strong>Serper + Qwen3-VL-8B</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Image Search</strong></td>
+<td style="text-align:left">逆向以圖搜圖（Reverse Image Search / Google Lens）尋找視覺相似物體與出處</td>
+<td style="text-align:left"><strong>Serper Lens + Qwen3-VL</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Webpage Visit</strong></td>
+<td style="text-align:left">目標導向的網頁深讀與結構化內容萃取</td>
+<td style="text-align:left"><strong>Serper Scrape + Qwen3-VL</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Python Coding Agent</strong></td>
+<td style="text-align:left">針對記憶體中的深度矩陣、邊界框與分割遮罩編寫代碼計算精確數值</td>
+<td style="text-align:left">本地 Python + 主模型代碼環境</td>
+</tr>
+</tbody>
+</table>
+</div>
+<blockquote>
+<p><strong>亮點設計：解耦輔助模型（Auxiliary Model）</strong><br>所有搜尋工具的文字摘要、以圖搜圖比對與網頁萃取，預設一律交由輕量級的 <strong>Qwen3-VL-8B-Instruct</strong> 獨立並行處理。這使得昂貴的主推理模型（如 GPT-6 Astra 或 32B/235B 大模型）不會被繁瑣的網頁爬蟲雜訊污染上下文，大幅節省 Token 並提升吞吐量。</p>
+</blockquote>
+<hr>
+<h3 id="2-持久化多模態記憶（Persistent-Multimodal-Memory）"><a href="#2-持久化多模態記憶（Persistent-Multimodal-Memory）" class="headerlink" title="2. 持久化多模態記憶（Persistent Multimodal Memory）"></a>2. 持久化多模態記憶（Persistent Multimodal Memory）</h3><p>過去的許多視覺工具系統最大的硬傷就是「<strong>無狀態（Stateless）</strong>」——工具調用完，模型看了一眼圖片輸出，下一步就把原始數值扔了；或是工具生成的圖片無法在後續幾輪繼續引用。</p>
+<p>OpenVLHarness 設計了嚴謹的<strong>跨步驟多模態記憶庫</strong>：</p>
+<ul>
+<li><strong>全域唯一控制代碼（Handles）</strong>：<ul>
+<li>輸入圖像：<code>input_image_0</code>, <code>input_image_1</code>…</li>
+<li>工具生成圖像：<code>tool_generated_image_0</code>, <code>tool_generated_image_1</code>…</li>
+</ul>
+</li>
+<li><strong>原生數值矩陣保留</strong>：<ul>
+<li>當模型執行 <code>Depth Estimation</code> 時，除了回傳一張人類與模型可直觀理解的深度偽彩色視覺圖外，背後的原始 <code>float32</code> 深度矩陣會以變數形式綁定在 Memory 中。</li>
+<li>SAM 3 產生的物體分割 Mask（RLE 編碼）也會被完整保存。</li>
+</ul>
+</li>
+<li><strong>動態環境更新（Environment Update）</strong>：<ul>
+<li>每一輪對話結束，系統會自動在 Context 中注入最新資產清單，模型永遠知道自己手上有哪些可用圖片、已辨識的變數名稱與參考網頁。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="3-視覺空間代碼化推理（Coding-in-Visual-Space）"><a href="#3-視覺空間代碼化推理（Coding-in-Visual-Space）" class="headerlink" title="3. 視覺空間代碼化推理（Coding in Visual Space）"></a>3. 視覺空間代碼化推理（Coding in Visual Space）</h3><p>這也是 OpenVLHarness 最具啟發性的設計。傳統視覺模型被問到「這兩張椅子誰更高？中間隔了幾公尺？」時，往往只能依賴神經網路的直覺估計。</p>
+<p>但在 OpenVLHarness 裡，模型可以選擇<strong>調用 Python Coding Agent</strong>：</p>
+<ol>
+<li>先調用 <code>Visual Grounding</code> 取得兩張椅子的 Bounding Box 與 Mask。</li>
+<li>再調用 <code>Depth Estimation</code> 取得該場景的深度矩陣。</li>
+<li>最後<strong>呼叫 Coding Agent 寫一段短 Python 腳本</strong>：<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="comment"># 直接讀取記憶體中已綁定的變數</span></span><br><span class="line">depth = memory[<span class="string">&quot;depth_array_0&quot;</span>]</span><br><span class="line">mask_a = memory[<span class="string">&quot;segment_chair_1&quot;</span>]</span><br><span class="line">mask_b = memory[<span class="string">&quot;segment_chair_2&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 計算兩椅子的平均真實深度與 3D 空間距離</span></span><br><span class="line">z_a = np.median(depth[mask_a])</span><br><span class="line">z_b = np.median(depth[mask_b])</span><br><span class="line">delta_z = <span class="built_in">abs</span>(z_a - z_b)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">f&quot;Spatial depth difference: <span class="subst">&#123;delta_z:<span class="number">.3</span>f&#125;</span> meters&quot;</span>)</span><br></pre></td></tr></table></figure></li>
+<li>本地 Python 執行後將結果回傳給模型，模型據此給出精準且百分之百具備證據支撐的最終答案。</li>
+</ol>
+<p>這種「<strong>感知工具獲取度量原始資料 ➔ 代碼代理解析幾何數學 ➔ MLLM 作出審判</strong>」的閉環，徹底突破了神經網絡不擅長精確浮點數值計算的先天缺陷。</p>
+<hr>
+<h2 id="二、實證成果：免微調帶來全面提升，擊潰盲目擴展推理"><a href="#二、實證成果：免微調帶來全面提升，擊潰盲目擴展推理" class="headerlink" title="二、實證成果：免微調帶來全面提升，擊潰盲目擴展推理"></a>二、實證成果：免微調帶來全面提升，擊潰盲目擴展推理</h2><p>論文在涵蓋 <strong>物體計數與定位（Counting &amp; Grounding）</strong>、<strong>多模態搜尋（Multimodal Search）</strong>、<strong>通用 VQA 與防幻覺（General VQA &amp; Hallucination）</strong>、<strong>空間理解（Spatial Understanding）</strong> 等 22 個權威 Benchmark 上，對 7 種開源與閉源頂級骨幹模型進行了全面評測：</p>
+<h3 id="1-全模型基準評測提升（22-Benchmark-平均分）"><a href="#1-全模型基準評測提升（22-Benchmark-平均分）" class="headerlink" title="1. 全模型基準評測提升（22 Benchmark 平均分）"></a>1. 全模型基準評測提升（22 Benchmark 平均分）</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">模型骨幹 (Backbone)</th>
+<th style="text-align:center">原始模型得分 (Base)</th>
+<th style="text-align:center">+ OpenVLHarness 得分</th>
+<th style="text-align:center">淨提升幅度 (Gain)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Qwen3-VL-8B-Instruct</strong></td>
+<td style="text-align:center">34.24</td>
+<td style="text-align:center"><strong>45.41</strong></td>
+<td style="text-align:center"><strong>+11.17</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Qwen3-VL-32B-Instruct</strong></td>
+<td style="text-align:center">38.30</td>
+<td style="text-align:center"><strong>50.92</strong></td>
+<td style="text-align:center"><strong>+12.62</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Kimi K3</strong> (Max Reasoning Effort)</td>
+<td style="text-align:center">56.43</td>
+<td style="text-align:center"><strong>66.09</strong></td>
+<td style="text-align:center"><strong>+9.66</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>GPT-5</strong> (Medium Effort)</td>
+<td style="text-align:center">44.37</td>
+<td style="text-align:center"><strong>55.65</strong></td>
+<td style="text-align:center"><strong>+11.28</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>GPT-6 Luna</strong> (Medium Effort)</td>
+<td style="text-align:center">45.76</td>
+<td style="text-align:center"><strong>56.52</strong></td>
+<td style="text-align:center"><strong>+10.76</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>GPT-6 Sol</strong> (Medium Effort)</td>
+<td style="text-align:center">52.67</td>
+<td style="text-align:center"><strong>64.31</strong></td>
+<td style="text-align:center"><strong>+11.64</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>GPT-6 Astra</strong> (Medium Effort)</td>
+<td style="text-align:center">60.27</td>
+<td style="text-align:center"><strong>70.17</strong></td>
+<td style="text-align:center"><strong>+9.90</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>所有模型<strong>在不經過任何監督微調（SFT）或強化學習（RL）的情況下，全線提升約 10~12.6 個百分點</strong>！特別是 8B/32B 開源端側模型，裝載 Harness 之後甚至能直接超越許多原本未掛工具的閉源大模型。</p>
+<hr>
+<h3 id="2-關鍵對比：工具增強-vs-盲目堆疊思考預算（Thinking-Tokens）"><a href="#2-關鍵對比：工具增強-vs-盲目堆疊思考預算（Thinking-Tokens）" class="headerlink" title="2. 關鍵對比：工具增強 vs 盲目堆疊思考預算（Thinking Tokens）"></a>2. 關鍵對比：工具增強 vs 盲目堆疊思考預算（Thinking Tokens）</h3><p>論文中一組極具震撼力的對比數據：<strong>GPT-6 Luna 在不同推理算力下的性價比測試</strong>：</p>
+<ul>
+<li><strong>GPT-6 Luna (Max Effort)</strong>：耗費最大思考 Token 預算，得分依舊在 48 分上下。</li>
+<li><strong>Visual Sketchpad / Codex (Max Effort)</strong>：傳統視覺草稿/代碼基線，約 48~49 分。</li>
+<li><strong>GPT-6 Luna (Medium Effort) + OpenVLHarness</strong>：<ul>
+<li><strong>得分達到 56.52 分（反超 7.7 ~ 8.5 分）</strong>！</li>
+<li><strong>整體 Token 成本僅為 Max Effort 基線的 37%</strong>！</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p><strong>核心啟示</strong>：在多模態領域，<strong>「高質量的外部感知證據 + 結構化代碼驗證」的智慧槓桿，遠遠高於「在漆黑的房間裡自我冥想（純內部推理）」</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="三、架構部署與工程實踐細節"><a href="#三、架構部署與工程實踐細節" class="headerlink" title="三、架構部署與工程實踐細節"></a>三、架構部署與工程實踐細節</h2><p>OpenVLHarness 的代碼架構非常清晰模組化，採用了生產級微服務解耦：</p>
+<h3 id="1-核心組件切分"><a href="#1-核心組件切分" class="headerlink" title="1. 核心組件切分"></a>1. 核心組件切分</h3><ol>
+<li><strong>Tool Router (<code>openvlharness.services.server</code>)</strong>：<ul>
+<li>統一對外提供 HTTP 端口（預設 <code>8101</code>），路由管理所有工具請求。</li>
+<li>具備自動重試（Exponential Backoff）、超時降級、工具呼叫健康檢查機制。</li>
+</ul>
+</li>
+<li><strong>GPU Perception Workers</strong>：<ul>
+<li>SAM 3、PaddleOCR-VL、Depth Anything 3 分別作為獨立服務進程啟動，便於在多卡或多節點叢集靈活分配顯存。</li>
+</ul>
+</li>
+<li><strong>Auxiliary Model Server</strong>：<ul>
+<li>負責非核心推理的搜尋總結，預設指向本機 vLLM / SGLang 部署的 <code>Qwen3-VL-8B-Instruct</code>。</li>
+</ul>
+</li>
+<li><strong>Agent Orchestrator</strong>：<ul>
+<li>主代理迴圈，支援 OpenAI Chat Completions、Responses API，內建嚴謹的單輪單工具約束（One-call enforcement）與幻覺截斷。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="四、個人思考與總結：對-Agent-演進的啟發"><a href="#四、個人思考與總結：對-Agent-演進的啟發" class="headerlink" title="四、個人思考與總結：對 Agent 演進的啟發"></a>四、個人思考與總結：對 Agent 演進的啟發</h2><p>精讀完 OpenVLHarness 的架構與代碼實現後，我認為這項研究對未來具身智能（Embodied AI）與多模態編程 Agent（如 Hermes、自主視覺工作流）帶來了三個極有價值的方向指引：</p>
+<ol>
+<li><strong>記憶體不能只有文字，必須有「多模態句柄（Handles）」</strong>：<br>傳統 LLM Agent 的記憶往往是一堆對話歷程字串或 Markdown。但視覺任務的本質是空間與矩陣，Agent 框架必須具備管理原生 Float32 矩陣、3D 姿態、圖像多版本的狀態機能力。</li>
+<li><strong>不要指望多模態模型做精確幾何算術，讓 Python 來</strong>：<br>MLLM 的長處是「語意理解」與「意圖編排」，短處是「像素級座標運算與空間度量」。將幾何計算交給 Python 腳本（NumPy/SciPy），讓模型只當指揮官，是當前最優的工程解。</li>
+<li><strong>免微調工具鏈架構具備極高的實用生命力</strong>：<br>微調一個 70B+ 的多模態模型成本高昂且容易破壞通用泛化力；OpenVLHarness 用優雅的 API 協定與證據渲染（Evidence Rendering），證明了不用動底層權重，就能榨出模型巨大的未開拓潛能。</li>
+</ol>
+<p>這是一篇理論紮實、工程落地性極強的開源力作，非常推薦關注多模態、視覺推理與 Agent 系統的開發者深入研讀！</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='https://link.hhtjim.com/163/475521.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='https://link.hhtjim.com/163/1867529146.mp3'></li>
+                        
+                    
+                        
+                            <li title='2' data-url='https://link.hhtjim.com/163/1860032684.mp3'></li>
+                        
+                    
+                        
+                            <li title='3' data-url='https://link.hhtjim.com/163/1326016489.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci=''
+        data-cs=''
+        data-r=''
+        data-o=''
+        data-a=''
+        data-d='false'
+    >查看留言</div>
+
+
+    </div>
+    
+        <div class='side'>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80%EF%BC%9A%E7%95%B6%E6%88%91%E5%80%91%E6%8A%8A%E3%80%8C%E6%80%9D%E8%80%83%E7%AE%97%E5%8A%9B%E3%80%8D%E7%84%A1%E6%AD%A2%E5%A2%83%E5%A0%86%E7%B5%A6%E8%A6%96%E8%A6%BA%E6%A8%A1%E5%9E%8B%EF%BC%8C%E6%9C%83%E7%99%BC%E7%94%9F%E4%BB%80%E9%BA%BC%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">前言：當我們把「思考算力」無止境堆給視覺模型，會發生什麼？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%A7%8B%EF%BC%9AOpenVLHarness-%E7%9A%84%E4%B8%89%E5%A4%A7%E6%94%AF%E6%9F%B1"><span class="toc-number">2.</span> <span class="toc-text">一、核心架構：OpenVLHarness 的三大支柱</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%83%BD%E5%8A%9B%E5%B1%A4%EF%BC%88Capability-Layer%EF%BC%89%E8%88%87-9-%E5%A4%A7%E7%95%B0%E8%B3%AA%E6%84%9F%E7%9F%A5%E5%B7%A5%E5%85%B7"><span class="toc-number">2.1.</span> <span class="toc-text">1. 能力層（Capability Layer）與 9 大異質感知工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%8C%81%E4%B9%85%E5%8C%96%E5%A4%9A%E6%A8%A1%E6%85%8B%E8%A8%98%E6%86%B6%EF%BC%88Persistent-Multimodal-Memory%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">2. 持久化多模態記憶（Persistent Multimodal Memory）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%A6%96%E8%A6%BA%E7%A9%BA%E9%96%93%E4%BB%A3%E7%A2%BC%E5%8C%96%E6%8E%A8%E7%90%86%EF%BC%88Coding-in-Visual-Space%EF%BC%89"><span class="toc-number">2.3.</span> <span class="toc-text">3. 視覺空間代碼化推理（Coding in Visual Space）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AF%A6%E8%AD%89%E6%88%90%E6%9E%9C%EF%BC%9A%E5%85%8D%E5%BE%AE%E8%AA%BF%E5%B8%B6%E4%BE%86%E5%85%A8%E9%9D%A2%E6%8F%90%E5%8D%87%EF%BC%8C%E6%93%8A%E6%BD%B0%E7%9B%B2%E7%9B%AE%E6%93%B4%E5%B1%95%E6%8E%A8%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">二、實證成果：免微調帶來全面提升，擊潰盲目擴展推理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%85%A8%E6%A8%A1%E5%9E%8B%E5%9F%BA%E6%BA%96%E8%A9%95%E6%B8%AC%E6%8F%90%E5%8D%87%EF%BC%8822-Benchmark-%E5%B9%B3%E5%9D%87%E5%88%86%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">1. 全模型基準評測提升（22 Benchmark 平均分）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%97%9C%E9%8D%B5%E5%B0%8D%E6%AF%94%EF%BC%9A%E5%B7%A5%E5%85%B7%E5%A2%9E%E5%BC%B7-vs-%E7%9B%B2%E7%9B%AE%E5%A0%86%E7%96%8A%E6%80%9D%E8%80%83%E9%A0%90%E7%AE%97%EF%BC%88Thinking-Tokens%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">2. 關鍵對比：工具增強 vs 盲目堆疊思考預算（Thinking Tokens）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%9E%B6%E6%A7%8B%E9%83%A8%E7%BD%B2%E8%88%87%E5%B7%A5%E7%A8%8B%E5%AF%A6%E8%B8%90%E7%B4%B0%E7%AF%80"><span class="toc-number">4.</span> <span class="toc-text">三、架構部署與工程實踐細節</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%A0%B8%E5%BF%83%E7%B5%84%E4%BB%B6%E5%88%87%E5%88%86"><span class="toc-number">4.1.</span> <span class="toc-text">1. 核心組件切分</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%80%8B%E4%BA%BA%E6%80%9D%E8%80%83%E8%88%87%E7%B8%BD%E7%B5%90%EF%BC%9A%E5%B0%8D-Agent-%E6%BC%94%E9%80%B2%E7%9A%84%E5%95%9F%E7%99%BC"><span class="toc-number">5.</span> <span class="toc-text">四、個人思考與總結：對 Agent 演進的啟發</span></a></li></ol>	
+        </div>
+    
+</div>
+
+
+    </div>
+</div>
+</body>
+
+
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/higumalu-note/js/plugin.js"></script>
+<script src="/higumalu-note/js/typed.js"></script>
+<script src="/higumalu-note/js/diaspora.js"></script>
+
+
+<link rel="stylesheet" href="/higumalu-note/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/higumalu-note/photoswipe/default-skin/default-skin.css">
+
+
+<script src="/higumalu-note/photoswipe/photoswipe.min.js"></script>
+<script src="/higumalu-note/photoswipe/photoswipe-ui-default.min.js"></script>
+
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+</html>
