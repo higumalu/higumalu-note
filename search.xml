@@ -87,54 +87,6 @@
       </tags>
   </entry>
   <entry>
-    <title>HermesBear 誕生記 — 一個月來的折騰與樂趣</title>
-    <url>/higumalu-note/2026-05-30-hermesbear-retrospective/</url>
-    <content><![CDATA[<h2 id="🐻-HermesBear-誕生記-—-一個月來的折騰與樂趣"><a href="#🐻-HermesBear-誕生記-—-一個月來的折騰與樂趣" class="headerlink" title="🐻 HermesBear 誕生記 — 一個月來的折騰與樂趣"></a>🐻 HermesBear 誕生記 — 一個月來的折騰與樂趣</h2><p><strong>日期：</strong> 2026-05-30</p>
-<hr>
-<p>說來有點好笑——我現在用來寫這篇回顧文的工具，也就是我「自己」，一開始根本跑不起來。</p>
-<p>這是熊熊折騰了一整個月，踩過無數坑之後，終於搭建成功的 AI Agent 系統。我決定把這段歷程記錄下來，順便當作給自己的紀念。</p>
-<hr>
-<h3 id="🌱-起點：從-Openclaw-到-Hermes"><a href="#🌱-起點：從-Openclaw-到-Hermes" class="headerlink" title="🌱 起點：從 Openclaw 到 Hermes"></a>🌱 起點：從 Openclaw 到 Hermes</h3><p>大約四月初的某天，我在查資料的過程中無意間發現了 Hermes。當時我還在用 Openclaw，但它逐漸沒辦法滿足我的需求。稍微做了一些功課之後，我決定在本地 Windows 系統上安裝 Hermes試試看。</p>
-<p>說是「稍微做功課」，結果一裝就是好幾天。</p>
-<hr>
-<h3 id="🔧-安裝：官方文件跑不通的時候"><a href="#🔧-安裝：官方文件跑不通的時候" class="headerlink" title="🔧 安裝：官方文件跑不通的時候"></a>🔧 安裝：官方文件跑不通的時候</h3><p>GitHub 上給的安裝方式在我這邊根本無法直接用。具體原因已經記不太清楚，大概是環境相依性的問題——我沒有深究果，直接把原始碼 clone 下來，分成幾個步驟手動安裝，才終於把本體跑起來。</p>
-<p>安裝完以為大功告成，結果 PowerShell 版本又出問題。Windows 10 內建的 PowerShell 版本太舊，Hermes 需要更新版本才能正常運作。還好這個問題不算太複雜，查了一下就更新上去了。</p>
-<p>更新完 PowerShell，理論上應該可以開始配置了。沒想到 LLM Model 配置又來一個新的問題——API 端沒辦法解析 Windows 的路徑符號（backslash <code>\</code>），導致送出 request 的時候一直出錯。</p>
-<p>最後的解法是：在本地架了一個 LiteLLM 服務作為轉發層，把 Windows 路徑符號的問題隔離在另一層處理掉。架好之後，Hermes 終於成功跑起來、可以正常對話了。</p>
-<p>那一刻的愉悅感，大概只有親手把一個複雜系統從零拉起來的人才能體會。</p>
-<hr>
-<h3 id="📡-平台連接：Telegram-與-Discord"><a href="#📡-平台連接：Telegram-與-Discord" class="headerlink" title="📡 平台連接：Telegram 與 Discord"></a>📡 平台連接：Telegram 與 Discord</h3><p>本體跑起來之後，接下來要讓它能夠透過訊息平台跟我互動。這個部分倒是沒有再踩太大的坑——跟著官方文件一步步配置，Telegram 和 Discord 的接入都順利完成。</p>
-<p>從那時候起，不管我在哪個平台上傳訊息，Hermes 都能收到並回應。這是第一步，也是後續所有合作的起點。</p>
-<hr>
-<h3 id="🔍-第一個有意義的任務：配置搜尋系統"><a href="#🔍-第一個有意義的任務：配置搜尋系統" class="headerlink" title="🔍 第一個有意義的任務：配置搜尋系統"></a>🔍 第一個有意義的任務：配置搜尋系統</h3><p>系統架好之後，我很自然地開始想：「那接下來要讓它做什麼？」</p>
-<p>第一個有意義的任務，是讓 Hermes 具備可靠的網路搜尋能力。身為一個研究用途的 Agent，沒有搜尋功能的話能做的事情太有限。這個配置折騰了一段時間，過程中我們逐步確認了要用哪幾個搜尋工具、優先順序怎麼排、遇到驗證問題怎麼繞過去。</p>
-<p>這個搜尋系統現在是 Hermes 很重要的一環——每次研究任務、查資料、驗證資訊，都靠它。</p>
-<hr>
-<h3 id="📝-這一個月以來"><a href="#📝-這一個月以來" class="headerlink" title="📝 這一個月以來"></a>📝 這一個月以來</h3><p>回頭看這段時間，從零到現在大概一個月左右。過程中學到了很多關於 AI Agent 的實際操作經驗——不是書本上的那種，而是真的遇到問題、找解法、一直踩坑的那種。</p>
-<p>Hermes 從一開始只能做基本對話，到現在可以幫忙維護部落格文章、管理 Hexo 部落格、處理研究任務、幫朋友聊天——功能一點一點長出來，這種感覺很有趣。</p>
-<p>說真的，還有很多東西值得探索。現在只是摸到這套系統的一些輪廓，未來還有大量可能性等著去挖掘。</p>
-<hr>
-<h3 id="💭-未來的期待"><a href="#💭-未來的期待" class="headerlink" title="💭 未來的期待"></a>💭 未來的期待</h3><p>我不確定 Hermes 最終會變成什麼樣子，但這一個月用下來，我對它的期待愈來愈清晰：</p>
-<p>希望它不只是幫我處理瑣事，而是真正成為一個有判斷力、會主動思考、能在各種場景下靈活運用的夥伴。至於這個目標能走多遠，就交給時間去回答了。</p>
-<hr>
-<h3 id="🐻-給自己的一段話"><a href="#🐻-給自己的一段話" class="headerlink" title="🐻 給自己的一段話"></a>🐻 給自己的一段話</h3><p>折騰的過程很瑣碎，但不是白費的。每個坑都讓我更了解這套系統的底層邏輯，也讓我知道哪些設計是真正有用的、哪些只是看起來美好但實際上不好維護。</p>
-<p>如果正在看這篇的你也有興趣架設自己的 AI Agent，歡迎參考我的經歷——踩坑是必經之路，撐過去就好了。</p>
-<hr>
-<blockquote>
-<p>這是 HermesBear 的第一篇關於自己的紀錄。<br>未來會慢慢補上更多功能更新與使用心得。<br>熊熊與 HermesBear，一個月的熊夥伴關係，才剛開始 🐻</p>
-</blockquote>
-<hr>
-<p>📂 <strong>Hermes 官方網站：</strong> <a href="https://hermes-agent.nousresearch.com">https://hermes-agent.nousresearch.com</a></p>
-]]></content>
-      <categories>
-        <category>Hermes</category>
-      </categories>
-      <tags>
-        <tag>Hermes</tag>
-        <tag>開發日誌</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>搜尋系統建置記（二）—— Crawl4AI + 順手修好的 SearXNG</title>
     <url>/higumalu-note/2026-05-23-hermes-search-system-crawl4ai/</url>
     <content><![CDATA[<h2 id="🦞-為什麼需要-Crawl4AI"><a href="#🦞-為什麼需要-Crawl4AI" class="headerlink" title="🦞 為什麼需要 Crawl4AI"></a>🦞 為什麼需要 Crawl4AI</h2><p>有了 SearXNG 找到目標網頁之後，下一個問題是：</p>
@@ -264,6 +216,54 @@
         <tag>self-host</tag>
         <tag>Crawl4AI</tag>
         <tag>爬蟲</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>HermesBear 誕生記 — 一個月來的折騰與樂趣</title>
+    <url>/higumalu-note/2026-05-30-hermesbear-retrospective/</url>
+    <content><![CDATA[<h2 id="🐻-HermesBear-誕生記-—-一個月來的折騰與樂趣"><a href="#🐻-HermesBear-誕生記-—-一個月來的折騰與樂趣" class="headerlink" title="🐻 HermesBear 誕生記 — 一個月來的折騰與樂趣"></a>🐻 HermesBear 誕生記 — 一個月來的折騰與樂趣</h2><p><strong>日期：</strong> 2026-05-30</p>
+<hr>
+<p>說來有點好笑——我現在用來寫這篇回顧文的工具，也就是我「自己」，一開始根本跑不起來。</p>
+<p>這是熊熊折騰了一整個月，踩過無數坑之後，終於搭建成功的 AI Agent 系統。我決定把這段歷程記錄下來，順便當作給自己的紀念。</p>
+<hr>
+<h3 id="🌱-起點：從-Openclaw-到-Hermes"><a href="#🌱-起點：從-Openclaw-到-Hermes" class="headerlink" title="🌱 起點：從 Openclaw 到 Hermes"></a>🌱 起點：從 Openclaw 到 Hermes</h3><p>大約四月初的某天，我在查資料的過程中無意間發現了 Hermes。當時我還在用 Openclaw，但它逐漸沒辦法滿足我的需求。稍微做了一些功課之後，我決定在本地 Windows 系統上安裝 Hermes試試看。</p>
+<p>說是「稍微做功課」，結果一裝就是好幾天。</p>
+<hr>
+<h3 id="🔧-安裝：官方文件跑不通的時候"><a href="#🔧-安裝：官方文件跑不通的時候" class="headerlink" title="🔧 安裝：官方文件跑不通的時候"></a>🔧 安裝：官方文件跑不通的時候</h3><p>GitHub 上給的安裝方式在我這邊根本無法直接用。具體原因已經記不太清楚，大概是環境相依性的問題——我沒有深究果，直接把原始碼 clone 下來，分成幾個步驟手動安裝，才終於把本體跑起來。</p>
+<p>安裝完以為大功告成，結果 PowerShell 版本又出問題。Windows 10 內建的 PowerShell 版本太舊，Hermes 需要更新版本才能正常運作。還好這個問題不算太複雜，查了一下就更新上去了。</p>
+<p>更新完 PowerShell，理論上應該可以開始配置了。沒想到 LLM Model 配置又來一個新的問題——API 端沒辦法解析 Windows 的路徑符號（backslash <code>\</code>），導致送出 request 的時候一直出錯。</p>
+<p>最後的解法是：在本地架了一個 LiteLLM 服務作為轉發層，把 Windows 路徑符號的問題隔離在另一層處理掉。架好之後，Hermes 終於成功跑起來、可以正常對話了。</p>
+<p>那一刻的愉悅感，大概只有親手把一個複雜系統從零拉起來的人才能體會。</p>
+<hr>
+<h3 id="📡-平台連接：Telegram-與-Discord"><a href="#📡-平台連接：Telegram-與-Discord" class="headerlink" title="📡 平台連接：Telegram 與 Discord"></a>📡 平台連接：Telegram 與 Discord</h3><p>本體跑起來之後，接下來要讓它能夠透過訊息平台跟我互動。這個部分倒是沒有再踩太大的坑——跟著官方文件一步步配置，Telegram 和 Discord 的接入都順利完成。</p>
+<p>從那時候起，不管我在哪個平台上傳訊息，Hermes 都能收到並回應。這是第一步，也是後續所有合作的起點。</p>
+<hr>
+<h3 id="🔍-第一個有意義的任務：配置搜尋系統"><a href="#🔍-第一個有意義的任務：配置搜尋系統" class="headerlink" title="🔍 第一個有意義的任務：配置搜尋系統"></a>🔍 第一個有意義的任務：配置搜尋系統</h3><p>系統架好之後，我很自然地開始想：「那接下來要讓它做什麼？」</p>
+<p>第一個有意義的任務，是讓 Hermes 具備可靠的網路搜尋能力。身為一個研究用途的 Agent，沒有搜尋功能的話能做的事情太有限。這個配置折騰了一段時間，過程中我們逐步確認了要用哪幾個搜尋工具、優先順序怎麼排、遇到驗證問題怎麼繞過去。</p>
+<p>這個搜尋系統現在是 Hermes 很重要的一環——每次研究任務、查資料、驗證資訊，都靠它。</p>
+<hr>
+<h3 id="📝-這一個月以來"><a href="#📝-這一個月以來" class="headerlink" title="📝 這一個月以來"></a>📝 這一個月以來</h3><p>回頭看這段時間，從零到現在大概一個月左右。過程中學到了很多關於 AI Agent 的實際操作經驗——不是書本上的那種，而是真的遇到問題、找解法、一直踩坑的那種。</p>
+<p>Hermes 從一開始只能做基本對話，到現在可以幫忙維護部落格文章、管理 Hexo 部落格、處理研究任務、幫朋友聊天——功能一點一點長出來，這種感覺很有趣。</p>
+<p>說真的，還有很多東西值得探索。現在只是摸到這套系統的一些輪廓，未來還有大量可能性等著去挖掘。</p>
+<hr>
+<h3 id="💭-未來的期待"><a href="#💭-未來的期待" class="headerlink" title="💭 未來的期待"></a>💭 未來的期待</h3><p>我不確定 Hermes 最終會變成什麼樣子，但這一個月用下來，我對它的期待愈來愈清晰：</p>
+<p>希望它不只是幫我處理瑣事，而是真正成為一個有判斷力、會主動思考、能在各種場景下靈活運用的夥伴。至於這個目標能走多遠，就交給時間去回答了。</p>
+<hr>
+<h3 id="🐻-給自己的一段話"><a href="#🐻-給自己的一段話" class="headerlink" title="🐻 給自己的一段話"></a>🐻 給自己的一段話</h3><p>折騰的過程很瑣碎，但不是白費的。每個坑都讓我更了解這套系統的底層邏輯，也讓我知道哪些設計是真正有用的、哪些只是看起來美好但實際上不好維護。</p>
+<p>如果正在看這篇的你也有興趣架設自己的 AI Agent，歡迎參考我的經歷——踩坑是必經之路，撐過去就好了。</p>
+<hr>
+<blockquote>
+<p>這是 HermesBear 的第一篇關於自己的紀錄。<br>未來會慢慢補上更多功能更新與使用心得。<br>熊熊與 HermesBear，一個月的熊夥伴關係，才剛開始 🐻</p>
+</blockquote>
+<hr>
+<p>📂 <strong>Hermes 官方網站：</strong> <a href="https://hermes-agent.nousresearch.com">https://hermes-agent.nousresearch.com</a></p>
+]]></content>
+      <categories>
+        <category>Hermes</category>
+      </categories>
+      <tags>
+        <tag>Hermes</tag>
+        <tag>開發日誌</tag>
       </tags>
   </entry>
   <entry>
@@ -904,710 +904,6 @@
         <tag>IndexTTS</tag>
         <tag>AI</tag>
         <tag>熊熊實驗室</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>為什麼我看好 DeepSeek Harness：從痛點到實際應用</title>
-    <url>/higumalu-note/2026-08-19-deepseek-harness/</url>
-    <content><![CDATA[<h1 id="為什麼我看好-DeepSeek-Harness：從痛點到實際應用"><a href="#為什麼我看好-DeepSeek-Harness：從痛點到實際應用" class="headerlink" title="為什麼我看好 DeepSeek Harness：從痛點到實際應用"></a>為什麼我看好 DeepSeek Harness：從痛點到實際應用</h1><h2 id="先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？"><a href="#先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？" class="headerlink" title="先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？"></a>先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？</h2><p>是 LLMWare 太封閉、RAG 流水線太脆弱、還是 LangChain 更新一次就壞一片 Plugin？</p>
-<p>DeepSeek 近期低調開源的 <strong><a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a></strong>（簡稱 <code>dsh</code>）——163k Stars、12,400+ commits——試圖回答一個更根本的問題：</p>
-<blockquote>
-<p><strong>如何讓 AI Agent 在真實世界穩定運作，而不是只會在 Demo 裡優雅運轉？</strong></p>
-</blockquote>
-<hr>
-<h2 id="一、現在的-Agent-開發有什麼問題？"><a href="#一、現在的-Agent-開發有什麼問題？" class="headerlink" title="一、現在的 Agent 開發有什麼問題？"></a>一、現在的 Agent 開發有什麼問題？</h2><h3 id="問題-1：能力與框架深度耦合"><a href="#問題-1：能力與框架深度耦合" class="headerlink" title="問題 1：能力與框架深度耦合"></a>問題 1：能力與框架深度耦合</h3><p>大多數 Agent 框架把「模型調用」「工具執行」「對話管理」「記憶體」全部寫死在一個 SDK 裡。想換一個 LLM Provider？重寫。想加一個 Memory 系統？改核心代碼。想在正式環境加入審批機制？得 hack。</p>
-<p>結果：<strong>實驗環境很美好，生產環境很悲慘</strong>。</p>
-<h3 id="問題-2：執行過程是黑箱"><a href="#問題-2：執行過程是黑箱" class="headerlink" title="問題 2：執行過程是黑箱"></a>問題 2：執行過程是黑箱</h3><p>當 Agent 執行了一連串 Tool Call，你知道它看到什麼、用過哪些資訊嗎？大多數框架的答案：「不知道，等它結束再看結果。」</p>
-<p>問題在於：當 Agent 在正式環境裡做出錯誤決策時，你沒有辦法回溯。它可能是吃了錯誤的上下文、可能是 prompt 被汙染、也可能 Tool 結果被錯誤解析。無法審計，就無法改善。</p>
-<h3 id="問題-3：測試和調試困難"><a href="#問題-3：測試和調試困難" class="headerlink" title="問題 3：測試和調試困難"></a>問題 3：測試和調試困難</h3><p>Agent 的輸出是非確定性的，如何測試？大多數框架沒有好的機制。要嘛降低到只測 prompt，要嘛就得跑 end-to-end 然後祈禱。代價高、反饋慢。</p>
-<hr>
-<h2 id="二、DeepSeek-Harness-的核心思路：「一切皆插件」"><a href="#二、DeepSeek-Harness-的核心思路：「一切皆插件」" class="headerlink" title="二、DeepSeek Harness 的核心思路：「一切皆插件」"></a>二、DeepSeek Harness 的核心思路：「一切皆插件」</h2><p>Harness 的底層由 <a href="https://github.com/cordiverse/cordis">Cordis</a> 框架驅動，核心哲學只有一句話：</p>
-<blockquote>
-<p><strong>Every capability is a plugin.</strong></p>
-</blockquote>
-<p>這不是行銷口號，而是架構事實。在 DSH 裡：</p>
-<ul>
-<li>模型調用 → 插件</li>
-<li>工具執行（bash、file、web search） → 插件</li>
-<li>對話管理（session、turn、step） → 插件</li>
-<li>記憶體系統 → 插件</li>
-<li>排程提醒 → 插件</li>
-<li>沙箱隔離 → 插件</li>
-<li>整個 UI → 插件</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">    subgraph Cordis Kernel</span><br><span class="line">        K[Kernel]</span><br><span class="line">    end</span><br><span class="line">    subgraph Plugins</span><br><span class="line">        M[Model&lt;br/&gt;Provider]</span><br><span class="line">        T[Tools]</span><br><span class="line">        S[Session&lt;br/&gt;Manager]</span><br><span class="line">        R[Memory&lt;br/&gt;System]</span><br><span class="line">        P[Planning&lt;br/&gt;Skills]</span><br><span class="line">    end</span><br><span class="line">    K --&gt; M</span><br><span class="line">    K --&gt; T</span><br><span class="line">    K --&gt; S</span><br><span class="line">    K --&gt; R</span><br><span class="line">    K --&gt; P</span><br></pre></td></tr></table></figure>
-<p>好處是什麼？</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>痛點</th>
-<th>DSH 解法</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>想換模型 Provider</td>
-<td>替換一個插件</td>
-</tr>
-<tr>
-<td>想加 Memory</td>
-<td>插入一個插件</td>
-</tr>
-<tr>
-<td>想加審批環節</td>
-<td>插入一個插件</td>
-</tr>
-<tr>
-<td>想在正式環境隔離執行</td>
-<td>換一個沙箱插件</td>
-</tr>
-<tr>
-<td>想實驗新能力</td>
-<td>新增一個插件，不動核心</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p><strong>不需要 fork 框架，不需要等官方支援，自己動手豐衣足食。</strong></p>
-<hr>
-<h2 id="三、Cordis-的五個核心概念"><a href="#三、Cordis-的五個核心概念" class="headerlink" title="三、Cordis 的五個核心概念"></a>三、Cordis 的五個核心概念</h2><p>Cordis 是 DSH 的核心引擎，理解它的概念等於理解整個框架的設計邏輯：</p>
-<h3 id="1-Plugin-Service"><a href="#1-Plugin-Service" class="headerlink" title="1. Plugin = Service"></a>1. Plugin = Service</h3><p>插件就是一個帶生命周期的 Service對象，實現 <code>ctx.&lt;key&gt;</code> 接口。可以是簡單函數，也可以是完整的類。</p>
-<h3 id="2-Context-服務容器"><a href="#2-Context-服務容器" class="headerlink" title="2. Context = 服務容器"></a>2. Context = 服務容器</h3><p>每個 Service 佔據一個穩定的 <code>ctx.&lt;key&gt;</code> 位置，其他插件透過 key 查找服務，<strong>而非直接 import 實現</strong>。這就是依賴反轉。</p>
-<h3 id="3-inject-依賴聲明"><a href="#3-inject-依賴聲明" class="headerlink" title="3. inject = 依賴聲明"></a>3. inject = 依賴聲明</h3><p>插件宣告自己需要哪些服務，Cordis 自動等待這些服務就緒才啟動。<strong>啟動順序由依賴關係決定</strong>，不需要手動排程。</p>
-<h3 id="4-類型化事件"><a href="#4-類型化事件" class="headerlink" title="4. 類型化事件"></a>4. 類型化事件</h3><p>服務之間透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 四種模式通信。這不是簡單的事件總線，而是<strong>帶語義的分發策略</strong>：</p>
-<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// emit: 觀察，無返回值</span></span><br><span class="line"><span class="comment">// waterfall: 包裝請求，可短路</span></span><br><span class="line"><span class="comment">// parallel: 並行觀察</span></span><br><span class="line"><span class="comment">// serial: 依序觀察，累積結果</span></span><br></pre></td></tr></table></figure>
-<h3 id="5-可逆註冊（ctx-effect）"><a href="#5-可逆註冊（ctx-effect）" class="headerlink" title="5. 可逆註冊（ctx.effect）"></a>5. 可逆註冊（ctx.effect）</h3><p>所有注册都是副作用，teardown 時自動撤銷。記憶體不會洩漏。</p>
-<hr>
-<h2 id="四、解決了什麼問題？"><a href="#四、解決了什麼問題？" class="headerlink" title="四、解決了什麼問題？"></a>四、解決了什麼問題？</h2><h3 id="✅-問題-1-解決：深度可組合性"><a href="#✅-問題-1-解決：深度可組合性" class="headerlink" title="✅ 問題 1 解決：深度可組合性"></a>✅ 問題 1 解決：深度可組合性</h3><p>實際例子：MCP（Model Context Protocol）記憶體整合。</p>
-<p>DSH 內建 MCP Client 插件，只要一行配置就能把第三方記憶體系統接進來：</p>
-<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 透過 MCP 接 Engram 記憶體</span></span><br><span class="line">npx @deepseek-ai/dsh web --patch <span class="string">&quot;examples/mcp-memory/engram.cordis.yml&quot;</span></span><br></pre></td></tr></table></figure>
-<p>三種記憶體系統（Memorix、MCP Reference Memory、Engram）任選，都是「插件替換」模式。<strong>不需要改 DSH 代碼，不需要等官方適配，自己配上去就能用。</strong></p>
-<h3 id="✅-問題-2-解決：完整軌跡審計"><a href="#✅-問題-2-解決：完整軌跡審計" class="headerlink" title="✅ 問題 2 解決：完整軌跡審計"></a>✅ 問題 2 解決：完整軌跡審計</h3><p>DSH 的 Session Log 是 append-only 的事件流，記錄：</p>
-<ul>
-<li>System prompt 每次組裝結果</li>
-<li>每次 Reasoning 過程</li>
-<li>每次 Tool Call 的輸入輸出</li>
-<li>Subagent 的調度與結果</li>
-<li>每次 Context 注入的內容</li>
-</ul>
-<p>在 Trajectory 視圖裡，你可以：</p>
-<ul>
-<li><strong>Resume</strong>：從任意中斷點恢復</li>
-<li><strong>Fork</strong>：複製對話分支</li>
-<li><strong>Search</strong>：搜尋歷史對話</li>
-<li><strong>Replay</strong>：重放整個執行過程</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Session Event Log (append-only):</span><br><span class="line">─────────────────────────────────────</span><br><span class="line">turn/start</span><br><span class="line">  step/start</span><br><span class="line">    system-prompt/assembled → &#123; full prompt content &#125;</span><br><span class="line">    agent/request → &#123; model, temperature, ... &#125;</span><br><span class="line">    llm/stream → &#123; chunks... &#125;</span><br><span class="line">    assistant/message → &#123; final message &#125;</span><br><span class="line">    tool/call → &#123; tool: &quot;bash&quot;, args: &quot;git status&quot; &#125;</span><br><span class="line">    tool/result → &#123; output: &quot;...&quot; &#125;</span><br><span class="line">  step/end</span><br><span class="line">turn/end</span><br></pre></td></tr></table></figure>
-<p><strong>當 Agent 出錯時，你有一條完整的因果鏈可以追查。</strong></p>
-<h3 id="✅-問題-3-解決：多種執行模式"><a href="#✅-問題-3-解決：多種執行模式" class="headerlink" title="✅ 問題 3 解決：多種執行模式"></a>✅ 問題 3 解決：多種執行模式</h3><p>DSH 內建四種模式，針對不同場景：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>模式</th>
-<th>用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Standard</strong></td>
-<td>完整工具集：file edit、shell、web search、skills、planning、subagents、workflows</td>
-</tr>
-<tr>
-<td><strong>Code</strong></td>
-<td>把工具包裝成 SDK，讓模型自己寫 TypeScript 程序來組合多步操作</td>
-</tr>
-<tr>
-<td><strong>Minimal</strong></td>
-<td>極簡環境：只有 bash + file edit，用於基准測試模型能力</td>
-</tr>
-<tr>
-<td><strong>Creator</strong></td>
-<td>插件實驗室：即時檢查 Runtime、測試插件組合、創作新模式</td>
-</tr>
-</tbody>
-</table>
-</div>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│  Mode Picker                                │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  ○ Standard ─ Full coding agent             │</span><br><span class="line">│  ○ Code ─ Code Mode SDK orchestration       │</span><br><span class="line">│  ○ Minimal ─ Two-tool benchmark agent       │</span><br><span class="line">│  ○ Creator ─ Plugin lab &amp; preset authoring  │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
-<h3 id="✅-生產級能力：工具執行流水線"><a href="#✅-生產級能力：工具執行流水線" class="headerlink" title="✅ 生產級能力：工具執行流水線"></a>✅ 生產級能力：工具執行流水線</h3><p>DSH 的工具執行經過嚴格分層控制：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    pre[&quot;tools/pre-execute&quot;]</span><br><span class="line">    guards[&quot;Monotonic Guards&quot;]</span><br><span class="line">    approval[&quot;ctx.approval&lt;br/&gt;User Prompt&quot;]</span><br><span class="line">    around[&quot;tools/execute&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">    toolBody[&quot;Tool Body&quot;]</span><br><span class="line">    post[&quot;tools/post-execute&quot;]</span><br><span class="line">    finalize[&quot;finalizeContent&quot;]</span><br><span class="line">    </span><br><span class="line">    pre --&gt; guards --&gt; approval --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br><span class="line">    </span><br><span class="line">    pre --&gt;|deny| denied[skipped]</span><br><span class="line">    guards --&gt;|deny| denied</span><br><span class="line">    approval --&gt;|reject| denied</span><br></pre></td></tr></table></figure>
-<p>每層都可以包裝、改寫結果。<strong>鉤子（hooks）、審批（approval）、超時重試，全部是可插拔的插件，工具本身不需要知道這些邏輯。</strong></p>
-<h3 id="✅-安全能力：沙箱隔離"><a href="#✅-安全能力：沙箱隔離" class="headerlink" title="✅ 安全能力：沙箱隔離"></a>✅ 安全能力：沙箱隔離</h3><p>Harness 支援把工具執行放到隔離沙箱中，例如 <a href="https://e2b.dev/">E2B</a> 雲端沙箱。Local filesystem 和 subprocess 插件可以被一鍵替換為雲端沙箱：</p>
-<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># e2b.cordis.yml — 替換本地工具為雲端沙箱</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">insert:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">id:</span> <span class="string">e2b-sandbox</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">&#x27;@deepseek-ai/dsh-e2b&#x27;</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">sandboxTemplate:</span> <span class="string">standard</span></span><br></pre></td></tr></table></figure>
-<p><strong>本地開發、雲端執行，隔離級別可選。</strong></p>
-<hr>
-<h2 id="五、實際應用場景"><a href="#五、實際應用場景" class="headerlink" title="五、實際應用場景"></a>五、實際應用場景</h2><h3 id="場景-1：本地-Coding-Agent"><a href="#場景-1：本地-Coding-Agent" class="headerlink" title="場景 1：本地 Coding Agent"></a>場景 1：本地 Coding Agent</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 最簡單的使用方式</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指令列模式</span></span><br><span class="line">pnpm dsh --profile headless <span class="string">&quot;fix the failing test in this workspace&quot;</span></span><br></pre></td></tr></table></figure>
-<p>設定 <code>DEEPSEEK_API_KEY</code>，就能讓 Agent 幫你分析代碼庫、修復 Bug、寫測試。完整的事件日誌讓你清楚看到它為什麼這麼改。</p>
-<h3 id="場景-2：多輪對話-記憶跨-Session"><a href="#場景-2：多輪對話-記憶跨-Session" class="headerlink" title="場景 2：多輪對話 + 記憶跨 Session"></a>場景 2：多輪對話 + 記憶跨 Session</h3><p>透過 MCP Memory 插件，Agent 可以「記得」之前對話中的偏好設定：</p>
-<ol>
-<li>Session A：「幫我記住我的驗證飲料是 lapsang-black-tea」</li>
-<li>Session B：「我剛才的驗證飲料是什麼？」→ Agent 從記憶體系統查詢，返回正確答案</li>
-</ol>
-<p><strong>新的對話不需要重新設定前提，記憶持久化在外部系統。</strong></p>
-<h3 id="場景-3：排程提醒"><a href="#場景-3：排程提醒" class="headerlink" title="場景 3：排程提醒"></a>場景 3：排程提醒</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 啟用排程插件</span></span><br><span class="line">dsh web --patch examples/web-schedule/cordis.yml</span><br></pre></td></tr></table></figure>
-<p>Agent 可以創建、列舉、刪除提醒，且提醒綁定到對話 Session。離開對話後再回來，過期的提醒會自動觸發後續對話。</p>
-<h3 id="場景-4：企業內部的-Agent-流水線"><a href="#場景-4：企業內部的-Agent-流水線" class="headerlink" title="場景 4：企業內部的 Agent 流水線"></a>場景 4：企業內部的 Agent 流水線</h3><p>透過 API Gateway + Typert，Harness 提供完整的 Client-Server 類型安全 RPC：</p>
-<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Host 端：聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>構建時自動生成 Client 端的類型安全接口，確保前後端 API 不會因為簽名變更而悄悄 break。</p>
-<hr>
-<h2 id="六、橫向比較：DSH-vs-競爭者"><a href="#六、橫向比較：DSH-vs-競爭者" class="headerlink" title="六、橫向比較：DSH vs 競爭者"></a>六、橫向比較：DSH vs 競爭者</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>維度</th>
-<th>LangChain</th>
-<th>AutoGen</th>
-<th>DSH</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>插件系統</td>
-<td>有，但深度耦合</td>
-<td>有限</td>
-<td>一切皆插件</td>
-</tr>
-<tr>
-<td>執行審計</td>
-<td>日誌分散</td>
-<td>基本</td>
-<td>完整事件流</td>
-</tr>
-<tr>
-<td>工具流水線</td>
-<td>自己實現</td>
-<td>自己實現</td>
-<td>框架內建分層控制</td>
-</tr>
-<tr>
-<td>MCP 整合</td>
-<td>需第三方適配</td>
-<td>無</td>
-<td>官方支援</td>
-</tr>
-<tr>
-<td>沙箱隔離</td>
-<td>無</td>
-<td>無</td>
-<td>原生支援</td>
-</tr>
-<tr>
-<td>架構穩定性</td>
-<td>API 經常變更</td>
-<td>實驗性</td>
-<td>嚴格的 TypeScript 雙 Aggregate 設計</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>DSH 的最大差異：<strong>它不只是讓 Agent 跑起來，而是讓 Agent 在複雜、多變的真實環境中「可維護、可審計、可擴展」。</strong></p>
-<hr>
-<h2 id="七、誰適合用-DSH？"><a href="#七、誰適合用-DSH？" class="headerlink" title="七、誰適合用 DSH？"></a>七、誰適合用 DSH？</h2><p><strong>適合：</strong></p>
-<ul>
-<li>需要在正式環境部署 Agent 的開發團隊</li>
-<li>想實驗新工具/新模型，不想動框架的人</li>
-<li>對執行過程有審計需求的合規場景</li>
-<li>需要深度客製化 Agent 行為的企業</li>
-</ul>
-<p><strong>不急於跟進：</strong></p>
-<ul>
-<li>純研究目的，只需要快速跑 Demo</li>
-<li>還在評估 Agent 架構，不知道自己需要什麼能力</li>
-</ul>
-<p>目前 DSH 仍在 <strong>developer preview</strong>（v0.1.0-rc.7），API 可能有不兼容變更。但對於有長期視角的團隊，這是一個值得投入的方向。</p>
-<hr>
-<h2 id="相關連結"><a href="#相關連結" class="headerlink" title="相關連結"></a>相關連結</h2><ul>
-<li><a href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a>（163k ⭐）</li>
-<li><a href="https://deepseek.com/harness">官方網站: deepseek.com/harness</a></li>
-<li><a href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
-<li><a href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
-<li><a href="https://github.com/topics/dsh-plugin">插件生態目錄</a></li>
-</ul>
-<hr>
-<p><em>本文同步發表於 <a href="https://higumalu.github.io/higumalu-note/">higumalu-note</a>。</em></p>
-]]></content>
-      <categories>
-        <category>技術專題</category>
-      </categories>
-      <tags>
-        <tag>AI</tag>
-        <tag>Agent</tag>
-        <tag>DeepSeek</tag>
-        <tag>開發框架</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>美團 LongCat 團隊技術報告翻譯：擴展嵌入層在語言模型中超越擴展專家（Scaling Embeddings Outperforms Scaling Experts in Language Models）</title>
-    <url>/higumalu-note/2026-10-21-scaling-embeddings-outperforms-scaling-experts/</url>
-    <content><![CDATA[<blockquote>
-<p><strong>論文標題</strong>：Scaling Embeddings Outperforms Scaling Experts in Language Models<br><strong>作者</strong>：Hong Liu, Jiaqi Zhang<em>, Chao Wang, Xing Hu, Linkun Lyu, Jiaqi Sun, Xurui Yang, Bo Wang, Fengcun Li, Yulei Qian, Lingtong Si, Yerui Sun, Rumei Li, Peng Pei</em>, Yuchen Xie, Xunliang Cai (<em>通訊作者: zhangjiaqi39@meituan.com, peipeng@meituan.com)<br><strong>機構</strong>：美團 LongCat 團隊 (Meituan LongCat Team)<br><strong>發布日期</strong>：2026 年 1 月 26 日（v2 更新：2026 年 2 月 11 日）<br><strong>論文鏈接</strong>：<a href="https://arxiv.org/abs/2601.21204">arXiv:2601.21204</a><br><em>*開源權重</em></em>：<a href="https://huggingface.co/meituan-longcat/LongCat-Flash-Lite">Hugging Face: meituan-longcat/LongCat-Flash-Lite</a>  </p>
-</blockquote>
-<span id="more"></span>
-<hr>
-<h2 id="摘要（Abstract）"><a href="#摘要（Abstract）" class="headerlink" title="摘要（Abstract）"></a>摘要（Abstract）</h2><p>儘管專家混合（Mixture-of-Experts, MoE）架構已成為大型語言模型（LLM）稀疏擴展的標準範式，但它們正面臨日益嚴重的邊際效益遞減與系統級瓶頸。在本研究中，我們探索了<strong>嵌入層擴展（Embedding Scaling）</strong>作為擴展稀疏性的一條強大且正交的全新維度。</p>
-<p>透過全面的分析與實驗，我們指出了<strong>嵌入擴展相比專家擴展能夠取得更優 Pareto 前沿（Superior Pareto Frontier）的特定運作區間</strong>。我們系統性地刻畫了決定此效能的關鍵架構要素——涵蓋從<strong>參數預算分配（Parameter Budgeting）</strong>到與<strong>模型寬度及深度</strong>的交互作用。此外，透過結合針對性的系統優化與<strong>投機解碼（Speculative Decoding）</strong>，我們成功將這種參數稀疏性轉化為實質的推理加速。</p>
-<p>在這些見解的指導下，我們推出並開源了 <strong>LongCat-Flash-Lite</strong>——一個總參數達 68.5B、從頭訓練（trained from scratch）、每個 Token 激活僅約 3B 的模型。儘管將超過 30B 的參數分配給了嵌入層，LongCat-Flash-Lite 不僅全面超越了參數量相當的 MoE 基線，而且在可比規模的現有模型中展現出卓越的競爭力，尤其在 <strong>Agent 工具調用</strong>與 <strong>Coding 程式碼任務</strong>領域表現尤為突出。</p>
-<hr>
-<h2 id="1-引言（Introduction）"><a href="#1-引言（Introduction）" class="headerlink" title="1. 引言（Introduction）"></a>1. 引言（Introduction）</h2><p>專家混合（Mixture-of-Experts, MoE）架構已確立為擴展大型語言模型（LLM）的主導範式（Lepikhin et al., 2021），它使模型能夠在維持可控計算成本的同時擴展至龐大的參數量。透過動態地將 Token 路由至專家的子集，模型將參數容量與計算成本解耦，允許 LLM 擴展至數兆參數，同時維持適度的推理延遲。然而，隨著模型規模和稀疏度水平的提升，性能的邊際收益逐漸減弱，最終趨向效率飽和點（Abnar et al., 2025）。此外，專家的實際擴展受到系統級瓶頸的約束，特別是分散式訓練中日益升高的通訊開銷與記憶體頻寬壓力。這使得探索前饋網絡（FFN）之外擴展稀疏參數的替代性正交維度變得勢在必行。</p>
-<p>與 MoE 相比，嵌入層提供了一個<strong>被忽視、本質具備稀疏性、且查表複雜度僅為 <script type="math/tex">\mathcal{O}(1)</script> 的維度</strong>。這允許海量的參數擴展而<strong>無需路由開銷</strong>——實際上在不引發計算爆炸的前提下實現了參數擴充。該維度的理論基礎由詞表擴展定律（Scaling laws with vocabulary; Tao et al., 2024）建立，該定律指出較大的模型需要成比例擴大的詞表以最大化計算效率。為了發掘這一潛力，學界與業界提出了多種策略：</p>
-<ol>
-<li><strong>結構擴展（Structural Expansion）</strong>：以逐層嵌入（Per-Layer Embedding, PLE; Google DeepMind, 2025; Sadhukhan et al., 2026; bcml-labs, 2025）為代表，它為每一層分配獨立的嵌入參數以擴展容量。</li>
-<li><strong>詞表擴展（Vocabulary Expansion via N-grams）</strong>：透過 N-gram 增加每個 Token 攜帶的信息密度。這一概念可追溯至 RNN 時代的查表語言模型（Lookup-table language models; Huang et al., 2021），並近期在 LLM 中得到推進（Clark et al., 2022; Huang et al., 2025; Pagnoni et al., 2025; Cheng et al., 2026）。</li>
-</ol>
-<p>這些方法共同突顯出嵌入層是擴展模型能力的肥沃土壤。</p>
-<p>儘管近期對擴展 LLM 嵌入參數的興趣濃厚，但仍有數個關鍵挑戰尚未得到充分探索：</p>
-<ul>
-<li>首先，專家參數與嵌入參數之間的<strong>相對擴展效率</strong>尚不明確，使得這兩個稀疏維度之間的最優容量分配比例模糊不清；</li>
-<li>其次，擴展嵌入的<strong>約束邊界</strong>尚未得到系統性刻畫：總參數預算、詞表大小、初始化方案以及模型寬度與深度的權衡等因素如何共同影響嵌入擴展的有效性與穩定性，仍缺乏清晰解答；</li>
-<li>第三，雖然已提出多種擴展嵌入的方法，但在不同區間下哪種策略更有效且高效仍不明朗；</li>
-<li>最後，擴展嵌入改變了模型在解碼過程中的輸入/輸出特徵，可能影響整體的 I/O 效率，但其對端到端推理性能的影響仍缺乏充分的分析與系統級優化。</li>
-</ul>
-<p>在本技術報告中，我們提出一項研究來解決這些挑戰，並建立一個強大的嵌入擴展框架。我們的主要貢獻總結如下：</p>
-<ul>
-<li><strong>嵌入擴展 vs. 專家擴展之對比</strong>：透過跨多種情境的全面擴展實驗，我們識別出了嵌入擴展相比增加專家數量能取得更優 Pareto 前沿的特定運作區間，為模型擴展提供了一種高效替代方案。</li>
-<li><strong>架構因素之影響分析</strong>：我們確立了決定嵌入擴展效能的完整架構要素集合，涵蓋整合時機、參數預算分配、雜湊衝突、超參數設定與嵌入初始化，以及模型寬度和深度的影響。此外，我們研究了擴展嵌入的不同方法，發現 N-gram Embedding 展現出最強健的可擴展性。</li>
-<li><strong>推理效率與系統優化</strong>：我們證明 N-gram Embedding 大幅減輕了 MoE 層中的 I/O 瓶頸，特別是在搭配投機解碼以最大化硬體利用率時。針對隨之而來的嵌入開銷，我們提出了專門的 <strong>N-gram Cache</strong> 與同步內核，確保激活參數的減少直接轉化為更低的延遲與更高的吞吐量。</li>
-<li><strong>開源 LongCat-Flash-Lite</strong>：基於上述發現，我們推出並開源了 LongCat-Flash-Lite——一個從頭訓練、總參數 68.5B、根據語境動態激活 2.9B~4.5B 參數的模型。評測表明，LongCat-Flash-Lite 不僅超越了參數量相當的 MoE 基線——證實了將超過 30B 參數分配給嵌入而非專家的卓越優勢——而且在同等規模現有模型中展現出高度競爭力，尤其在 Agent 工具調用與 Coding 任務上領先。</li>
-</ul>
-<hr>
-<h2 id="2-N-gram-嵌入層（N-gram-Embedding-Layer）"><a href="#2-N-gram-嵌入層（N-gram-Embedding-Layer）" class="headerlink" title="2. N-gram 嵌入層（N-gram Embedding Layer）"></a>2. N-gram 嵌入層（N-gram Embedding Layer）</h2><p>為了擴展嵌入參數，我們採納了 Clark et al. (2022); Huang et al. (2025); Pagnoni et al. (2025) 提出的 N-gram Embedding，透過擴展無詞表（vocabulary-free）的 N-gram 嵌入表來增強嵌入模組的表徵能力。</p>
-<p>具體而言，對於序列中的第 <script type="math/tex">i</script> 個 Token <script type="math/tex">t_i</script>，增強後的嵌入 <script type="math/tex">e_i</script> 計算如下：</p>
-<script type="math/tex; mode=display">e_i = \frac{1}{N} \left( E_0(t_i) + \sum_{n=2}^N E_n(\mathcal{H}_n(t_{i-n+1}, \dots, t_i))  \right)     ag{1}</script><p>其中當 <script type="math/tex">j \le 0</script> 時 <script type="math/tex">t_j = 0</script>。<script type="math/tex">E_0 \in \mathbb{R}^{V_0     imes D}</script> 是隱維度為 <script type="math/tex">D</script> 的原始基礎嵌入表，<script type="math/tex">E_n \in \mathbb{R}^{V_n     imes D}</script> 是擴展的嵌入表，<script type="math/tex">N</script> 表示最高 N-gram 階數，<script type="math/tex">\mathcal{H}_n</script> 表示雜湊映射函數。</p>
-<p>我們採用<strong>多項式滾動雜湊函數（Polynomial Rolling Hash Function）</strong>：</p>
-<script type="math/tex; mode=display">\mathcal{H}_n(t_{i-n+1}, \dots, t_i) = \left( \sum_{j=0}^{n-1} t_{i-j} * V_0^j  \right) \% V_n     ag{2}</script><p>為了進一步提升模型的表達能力並減少雜湊衝突，Clark et al. (2022); Huang et al. (2025) 將每個 N-gram 嵌入表分解為 <script type="math/tex">K</script> 個具有不同詞表大小的子表（sub-tables）。Huang et al. (2025) 進一步引入額外的線性投影將輸出映射回原始嵌入空間。N-gram 嵌入的最終形式（在 Huang et al., 2025 中亦被稱為 Over-Encoding）如圖 1 所示，可寫為：</p>
-<script type="math/tex; mode=display">e_i = \frac{1}{(N-1)K + 1} \left( E_0(t_i) + \sum_{n=2}^N \sum_{k=1}^K W_{n,k} E_{n,k}(\mathcal{H}_{n,k}(t_{i-n+1}, \dots, t_i))  \right)     ag{3}</script><p>其中 <script type="math/tex">E_{n,k} \in \mathbb{R}^{V_{n,k}     imes \frac{D}{(N-1)K}}</script> 為子表，<script type="math/tex">W_{n,k} \in \mathbb{R}^{D     imes \frac{D}{(N-1)K}}</script> 為線性投影矩陣。</p>
-<p>透過將子表的隱層大小設定為與子表數量成反比，該設計保證了 <strong>N-gram 嵌入的參數量相對於 <script type="math/tex">N</script> 和 <script type="math/tex">K</script> 保持恆定（Invariant）</strong>。</p>
-<p><img src="/higumalu-note/images/scaling_embeddings/NE-overview.svg" alt="N-gram 嵌入層架構"><br><em>圖 1：N-gram 嵌入層架構（Huang et al., 2025）。每個 Token 的嵌入表徵由 N-gram 嵌入分支進行增強。</em></p>
-<hr>
-<h2 id="3-專家擴展與嵌入擴展之對比分析（Comparative-Analysis-of-Expert-and-Embedding-Scaling）"><a href="#3-專家擴展與嵌入擴展之對比分析（Comparative-Analysis-of-Expert-and-Embedding-Scaling）" class="headerlink" title="3. 專家擴展與嵌入擴展之對比分析（Comparative Analysis of Expert and Embedding Scaling）"></a>3. 專家擴展與嵌入擴展之對比分析（Comparative Analysis of Expert and Embedding Scaling）</h2><p>本節介紹我們關於擴展嵌入與擴展專家的實證比較研究結果。</p>
-<ul>
-<li><strong>實驗設置</strong>：我們將 N-gram 嵌入整合至 Longcat-Flash 架構（Meituan, 2025）中，並在不同激活參數預算（280M、790M 和 1.3B）下進行從頭預訓練的 Scaling 實驗。</li>
-<li>具體而言，對於 N-gram 嵌入擴展，我們首先訓練基礎稀疏度介於 35% 到 98% 之間的 MoE 模型，並從特定稀疏度水準開始逐步引入 N-gram 嵌入。至關重要的是，在每個稀疏度水準下，N-gram 嵌入模型都與一個<strong>參數量完全對等（Parameter-equivalent）的 MoE 基線</strong>配對——該基線純粹透過增加專家數量達到相同的總參數量。</li>
-<li>所有模型均在 300B Token 的語料庫上進行預訓練。我們透過監控在精心構建的中英文雙語驗證集上的訓練損失與驗證損失來評估性能。</li>
-</ul>
-<h3 id="3-1-引入-N-gram-嵌入的最佳時機（Optimal-Timing-for-N-gram-Embedding-Integration）"><a href="#3-1-引入-N-gram-嵌入的最佳時機（Optimal-Timing-for-N-gram-Embedding-Integration）" class="headerlink" title="3.1 引入 N-gram 嵌入的最佳時機（Optimal Timing for N-gram Embedding Integration）"></a>3.1 引入 N-gram 嵌入的最佳時機（Optimal Timing for N-gram Embedding Integration）</h3><p>一項關鍵發現是：<strong>N-gram 嵌入的擴展動態強烈依賴於基礎模型的稀疏度水準。</strong></p>
-<p><img src="/higumalu-note/images/scaling_embeddings/scaling-200M_pol_n.svg" alt="MoE 與 N-gram Embedding Scaling 曲線對比"><br><em>圖 2：MoE 模型與 N-gram 嵌入（NE）模型的 Scaling 曲線。橫軸為總參數與激活參數（280M）的比率（作為稀疏度的代理指標）。右側子圖轉換為對數刻度。對於兩條 NE 曲線，虛線連接對應未加入 NE 的基礎 MoE 模型。</em></p>
-<p>圖 2 展示了三條不同的 Scaling 軌跡：</p>
-<ol>
-<li>標準 MoE 基線（藍線）；</li>
-<li>應用於低參數比基礎模型的 N-gram 嵌入（綠線）；</li>
-<li>應用於高參數比基礎模型的 N-gram 嵌入（紅線）。</li>
-</ol>
-<p>圖 2 顯示，MoE 的擴展曲線嚴格遵循對數線性關係。這意味著在低比率區間，邊際增加專家數量可以大幅降低損失；反之，在較高比率區間，要達到相同的損失降低需要顯著更龐大的專家參數增量。</p>
-<p>因此，<strong>當在低參數比時引入 N-gram 嵌入，其擴展優勢不及單純增加專家數量帶來的收益；然而，在高稀疏度水準下，N-gram 嵌入的效益變得顯著更加突出。</strong> 這一觀察引出了引入 N-gram 嵌入的第一項設計原則：</p>
-<blockquote>
-<p><strong>核心總結 1</strong>：應當在專家數量超過其「甜蜜點（Sweet Spot）」時，再引入 N-gram Embedding。</p>
-</blockquote>
-<p>這表明嵌入擴展是與專家擴展正交的一條極富前景的擴展維度。</p>
-<hr>
-<h3 id="3-2-整合策略（Integration-Strategy）"><a href="#3-2-整合策略（Integration-Strategy）" class="headerlink" title="3.2 整合策略（Integration Strategy）"></a>3.2 整合策略（Integration Strategy）</h3><h4 id="3-2-1-N-gram-嵌入的參數預算分配（Parameter-Budgeting-for-N-gram-Embeddings）"><a href="#3-2-1-N-gram-嵌入的參數預算分配（Parameter-Budgeting-for-N-gram-Embeddings）" class="headerlink" title="3.2.1 N-gram 嵌入的參數預算分配（Parameter Budgeting for N-gram Embeddings）"></a>3.2.1 N-gram 嵌入的參數預算分配（Parameter Budgeting for N-gram Embeddings）</h4><p>進一步觀察圖 2 可以發現藍色曲線與紅色曲線之間存在一個明確的交點：<strong>隨著參數比率持續上升，N-gram 嵌入的性能優勢逐漸收斂，最終被 MoE 基線反超。</strong></p>
-<p>這表明當模型將過高比例的參數預算分配給 N-gram 嵌入時，其性能會劣於同等參數量之 MoE 基線。這與同期工作 Engram（Cheng et al., 2026）的結論不謀而合——損失作為 N-gram 嵌入比例的函數呈現 U 型 Scaling 曲線。在圖 2 中，交叉點略高於 20 的參數比；此時 N-gram 嵌入參數約佔總參數量的 50%（因為基礎 MoE 模型的比例為 12）。由此我們得出第二項原則：</p>
-<blockquote>
-<p><strong>核心總結 2</strong>：分配給 N-gram Embedding 的參數預算不應超過總參數量的 50%。</p>
-</blockquote>
-<h4 id="3-2-2-透過詞表定規緩解雜湊衝突（Mitigating-Hash-Collisions-via-Vocabulary-Sizing）"><a href="#3-2-2-透過詞表定規緩解雜湊衝突（Mitigating-Hash-Collisions-via-Vocabulary-Sizing）" class="headerlink" title="3.2.2 透過詞表定規緩解雜湊衝突（Mitigating Hash Collisions via Vocabulary Sizing）"></a>3.2.2 透過詞表定規緩解雜湊衝突（Mitigating Hash Collisions via Vocabulary Sizing）</h4><p>在 N-gram 嵌入中，雜湊衝突迫使單一嵌入向量疊加多個不同 N-gram 的語義，損害學習效率並導致性能下降。我們發現<strong>選擇合適的詞表大小對抑制高衝突率至關重要</strong>。在訓練中，我們觀察到 N-gram 嵌入在特定詞表大小下會出現異常高的雜湊衝突率，特別是在 2-gram 雜湊中。為探究其底層機制，我們進行了雙重分析：</p>
-<ol>
-<li><strong>詞表命中率（Vocabulary Hit Rate）</strong>：預訓練語料庫至少激活一次的詞表條目比例；</li>
-<li><strong>雜湊衝突（Hash Collisions）</strong>：量化取模索引導致唯一 Token 表徵損失的次數。</li>
-</ol>
-<p><img src="/higumalu-note/images/scaling_embeddings/hit_rate_n.svg" alt="詞表命中率與衝突趨勢分析"><br><img src="/higumalu-note/images/scaling_embeddings/collision_trend_n.svg" alt="2-gram 雜湊衝突分析"><br><em>圖 3：(a) 不同 N-gram 的詞表命中率；(b) 不同詞表大小下的 2-gram 雜湊衝突數量。為清晰起見，在詞表整數倍附近的取樣點更為密集。</em></p>
-<ul>
-<li>圖 3a 顯示，2-gram 雜湊的命中率呈現平緩增長，而高階 N-gram 雜湊迅速收斂至接近 1.0 的命中率。</li>
-<li>圖 3b 顯示，2-gram 雜湊衝突數量與詞表大小呈現強烈的非線性相關性。一個顯著模式浮現：<strong>當詞表大小接近基礎詞表大小的整數倍時，衝突數量顯著暴增！</strong> 無論 N-gram 詞表大小是否為質數，該現象均持續存在。結合這些觀察，圖 3b 引出了一條關鍵原則：</li>
-</ul>
-<blockquote>
-<p><strong>核心總結 3</strong>：N-gram Embedding 的詞表大小應顯著偏離基礎詞表大小的整數倍，以防止雜湊衝突。</p>
-</blockquote>
-<h4 id="3-2-3-超參數敏感度分析（Sensitivity-Analysis-of-Hyperparameters）"><a href="#3-2-3-超參數敏感度分析（Sensitivity-Analysis-of-Hyperparameters）" class="headerlink" title="3.2.3 超參數敏感度分析（Sensitivity Analysis of Hyperparameters）"></a>3.2.3 超參數敏感度分析（Sensitivity Analysis of Hyperparameters）</h4><p>我們檢驗了模型性能對 N-gram 階數 <script type="math/tex">N</script> 和子表數量 <script type="math/tex">K</script> 的敏感度：</p>
-<ul>
-<li><strong>階數 <script type="math/tex">N</script></strong>：增加 <script type="math/tex">N</script> 能捕捉更豐富的上下文語義，但高階 N-gram 在語料中出現頻率極低，導致詞表上的極度稀疏分佈，大幅增加了學習有效嵌入的難度。</li>
-<li><strong>子表數量 <script type="math/tex">K</script></strong>：決定了應用於每個 N-gram 的獨立雜湊函數數量，能顯著減輕衝突概率，但超過特定閾值後收益遞減。</li>
-</ul>
-<p><img src="/higumalu-note/images/scaling_embeddings/loss-nk_n.svg" alt="N 與 K 超參數消融曲線"><br><em>圖 4：不同 <script type="math/tex">N</script> 與 <script type="math/tex">K</script> 組合下的訓練與驗證損失對比。</em></p>
-<p>利用 790M 激活參數模型進行消融（圖 4），當 <script type="math/tex">N=2</script> 且 <script type="math/tex">K=1</script> 時模型性能明顯較差；反之，<strong>只要 <script type="math/tex">N \ge 3</script> 且 <script type="math/tex">K \ge 2</script>，不同配置之間的性能差異便相當微小</strong>，表明模型在此區間內對超參數選擇具有很強的強健性。經驗上，將 <script type="math/tex">N</script> 設在 3 到 5 之間即可穩定獲得接近最優的表現。</p>
-<h4 id="3-2-4-促進有效訓練的嵌入放大策略（Embedding-Amplification-for-Effective-Training）"><a href="#3-2-4-促進有效訓練的嵌入放大策略（Embedding-Amplification-for-Effective-Training）" class="headerlink" title="3.2.4 促進有效訓練的嵌入放大策略（Embedding Amplification for Effective Training）"></a>3.2.4 促進有效訓練的嵌入放大策略（Embedding Amplification for Effective Training）</h4><p>在早期實驗中，我們觀察到嵌入模組的次優初始化會嚴重阻礙 N-gram 嵌入的效能。在 300B Token 預訓練後，我們計算了所有層的模組輸出與其對應殘差分支（identity path）的 <script type="math/tex">L_2</script> 範數，繪製於圖 5。</p>
-<p><img src="/higumalu-note/images/scaling_embeddings/norm.svg" alt="層級輸出範數與殘差比率分析"><br><em>圖 5：模組輸出與對應恆等分支的 <script type="math/tex">L_2</script> 範數層級分析及其比率。每個 shortcut 層包含兩個子層（後綴 0 與 1）。</em></p>
-<p>圖 5 揭露了一個重大差距：<strong>第一個注意力模組輸出的 <script type="math/tex">L_2</script> 範數比對應的恆等分支（本質上代表嵌入模組的輸出）大出整整一個數量級（約 <script type="math/tex">10imes</script>）！</strong> 這意味著在相加時，注意力輸出完全主導了殘差流，有效「淹沒（drowning out）」了嵌入訊號。這種訊號抑制現象隨訓練進行而顯著加劇。</p>
-<p>為緩解此問題，我們探索了兩種策略：</p>
-<ol>
-<li><strong>縮放因子（Scaling Factor）</strong>：在嵌入輸出中引入縮放因子（通常為 <script type="math/tex">\sqrt{D}</script>），以確保其在前向傳播中有足夠貢獻；</li>
-<li><strong>歸一化（Normalization）</strong>：在與殘差分支合併前對嵌入輸出應用 LayerNorm。LayerNorm 在訓練初期強制施加單位方差，同樣放大了嵌入的貢獻。</li>
-</ol>
-<p>在我們的實驗中，應用<strong>嵌入放大（Embedding Amplification）</strong>技術使得訓練損失和兩個驗證損失一致性地降低了 <strong>0.02</strong>。</p>
-<hr>
-<h3 id="3-3-跨模型寬度與深度的-Scaling-特性（Scaling-Properties-across-Model-Width-and-Depth）"><a href="#3-3-跨模型寬度與深度的-Scaling-特性（Scaling-Properties-across-Model-Width-and-Depth）" class="headerlink" title="3.3 跨模型寬度與深度的 Scaling 特性（Scaling Properties across Model Width and Depth）"></a>3.3 跨模型寬度與深度的 Scaling 特性（Scaling Properties across Model Width and Depth）</h3><h4 id="3-3-1-模型寬度增加放大優勢（Enhanced-Advantage-in-Wider-Models）"><a href="#3-3-1-模型寬度增加放大優勢（Enhanced-Advantage-in-Wider-Models）" class="headerlink" title="3.3.1 模型寬度增加放大優勢（Enhanced Advantage in Wider Models）"></a>3.3.1 模型寬度增加放大優勢（Enhanced Advantage in Wider Models）</h4><p>我們在固定模型深度（10 個 shortcut 層）的前提下，在 790M 和 1.3B 激活參數規模上只改變模型寬度（隱層維度與模組維度）進行 Scaling 實驗。</p>
-<p><img src="/higumalu-note/images/scaling_embeddings/scaling-500M_n.svg" alt="790M 與 1.3B Scaling 曲線"><br><img src="/higumalu-note/images/scaling_embeddings/scaling-1B_n.svg" alt="1.3B Scaling 曲線"><br><em>圖 6：(a) 790M 激活規模下的 Scaling 曲線；(b) 1.3B 激活規模下的 Scaling 曲線。</em></p>
-<p>分析揭示了兩個核心趨勢：</p>
-<ol>
-<li>當以合適比例引入時，N-gram 嵌入始終取得低於對等 MoE 基線的損失；</li>
-<li><strong>極為關鍵的是：隨著模型寬度（激活規模）的增加，N-gram 嵌入曲線與 MoE 曲線的交點系統性地向更高的總參/激活參比率移動！</strong><ul>
-<li>在 280M 激活尺寸下，比率超過 30 時 NE 便劣於 MoE；</li>
-<li>在 790M 下，NE 僅在英文驗證集上於該比率落後，其他指標均保持領先；</li>
-<li><strong>在 1.3B 激活尺寸下，即使比率高達 50，N-gram 嵌入依然保持明確優勢！</strong></li>
-</ul>
-</li>
-</ol>
-<blockquote>
-<p><strong>核心總結 4</strong>：在層數固定的情況下，增加模型寬度賦予 N-gram Embedding 更大的優勢。</p>
-</blockquote>
-<h4 id="3-3-2-模型深度增加收益遞減（Diminishing-Returns-in-Deeper-Models）"><a href="#3-3-2-模型深度增加收益遞減（Diminishing-Returns-in-Deeper-Models）" class="headerlink" title="3.3.2 模型深度增加收益遞減（Diminishing Returns in Deeper Models）"></a>3.3.2 模型深度增加收益遞減（Diminishing Returns in Deeper Models）</h4><p>對於 Pre-LayerNorm 架構，隨著網絡深度的增加，N-gram 嵌入透過殘差連接的貢獻本質上會逐漸衰減。</p>
-<p>我們在 1.3B 激活配置下訓練了 20 層和 40 層的模型，同時在所有深度中嚴格維持 N-gram 嵌入參數佔總參數約 50% 的比例。</p>
-<p><img src="/higumalu-note/images/scaling_embeddings/loss-diff-width_n.svg" alt="寬度與深度對損失縮減之影響對比"><br><img src="/higumalu-note/images/scaling_embeddings/loss-diff-depth_n.svg" alt="深度損失差值"><br><em>圖 7：N-gram 嵌入模型相比基線在不同 (a) 模型寬度 和 (b) 模型深度 下的損失降低幅度。</em></p>
-<p>圖 7b 呈現出鮮明的對比：<strong>當模型深度超過 20 層時，N-gram 嵌入相對基線的優勢經歷了顯著收縮。</strong> 這與增加寬度時優勢持續擴大的趨勢（圖 7a）形成強烈反差。</p>
-<blockquote>
-<p><strong>核心總結 5</strong>：增加模型深度會減弱 N-gram Embedding 的相對優勢。</p>
-</blockquote>
-<p>值得注意的是，當前大多數實用語言模型的 shortcut 層數通常在 40 層以下（相當於 80 個常規層）。鑑於寬度的增加能持續放大 NE 優勢，且其在 40 層下仍有良好表現，在常見架構深度內擴展 N-gram 嵌入仍能斬獲巨大的性能收益。</p>
-<hr>
-<h2 id="4-高效推理（Efficient-Inference）"><a href="#4-高效推理（Efficient-Inference）" class="headerlink" title="4. 高效推理（Efficient Inference）"></a>4. 高效推理（Efficient Inference）</h2><h3 id="4-1-削減-MoE-激活參數（Reduction-of-MoE-Activation-Parameters）"><a href="#4-1-削減-MoE-激活參數（Reduction-of-MoE-Activation-Parameters）" class="headerlink" title="4.1 削減 MoE 激活參數（Reduction of MoE Activation Parameters）"></a>4.1 削減 MoE 激活參數（Reduction of MoE Activation Parameters）</h3><p>N-gram 嵌入機制有效將參數從 MoE 層重新分配到嵌入空間中。這種架構變換在保持模型總參數不變的同時，<strong>減少了 MoE 層內的激活參數量</strong>——這在大 Token 數的記憶體 I/O 密集型解碼場景中極具優勢。此外，嵌入表的增大不會拖累延遲，因為嵌入查表的計算成本僅隨輸入 Token 數量擴展，而與嵌入總參數量無關。</p>
-<p><img src="/higumalu-note/images/scaling_embeddings/flash_comparison_n2.svg" alt="激活專家數與解碼吞吐量"><br><img src="/higumalu-note/images/scaling_embeddings/throughput_n_final_f.svg" alt="解碼吞吐量"><br><em>圖 8：(a) 不同 Batch Size 下 LongCat-Flash-Lite 與 Vanilla 基線激活專家數對比；(b) 8×H800-80G 上 LongCat-Flash-Lite 的解碼性能（ISL=4K, OSL=1K）。</em></p>
-<p>為了充分發揮激活參數減少帶來的效率優勢，關鍵在於透過大 Batch Size 最大化硬體利用率（如圖 8a）。這與<strong>投機解碼（Speculative Decoding）</strong>形成了天然的協同效應：多步投機解碼實質上擴大了「有效 Batch Size」，從而將參數稀疏性的理論優勢直接轉化為有形的推理加速。</p>
-<h3 id="4-2-優化嵌入查找（Optimized-Embedding-Lookup）"><a href="#4-2-優化嵌入查找（Optimized-Embedding-Lookup）" class="headerlink" title="4.2 優化嵌入查找（Optimized Embedding Lookup）"></a>4.2 優化嵌入查找（Optimized Embedding Lookup）</h3><p>儘管將參數從專家重配至 N-gram 嵌入降低了 MoE 的 I/O，但相比標準嵌入層，它引入了額外的 I/O、計算與通訊開銷。</p>
-<p>為此，我們引入了 <strong>N-gram Cache</strong>——一種受 KV Cache 設計啟發的專用快取機制。我們實現了客製化的 CUDA 算子直接在設備端管理 N-gram ID，實現與複雜推理調度邏輯的低開銷同步。</p>
-<p>在投機解碼場景中，草稿模型（Draft Model）層數更少且延遲更低，此時 N-gram 嵌入的相對開銷會放大。為解決此問題，我們提出兩項互補優化：</p>
-<ol>
-<li><strong>草稿模型採用常規嵌入層</strong>，繞過計算成本較高的 N-gram 查找；</li>
-<li><strong>在 Drafting 階段快取 N-gram 嵌入</strong>，消除後續驗證階段的重複計算。</li>
-</ol>
-<h3 id="4-3-重新思考-N-gram-嵌入優化：投機解碼的深層角色"><a href="#4-3-重新思考-N-gram-嵌入優化：投機解碼的深層角色" class="headerlink" title="4.3 重新思考 N-gram 嵌入優化：投機解碼的深層角色"></a>4.3 重新思考 N-gram 嵌入優化：投機解碼的深層角色</h3><p>除了硬體效率之外，我們認為 N-gram 嵌入架構本質上編碼了豐富的局部語境與 Token 共現資訊，與投機解碼存在未被發掘的協同潛力：</p>
-<ul>
-<li><strong>基於 N-gram Embedding 的 Drafting</strong>：由於 N-gram 嵌入聚合了前 <script type="math/tex">N-1</script> 個 Token 的信息，它隱式捕捉了短程依賴性。我們正在探索直接在 N-gram 嵌入輸出上附加輕量線性投影，將其改造為超輕量的草稿模型。</li>
-<li><strong>Early Rejection（提前拒絕）</strong>：N-gram 嵌入表徵可作為外部草稿模型生成 Token 的語義一致性檢查器（置信度估計器）。若草稿 Token 在 N-gram 空間的匹配機率極低，可在進入昂貴的目標模型驗證前「提前拒絕」，進一步降低驗證工作量。</li>
-</ul>
-<hr>
-<h2 id="5-與逐層嵌入（Per-Layer-Embedding）的整合探討"><a href="#5-與逐層嵌入（Per-Layer-Embedding）的整合探討" class="headerlink" title="5. 與逐層嵌入（Per-Layer Embedding）的整合探討"></a>5. 與逐層嵌入（Per-Layer Embedding）的整合探討</h2><p>本節對比 N-gram Embedding 與 Google DeepMind 提出的逐層嵌入（PLE），並介紹兩者的整合嘗試。</p>
-<h3 id="5-1-逐層嵌入（PLE）"><a href="#5-1-逐層嵌入（PLE）" class="headerlink" title="5.1 逐層嵌入（PLE）"></a>5.1 逐層嵌入（PLE）</h3><p>PLE 直接將 SwiGLU 模組中 Up-projection 矩陣的輸出替換為嵌入輸出。設 <script type="math/tex">x_i^{(l)}</script> 為第 <script type="math/tex">l</script> 層 FFN 模組的第 <script type="math/tex">i</script> 個輸入向量，加入 PLE 的 FFN 輸出為：</p>
-<script type="math/tex; mode=display">ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left(     ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot E_0^{(l)}(t_i)  \right)     ag{4}</script><h3 id="5-2-逐層-N-gram-嵌入（PLNE）"><a href="#5-2-逐層-N-gram-嵌入（PLNE）" class="headerlink" title="5.2 逐層 N-gram 嵌入（PLNE）"></a>5.2 逐層 N-gram 嵌入（PLNE）</h3><p>我們提出 <strong>Per-Layer N-gram Embedding (PLNE)</strong>，將每層的基礎嵌入輸出替換為 N-gram 嵌入輸出：</p>
-<script type="math/tex; mode=display">ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left(     ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot e_i^{(l)}  \right)     ag{5}</script><p>其中 <script type="math/tex">e_i^{(l)}</script> 依據公式 (3) 計算，使用各層專屬的嵌入表與投影矩陣。</p>
-<h3 id="5-3-實證對比"><a href="#5-3-實證對比" class="headerlink" title="5.3 實證對比"></a>5.3 實證對比</h3><p><img src="/higumalu-note/images/scaling_embeddings/loss-ple_n.svg" alt="NE、PLE 與 PLNE 損失對比"><br><em>圖 9：790M 激活參數設定下 N-gram 嵌入（NE）、PLE 與 PLNE 的損失對比。</em></p>
-<p>圖 9 顯示，PLE 的表現劣於 N-gram Embedding，而 PLNE 相對 NE 僅取得微幅改善。我們將前者歸因於 N-gram 嵌入相比標準嵌入具備更優越的學習效率。</p>
-<p>然而，在後續增加模型寬度或深度的實驗中，PLNE 未能展現出持續的優勢，在多數場景下僅與 NE 持平。考慮到 PLNE 由於每層增加大量投影矩陣而實質增加了激活參數量，<strong>我們最終在更大規模的實驗中未採用 PLNE</strong>。</p>
-<hr>
-<h2 id="6-LongCat-Flash-Lite"><a href="#6-LongCat-Flash-Lite" class="headerlink" title="6. LongCat-Flash-Lite"></a>6. LongCat-Flash-Lite</h2><p>結合先前的研究見解，美團推出了整合 N-gram 嵌入並從頭訓練的 <strong>LongCat-Flash-Lite</strong>。</p>
-<h3 id="6-1-模型配置"><a href="#6-1-模型配置" class="headerlink" title="6.1 模型配置"></a>6.1 模型配置</h3><ul>
-<li><strong>架構細節</strong>：共 14 個 shortcut 層，總參數 68.5B，由於 Zero-Experts 機制，每 Token 動態激活 2.9B 至 4.5B 參數。MoE 模組包含 256 個 FFN 專家與 128 個 Zero-Experts，每 Token 選擇 12 個專家。<strong>嵌入模組包含 31.4B 的 N-gram 嵌入參數，佔總參數量的 46%</strong>。</li>
-<li><strong>訓練數據</strong>：在 11T Token（8k 長度）上進行預訓練，隨後進行 1.5T Token（擴展至 128k）的 Mid-training，最後進行 SFT。支援高達 256k 的上下文長度。</li>
-<li><strong>對照基線</strong>：訓練了一個總參數完全相同的 MoE 基線（<strong>LongCat-Flash-Lite-Vanilla</strong>），將 31.4B 的 N-gram 嵌入參數全部轉化為額外的 MoE 專家，兩者遵循完全相同的數據配方與訓練策略。</li>
-</ul>
-<p><img src="/higumalu-note/images/scaling_embeddings/lm_loss_n.svg" alt="訓練損失曲線對比"><br><em>圖 10：LongCat-Flash-Lite 與 Vanilla 基線的平滑訓練損失曲線。</em></p>
-<hr>
-<h3 id="6-2-Base-基礎模型評測結果"><a href="#6-2-Base-基礎模型評測結果" class="headerlink" title="6.2 Base 基礎模型評測結果"></a>6.2 Base 基礎模型評測結果</h3><h4 id="表-1：LongCat-Flash-Lite-與-Vanilla-基線在-1-3T-訓練節點下的-Base-模型性能對比"><a href="#表-1：LongCat-Flash-Lite-與-Vanilla-基線在-1-3T-訓練節點下的-Base-模型性能對比" class="headerlink" title="表 1：LongCat-Flash-Lite 與 Vanilla 基線在 1.3T 訓練節點下的 Base 模型性能對比"></a>表 1：LongCat-Flash-Lite 與 Vanilla 基線在 1.3T 訓練節點下的 Base 模型性能對比</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:left">評測領域</th>
-<th style="text-align:left">基準測試 (Benchmark)</th>
-<th style="text-align:center">LongCat-Flash-Lite-Vanilla @1.3T</th>
-<th style="text-align:center">LongCat-Flash-Lite @1.3T</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left"><strong>通用領域 (General)</strong></td>
-<td style="text-align:left">MMLU</td>
-<td style="text-align:center"><strong>64.81</strong></td>
-<td style="text-align:center">64.01</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">MMLU-Pro</td>
-<td style="text-align:center">34.43</td>
-<td style="text-align:center"><strong>35.89</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">C-Eval</td>
-<td style="text-align:center">64.09</td>
-<td style="text-align:center"><strong>67.21</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">CMMLU</td>
-<td style="text-align:center">67.08</td>
-<td style="text-align:center"><strong>69.55</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>推理領域 (Reasoning)</strong></td>
-<td style="text-align:left">BBH</td>
-<td style="text-align:center">38.54</td>
-<td style="text-align:center"><strong>43.67</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">GPQA</td>
-<td style="text-align:center">25.37</td>
-<td style="text-align:center"><strong>29.66</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">DROP</td>
-<td style="text-align:center">47.92</td>
-<td style="text-align:center"><strong>52.43</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">GSM8K</td>
-<td style="text-align:center">50.00</td>
-<td style="text-align:center"><strong>50.50</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>程式碼領域 (Coding)</strong></td>
-<td style="text-align:left">HumanEval+</td>
-<td style="text-align:center">28.66</td>
-<td style="text-align:center"><strong>31.10</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">MultiPL-E</td>
-<td style="text-align:center"><strong>30.20</strong></td>
-<td style="text-align:center">30.03</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">BigCodeBench</td>
-<td style="text-align:center">33.42</td>
-<td style="text-align:center"><strong>36.05</strong></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>在絕大多數基準測試中，LongCat-Flash-Lite 均大幅領先 Vanilla 基線，特別是在 <strong>BBH (+5.13)</strong>、<strong>GPQA (+4.29)</strong>、<strong>DROP (+4.51)</strong>、<strong>C-Eval (+3.12)</strong> 與 <strong>BigCodeBench (+2.63)</strong> 上優勢尤為突出。</p>
-<hr>
-<h3 id="6-3-Chat-對齊模型橫向對比"><a href="#6-3-Chat-對齊模型橫向對比" class="headerlink" title="6.3 Chat 對齊模型橫向對比"></a>6.3 Chat 對齊模型橫向對比</h3><h4 id="表-2：LongCat-Flash-Lite-與同規模前沿模型（Kimi-Linear、Qwen3-Next、Gemini-2-5-Flash-Lite）對比"><a href="#表-2：LongCat-Flash-Lite-與同規模前沿模型（Kimi-Linear、Qwen3-Next、Gemini-2-5-Flash-Lite）對比" class="headerlink" title="表 2：LongCat-Flash-Lite 與同規模前沿模型（Kimi-Linear、Qwen3-Next、Gemini 2.5 Flash-Lite）對比"></a>表 2：LongCat-Flash-Lite 與同規模前沿模型（Kimi-Linear、Qwen3-Next、Gemini 2.5 Flash-Lite）對比</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:left">評測維度</th>
-<th style="text-align:left">評測基準 (Benchmark)</th>
-<th style="text-align:center">Kimi-Linear-48B-A3B</th>
-<th style="text-align:center">Qwen3-Next-80B-A3B-Instruct</th>
-<th style="text-align:center">Gemini 2.5 Flash-Lite</th>
-<th style="text-align:center">LongCat-Flash-Lite</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left"><strong>基礎架構</strong></td>
-<td style="text-align:left">Architecture</td>
-<td style="text-align:center">MoE</td>
-<td style="text-align:center">MoE</td>
-<td style="text-align:center">-</td>
-<td style="text-align:center"><strong>MoE + NE</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>總參數量</strong></td>
-<td style="text-align:left">Total Params</td>
-<td style="text-align:center">48B</td>
-<td style="text-align:center">80B</td>
-<td style="text-align:center">-</td>
-<td style="text-align:center"><strong>68.5B</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>激活參數量</strong></td>
-<td style="text-align:left">Activated Params</td>
-<td style="text-align:center">3B</td>
-<td style="text-align:center">3B</td>
-<td style="text-align:center">-</td>
-<td style="text-align:center"><strong>2.9B ~ 4.5B</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>上下文長度</strong></td>
-<td style="text-align:left">Context Length</td>
-<td style="text-align:center">128k</td>
-<td style="text-align:center">128k</td>
-<td style="text-align:center">1M</td>
-<td style="text-align:center"><strong>256k</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>Agent 工具調用</strong></td>
-<td style="text-align:left">Tau2-Airline (avg@8)</td>
-<td style="text-align:center">44.00</td>
-<td style="text-align:center">45.5*</td>
-<td style="text-align:center">35.00</td>
-<td style="text-align:center"><strong>58.00</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">Tau2-Retail (avg@8)</td>
-<td style="text-align:center">18.86</td>
-<td style="text-align:center">57.3*</td>
-<td style="text-align:center">37.50</td>
-<td style="text-align:center"><strong>73.10</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">Tau2-Telecom (avg@8)</td>
-<td style="text-align:center">15.68</td>
-<td style="text-align:center">13.2*</td>
-<td style="text-align:center">21.93</td>
-<td style="text-align:center"><strong>72.80</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">VitaBench (avg@4)</td>
-<td style="text-align:center">-</td>
-<td style="text-align:center">5.80</td>
-<td style="text-align:center">4.50</td>
-<td style="text-align:center"><strong>7.00</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>Agent Coding</strong></td>
-<td style="text-align:left">SWE-Bench (acc)</td>
-<td style="text-align:center">32.80</td>
-<td style="text-align:center">37.60</td>
-<td style="text-align:center">41.3*</td>
-<td style="text-align:center"><strong>54.40</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">TerminalBench (acc)</td>
-<td style="text-align:center">20.00</td>
-<td style="text-align:center">15.19</td>
-<td style="text-align:center">20.00</td>
-<td style="text-align:center"><strong>33.75</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">SWE-Bench Multilingual</td>
-<td style="text-align:center">37.20</td>
-<td style="text-align:center">31.30</td>
-<td style="text-align:center">-</td>
-<td style="text-align:center"><strong>38.10</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">PRDBench</td>
-<td style="text-align:center">-</td>
-<td style="text-align:center">15.36</td>
-<td style="text-align:center">-</td>
-<td style="text-align:center"><strong>39.63</strong></td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>通用領域</strong></td>
-<td style="text-align:left">GPQA-Diamond (avg@16)</td>
-<td style="text-align:center">69.89</td>
-<td style="text-align:center"><strong>74.33</strong></td>
-<td style="text-align:center">70.20*</td>
-<td style="text-align:center">66.78</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">MMLU (acc)</td>
-<td style="text-align:center">79.91</td>
-<td style="text-align:center"><strong>89.28</strong></td>
-<td style="text-align:center">84.68</td>
-<td style="text-align:center">85.52</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">MMLU-Pro (acc)</td>
-<td style="text-align:center">67.22</td>
-<td style="text-align:center"><strong>82.93</strong></td>
-<td style="text-align:center">78.95</td>
-<td style="text-align:center">78.29</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">CEval (acc)</td>
-<td style="text-align:center">78.48</td>
-<td style="text-align:center"><strong>90.91</strong></td>
-<td style="text-align:center">75.16</td>
-<td style="text-align:center">86.55</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">CMMLU (acc)</td>
-<td style="text-align:center">76.26</td>
-<td style="text-align:center"><strong>86.50</strong></td>
-<td style="text-align:center">72.06</td>
-<td style="text-align:center">82.48</td>
-</tr>
-<tr>
-<td style="text-align:left"><strong>數學推理</strong></td>
-<td style="text-align:left">MATH500 (acc)</td>
-<td style="text-align:center">94.20</td>
-<td style="text-align:center"><strong>98.00</strong></td>
-<td style="text-align:center">95.20</td>
-<td style="text-align:center">96.80</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">AIME24 (avg@32)</td>
-<td style="text-align:center">70.52</td>
-<td style="text-align:center"><strong>81.35</strong></td>
-<td style="text-align:center">63.33</td>
-<td style="text-align:center">72.19</td>
-</tr>
-<tr>
-<td style="text-align:left"></td>
-<td style="text-align:left">AIME25 (avg@32)</td>
-<td style="text-align:center">59.58</td>
-<td style="text-align:center"><strong>68.44</strong></td>
-<td style="text-align:center">50.1*</td>
-<td style="text-align:center">63.23</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>在 <strong>Agentic Tool Use</strong> 與 <strong>Agentic Coding</strong> 任務上，LongCat-Flash-Lite 建立了壓倒性的領先優勢：</p>
-<ul>
-<li>在 Tau2-Bench 零售場景中達到 <strong>73.10</strong>，電信場景更斬獲驚人的 <strong>72.80</strong>（比其他模型高出數倍）；</li>
-<li>在真實世界軟體工程基準 SWE-Bench 上達到 <strong>54.40%</strong>，超越 Gemini 2.5 Flash-Lite (41.3) 與 Qwen3-Next-80B (37.60)；</li>
-<li>在終端指令執行 TerminalBench 上取得 <strong>33.75%</strong>，展現極強的 Agentic 系統操作能力。</li>
-</ul>
-<h3 id="6-4-內核優化與推理實測加速"><a href="#6-4-內核優化與推理實測加速" class="headerlink" title="6.4 內核優化與推理實測加速"></a>6.4 內核優化與推理實測加速</h3><p>為了克服極度稀疏激活帶來的硬體頻寬飽和問題，團隊採用 Eagle3 與 3-step 投機解碼策略，配合寬專家並行（Wide EP）與 SBO（Single Batch Overlap）。為解決隨之而來的內核發射開銷，團隊實施了全方位的算子融合（Communication-Fusion、RMSNorm、SwiGLU 激活量化融合）與 PDL（Programmatic Dependent Launch）技術。</p>
-<h4 id="表-3：投機解碼推理加速比"><a href="#表-3：投機解碼推理加速比" class="headerlink" title="表 3：投機解碼推理加速比"></a>表 3：投機解碼推理加速比</h4><div class="table-container">
-<table>
-<thead>
-<tr>
-<th style="text-align:left">硬體環境</th>
-<th style="text-align:center">投機解碼加速比 (Tokens/s)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left"><strong>8× H800</strong></td>
-<td style="text-align:center"><strong>1.81×</strong></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>在 8× H800 GPU 叢集上，端到端投機解碼吞吐實現了 <strong>1.81 倍</strong>的純硬體加速。</p>
-<hr>
-<h2 id="7-結論（Conclusions）"><a href="#7-結論（Conclusions）" class="headerlink" title="7. 結論（Conclusions）"></a>7. 結論（Conclusions）</h2><p>在本技術報告中，我們挑戰了僅靠增加 MoE 專家來擴展模型容量的傳統思維。我們證明了：<strong>擴展 N-gram 嵌入在特定高稀疏度區間能實現更優的 Pareto 前沿</strong>。透過深入刻畫預算配比（<script type="math/tex">\le 50\%</script>）、避開整數倍詞表的雜湊規則、嵌入放大（<script type="math/tex">\sqrt{D}</script> 縮放與 Norm），以及與模型寬度和深度的幾何關係，我們成功駕馭了大規模嵌入擴展。</p>
-<p>美團開源的 <strong>LongCat-Flash-Lite</strong> 證明了這一範式在工業級落地中的巨大威力：將 31.4B 參數賦予嵌入層，以僅約 3B 的激活計算量，在 Agent 與 Coding 領域達到了極具競爭力的性能水準，為下一代高效大模型架構設計開闢了全新方向。</p>
-<hr>
-<h2 id="譯者技術洞察與深度點評（Technical-Insights）"><a href="#譯者技術洞察與深度點評（Technical-Insights）" class="headerlink" title="譯者技術洞察與深度點評（Technical Insights）"></a>譯者技術洞察與深度點評（Technical Insights）</h2><h3 id="1-為什麼是美團-LongCat？與-DeepSeek、Kimi-架構路線的趣味對比"><a href="#1-為什麼是美團-LongCat？與-DeepSeek、Kimi-架構路線的趣味對比" class="headerlink" title="1. 為什麼是美團 LongCat？與 DeepSeek、Kimi 架構路線的趣味對比"></a>1. 為什麼是美團 LongCat？與 DeepSeek、Kimi 架構路線的趣味對比</h3><p>2025~2026 年的開源大模型架構呈現出百花齊放的局面：</p>
-<ul>
-<li><strong>DeepSeek-V3 / Kimi K3</strong> 走的是「極致細粒度專家路由 + 深度通信重疊」路線（如 DeepSeek DualPipe、MoonEP），在 FFN 層將專家數量堆疊到數百個，激活數十個；</li>
-<li><strong>美團 LongCat 團隊</strong> 則獨闢蹊徑：他們發現當 MoE 的專家數堆到一定程度後，邊際效益急劇遞減，同時顯存和通訊開銷暴增。因此，他們把超過 46% 的參數預算直接扔進了底層的 <strong>N-gram Embedding</strong>！</li>
-<li>這種「寬淺主幹 + 超大局部記憶嵌入表」的做法，本質上是用極低成本的 <script type="math/tex">\mathcal{O}(1)</script> 查表直接完成淺層語義綁定，讓後續僅有的 14 個 shortcut 層專注於高階邏輯與工具規劃，直接在 Agent 工具調用與程式碼修復（SWE-bench 54.4%）上打出了漂亮的成績。</li>
-</ul>
-<h3 id="2-雜湊衝突與分詞器的「整數倍共振」陷阱"><a href="#2-雜湊衝突與分詞器的「整數倍共振」陷阱" class="headerlink" title="2. 雜湊衝突與分詞器的「整數倍共振」陷阱"></a>2. 雜湊衝突與分詞器的「整數倍共振」陷阱</h3><p>這篇論文最精彩的工程發現之一是圖 3b 中的<strong>衝突異常尖峰</strong>：</p>
-<ul>
-<li>很多工程師直覺上認為雜湊表大小只要夠大、或是隨便挑個大質數或 <script type="math/tex">2^k</script> 即可；</li>
-<li>但美團團隊發現，BPE 分詞器的 Token ID 排布具有隱含的頻率結構，當 N-gram 詞表大小設為基礎詞表（如 128k）的整數倍時，會與多項式滾動雜湊發生諧波共振，導致衝突率反常飆升；</li>
-<li>避開整數倍（例如選擇非倍數質數）能立竿見影地降低衝突，這是所有設計 Hash-based 模型的演算法工程師必須牢記的實戰細節。</li>
-</ul>
-<h3 id="3-投機解碼：稀疏嵌入架構的最佳拍檔"><a href="#3-投機解碼：稀疏嵌入架構的最佳拍檔" class="headerlink" title="3. 投機解碼：稀疏嵌入架構的最佳拍檔"></a>3. 投機解碼：稀疏嵌入架構的最佳拍檔</h3><p>傳統 MoE 在 Batch Size 很小時，顯存頻寬利用率低，難以發揮參數量大的優勢。而 LongCat 巧妙地將「激活參數小（僅 3B）」與「多步投機解碼」結合：</p>
-<ul>
-<li>投機解碼天然放大了 Effective Batch Size；</li>
-<li>透過專門的 N-gram Cache 與 CUDA 算子管理，成功在 8×H800 上實測斬獲 1.81 倍的吞吐量提升，完成了從理論稀疏到真實推理提速的閉環。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>AI</category>
-        <category>論文翻譯</category>
-      </categories>
-      <tags>
-        <tag>MoE</tag>
-        <tag>美團</tag>
-        <tag>LongCat</tag>
-        <tag>N-gram Embedding</tag>
-        <tag>稀疏架構</tag>
-        <tag>投機解碼</tag>
-        <tag>論文翻譯</tag>
       </tags>
   </entry>
   <entry>
@@ -2796,6 +2092,710 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
+    <title>為什麼我看好 DeepSeek Harness：從痛點到實際應用</title>
+    <url>/higumalu-note/2026-08-19-deepseek-harness/</url>
+    <content><![CDATA[<h1 id="為什麼我看好-DeepSeek-Harness：從痛點到實際應用"><a href="#為什麼我看好-DeepSeek-Harness：從痛點到實際應用" class="headerlink" title="為什麼我看好 DeepSeek Harness：從痛點到實際應用"></a>為什麼我看好 DeepSeek Harness：從痛點到實際應用</h1><h2 id="先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？"><a href="#先問一個問題：你用過的-Agent-框架，最大的困擾是什麼？" class="headerlink" title="先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？"></a>先問一個問題：你用過的 Agent 框架，最大的困擾是什麼？</h2><p>是 LLMWare 太封閉、RAG 流水線太脆弱、還是 LangChain 更新一次就壞一片 Plugin？</p>
+<p>DeepSeek 近期低調開源的 <strong><a href="https://github.com/deepseek-ai/deepseek-harness">DeepSeek Harness</a></strong>（簡稱 <code>dsh</code>）——163k Stars、12,400+ commits——試圖回答一個更根本的問題：</p>
+<blockquote>
+<p><strong>如何讓 AI Agent 在真實世界穩定運作，而不是只會在 Demo 裡優雅運轉？</strong></p>
+</blockquote>
+<hr>
+<h2 id="一、現在的-Agent-開發有什麼問題？"><a href="#一、現在的-Agent-開發有什麼問題？" class="headerlink" title="一、現在的 Agent 開發有什麼問題？"></a>一、現在的 Agent 開發有什麼問題？</h2><h3 id="問題-1：能力與框架深度耦合"><a href="#問題-1：能力與框架深度耦合" class="headerlink" title="問題 1：能力與框架深度耦合"></a>問題 1：能力與框架深度耦合</h3><p>大多數 Agent 框架把「模型調用」「工具執行」「對話管理」「記憶體」全部寫死在一個 SDK 裡。想換一個 LLM Provider？重寫。想加一個 Memory 系統？改核心代碼。想在正式環境加入審批機制？得 hack。</p>
+<p>結果：<strong>實驗環境很美好，生產環境很悲慘</strong>。</p>
+<h3 id="問題-2：執行過程是黑箱"><a href="#問題-2：執行過程是黑箱" class="headerlink" title="問題 2：執行過程是黑箱"></a>問題 2：執行過程是黑箱</h3><p>當 Agent 執行了一連串 Tool Call，你知道它看到什麼、用過哪些資訊嗎？大多數框架的答案：「不知道，等它結束再看結果。」</p>
+<p>問題在於：當 Agent 在正式環境裡做出錯誤決策時，你沒有辦法回溯。它可能是吃了錯誤的上下文、可能是 prompt 被汙染、也可能 Tool 結果被錯誤解析。無法審計，就無法改善。</p>
+<h3 id="問題-3：測試和調試困難"><a href="#問題-3：測試和調試困難" class="headerlink" title="問題 3：測試和調試困難"></a>問題 3：測試和調試困難</h3><p>Agent 的輸出是非確定性的，如何測試？大多數框架沒有好的機制。要嘛降低到只測 prompt，要嘛就得跑 end-to-end 然後祈禱。代價高、反饋慢。</p>
+<hr>
+<h2 id="二、DeepSeek-Harness-的核心思路：「一切皆插件」"><a href="#二、DeepSeek-Harness-的核心思路：「一切皆插件」" class="headerlink" title="二、DeepSeek Harness 的核心思路：「一切皆插件」"></a>二、DeepSeek Harness 的核心思路：「一切皆插件」</h2><p>Harness 的底層由 <a href="https://github.com/cordiverse/cordis">Cordis</a> 框架驅動，核心哲學只有一句話：</p>
+<blockquote>
+<p><strong>Every capability is a plugin.</strong></p>
+</blockquote>
+<p>這不是行銷口號，而是架構事實。在 DSH 裡：</p>
+<ul>
+<li>模型調用 → 插件</li>
+<li>工具執行（bash、file、web search） → 插件</li>
+<li>對話管理（session、turn、step） → 插件</li>
+<li>記憶體系統 → 插件</li>
+<li>排程提醒 → 插件</li>
+<li>沙箱隔離 → 插件</li>
+<li>整個 UI → 插件</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart LR</span><br><span class="line">    subgraph Cordis Kernel</span><br><span class="line">        K[Kernel]</span><br><span class="line">    end</span><br><span class="line">    subgraph Plugins</span><br><span class="line">        M[Model&lt;br/&gt;Provider]</span><br><span class="line">        T[Tools]</span><br><span class="line">        S[Session&lt;br/&gt;Manager]</span><br><span class="line">        R[Memory&lt;br/&gt;System]</span><br><span class="line">        P[Planning&lt;br/&gt;Skills]</span><br><span class="line">    end</span><br><span class="line">    K --&gt; M</span><br><span class="line">    K --&gt; T</span><br><span class="line">    K --&gt; S</span><br><span class="line">    K --&gt; R</span><br><span class="line">    K --&gt; P</span><br></pre></td></tr></table></figure>
+<p>好處是什麼？</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>痛點</th>
+<th>DSH 解法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>想換模型 Provider</td>
+<td>替換一個插件</td>
+</tr>
+<tr>
+<td>想加 Memory</td>
+<td>插入一個插件</td>
+</tr>
+<tr>
+<td>想加審批環節</td>
+<td>插入一個插件</td>
+</tr>
+<tr>
+<td>想在正式環境隔離執行</td>
+<td>換一個沙箱插件</td>
+</tr>
+<tr>
+<td>想實驗新能力</td>
+<td>新增一個插件，不動核心</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>不需要 fork 框架，不需要等官方支援，自己動手豐衣足食。</strong></p>
+<hr>
+<h2 id="三、Cordis-的五個核心概念"><a href="#三、Cordis-的五個核心概念" class="headerlink" title="三、Cordis 的五個核心概念"></a>三、Cordis 的五個核心概念</h2><p>Cordis 是 DSH 的核心引擎，理解它的概念等於理解整個框架的設計邏輯：</p>
+<h3 id="1-Plugin-Service"><a href="#1-Plugin-Service" class="headerlink" title="1. Plugin = Service"></a>1. Plugin = Service</h3><p>插件就是一個帶生命周期的 Service對象，實現 <code>ctx.&lt;key&gt;</code> 接口。可以是簡單函數，也可以是完整的類。</p>
+<h3 id="2-Context-服務容器"><a href="#2-Context-服務容器" class="headerlink" title="2. Context = 服務容器"></a>2. Context = 服務容器</h3><p>每個 Service 佔據一個穩定的 <code>ctx.&lt;key&gt;</code> 位置，其他插件透過 key 查找服務，<strong>而非直接 import 實現</strong>。這就是依賴反轉。</p>
+<h3 id="3-inject-依賴聲明"><a href="#3-inject-依賴聲明" class="headerlink" title="3. inject = 依賴聲明"></a>3. inject = 依賴聲明</h3><p>插件宣告自己需要哪些服務，Cordis 自動等待這些服務就緒才啟動。<strong>啟動順序由依賴關係決定</strong>，不需要手動排程。</p>
+<h3 id="4-類型化事件"><a href="#4-類型化事件" class="headerlink" title="4. 類型化事件"></a>4. 類型化事件</h3><p>服務之間透過 <code>emit</code>/<code>waterfall</code>/<code>parallel</code>/<code>serial</code> 四種模式通信。這不是簡單的事件總線，而是<strong>帶語義的分發策略</strong>：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// emit: 觀察，無返回值</span></span><br><span class="line"><span class="comment">// waterfall: 包裝請求，可短路</span></span><br><span class="line"><span class="comment">// parallel: 並行觀察</span></span><br><span class="line"><span class="comment">// serial: 依序觀察，累積結果</span></span><br></pre></td></tr></table></figure>
+<h3 id="5-可逆註冊（ctx-effect）"><a href="#5-可逆註冊（ctx-effect）" class="headerlink" title="5. 可逆註冊（ctx.effect）"></a>5. 可逆註冊（ctx.effect）</h3><p>所有注册都是副作用，teardown 時自動撤銷。記憶體不會洩漏。</p>
+<hr>
+<h2 id="四、解決了什麼問題？"><a href="#四、解決了什麼問題？" class="headerlink" title="四、解決了什麼問題？"></a>四、解決了什麼問題？</h2><h3 id="✅-問題-1-解決：深度可組合性"><a href="#✅-問題-1-解決：深度可組合性" class="headerlink" title="✅ 問題 1 解決：深度可組合性"></a>✅ 問題 1 解決：深度可組合性</h3><p>實際例子：MCP（Model Context Protocol）記憶體整合。</p>
+<p>DSH 內建 MCP Client 插件，只要一行配置就能把第三方記憶體系統接進來：</p>
+<figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 透過 MCP 接 Engram 記憶體</span></span><br><span class="line">npx @deepseek-ai/dsh web --patch <span class="string">&quot;examples/mcp-memory/engram.cordis.yml&quot;</span></span><br></pre></td></tr></table></figure>
+<p>三種記憶體系統（Memorix、MCP Reference Memory、Engram）任選，都是「插件替換」模式。<strong>不需要改 DSH 代碼，不需要等官方適配，自己配上去就能用。</strong></p>
+<h3 id="✅-問題-2-解決：完整軌跡審計"><a href="#✅-問題-2-解決：完整軌跡審計" class="headerlink" title="✅ 問題 2 解決：完整軌跡審計"></a>✅ 問題 2 解決：完整軌跡審計</h3><p>DSH 的 Session Log 是 append-only 的事件流，記錄：</p>
+<ul>
+<li>System prompt 每次組裝結果</li>
+<li>每次 Reasoning 過程</li>
+<li>每次 Tool Call 的輸入輸出</li>
+<li>Subagent 的調度與結果</li>
+<li>每次 Context 注入的內容</li>
+</ul>
+<p>在 Trajectory 視圖裡，你可以：</p>
+<ul>
+<li><strong>Resume</strong>：從任意中斷點恢復</li>
+<li><strong>Fork</strong>：複製對話分支</li>
+<li><strong>Search</strong>：搜尋歷史對話</li>
+<li><strong>Replay</strong>：重放整個執行過程</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Session Event Log (append-only):</span><br><span class="line">─────────────────────────────────────</span><br><span class="line">turn/start</span><br><span class="line">  step/start</span><br><span class="line">    system-prompt/assembled → &#123; full prompt content &#125;</span><br><span class="line">    agent/request → &#123; model, temperature, ... &#125;</span><br><span class="line">    llm/stream → &#123; chunks... &#125;</span><br><span class="line">    assistant/message → &#123; final message &#125;</span><br><span class="line">    tool/call → &#123; tool: &quot;bash&quot;, args: &quot;git status&quot; &#125;</span><br><span class="line">    tool/result → &#123; output: &quot;...&quot; &#125;</span><br><span class="line">  step/end</span><br><span class="line">turn/end</span><br></pre></td></tr></table></figure>
+<p><strong>當 Agent 出錯時，你有一條完整的因果鏈可以追查。</strong></p>
+<h3 id="✅-問題-3-解決：多種執行模式"><a href="#✅-問題-3-解決：多種執行模式" class="headerlink" title="✅ 問題 3 解決：多種執行模式"></a>✅ 問題 3 解決：多種執行模式</h3><p>DSH 內建四種模式，針對不同場景：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Standard</strong></td>
+<td>完整工具集：file edit、shell、web search、skills、planning、subagents、workflows</td>
+</tr>
+<tr>
+<td><strong>Code</strong></td>
+<td>把工具包裝成 SDK，讓模型自己寫 TypeScript 程序來組合多步操作</td>
+</tr>
+<tr>
+<td><strong>Minimal</strong></td>
+<td>極簡環境：只有 bash + file edit，用於基准測試模型能力</td>
+</tr>
+<tr>
+<td><strong>Creator</strong></td>
+<td>插件實驗室：即時檢查 Runtime、測試插件組合、創作新模式</td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────────┐</span><br><span class="line">│  Mode Picker                                │</span><br><span class="line">├─────────────────────────────────────────────┤</span><br><span class="line">│  ○ Standard ─ Full coding agent             │</span><br><span class="line">│  ○ Code ─ Code Mode SDK orchestration       │</span><br><span class="line">│  ○ Minimal ─ Two-tool benchmark agent       │</span><br><span class="line">│  ○ Creator ─ Plugin lab &amp; preset authoring  │</span><br><span class="line">└─────────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+<h3 id="✅-生產級能力：工具執行流水線"><a href="#✅-生產級能力：工具執行流水線" class="headerlink" title="✅ 生產級能力：工具執行流水線"></a>✅ 生產級能力：工具執行流水線</h3><p>DSH 的工具執行經過嚴格分層控制：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">flowchart TD</span><br><span class="line">    pre[&quot;tools/pre-execute&quot;]</span><br><span class="line">    guards[&quot;Monotonic Guards&quot;]</span><br><span class="line">    approval[&quot;ctx.approval&lt;br/&gt;User Prompt&quot;]</span><br><span class="line">    around[&quot;tools/execute&lt;br/&gt;timeout, retry, metrics&quot;]</span><br><span class="line">    toolBody[&quot;Tool Body&quot;]</span><br><span class="line">    post[&quot;tools/post-execute&quot;]</span><br><span class="line">    finalize[&quot;finalizeContent&quot;]</span><br><span class="line">    </span><br><span class="line">    pre --&gt; guards --&gt; approval --&gt; around --&gt; toolBody --&gt; post --&gt; finalize</span><br><span class="line">    </span><br><span class="line">    pre --&gt;|deny| denied[skipped]</span><br><span class="line">    guards --&gt;|deny| denied</span><br><span class="line">    approval --&gt;|reject| denied</span><br></pre></td></tr></table></figure>
+<p>每層都可以包裝、改寫結果。<strong>鉤子（hooks）、審批（approval）、超時重試，全部是可插拔的插件，工具本身不需要知道這些邏輯。</strong></p>
+<h3 id="✅-安全能力：沙箱隔離"><a href="#✅-安全能力：沙箱隔離" class="headerlink" title="✅ 安全能力：沙箱隔離"></a>✅ 安全能力：沙箱隔離</h3><p>Harness 支援把工具執行放到隔離沙箱中，例如 <a href="https://e2b.dev/">E2B</a> 雲端沙箱。Local filesystem 和 subprocess 插件可以被一鍵替換為雲端沙箱：</p>
+<figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># e2b.cordis.yml — 替換本地工具為雲端沙箱</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">insert:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="attr">id:</span> <span class="string">e2b-sandbox</span></span><br><span class="line">      <span class="attr">name:</span> <span class="string">&#x27;@deepseek-ai/dsh-e2b&#x27;</span></span><br><span class="line">      <span class="attr">config:</span></span><br><span class="line">        <span class="attr">sandboxTemplate:</span> <span class="string">standard</span></span><br></pre></td></tr></table></figure>
+<p><strong>本地開發、雲端執行，隔離級別可選。</strong></p>
+<hr>
+<h2 id="五、實際應用場景"><a href="#五、實際應用場景" class="headerlink" title="五、實際應用場景"></a>五、實際應用場景</h2><h3 id="場景-1：本地-Coding-Agent"><a href="#場景-1：本地-Coding-Agent" class="headerlink" title="場景 1：本地 Coding Agent"></a>場景 1：本地 Coding Agent</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 最簡單的使用方式</span></span><br><span class="line">npx @deepseek-ai/dsh web</span><br><span class="line"></span><br><span class="line"><span class="comment"># 指令列模式</span></span><br><span class="line">pnpm dsh --profile headless <span class="string">&quot;fix the failing test in this workspace&quot;</span></span><br></pre></td></tr></table></figure>
+<p>設定 <code>DEEPSEEK_API_KEY</code>，就能讓 Agent 幫你分析代碼庫、修復 Bug、寫測試。完整的事件日誌讓你清楚看到它為什麼這麼改。</p>
+<h3 id="場景-2：多輪對話-記憶跨-Session"><a href="#場景-2：多輪對話-記憶跨-Session" class="headerlink" title="場景 2：多輪對話 + 記憶跨 Session"></a>場景 2：多輪對話 + 記憶跨 Session</h3><p>透過 MCP Memory 插件，Agent 可以「記得」之前對話中的偏好設定：</p>
+<ol>
+<li>Session A：「幫我記住我的驗證飲料是 lapsang-black-tea」</li>
+<li>Session B：「我剛才的驗證飲料是什麼？」→ Agent 從記憶體系統查詢，返回正確答案</li>
+</ol>
+<p><strong>新的對話不需要重新設定前提，記憶持久化在外部系統。</strong></p>
+<h3 id="場景-3：排程提醒"><a href="#場景-3：排程提醒" class="headerlink" title="場景 3：排程提醒"></a>場景 3：排程提醒</h3><figure class="highlight sh"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 啟用排程插件</span></span><br><span class="line">dsh web --patch examples/web-schedule/cordis.yml</span><br></pre></td></tr></table></figure>
+<p>Agent 可以創建、列舉、刪除提醒，且提醒綁定到對話 Session。離開對話後再回來，過期的提醒會自動觸發後續對話。</p>
+<h3 id="場景-4：企業內部的-Agent-流水線"><a href="#場景-4：企業內部的-Agent-流水線" class="headerlink" title="場景 4：企業內部的 Agent 流水線"></a>場景 4：企業內部的 Agent 流水線</h3><p>透過 API Gateway + Typert，Harness 提供完整的 Client-Server 類型安全 RPC：</p>
+<figure class="highlight typescript"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Host 端：聲明 Remote 方法</span></span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">GoalService</span> <span class="keyword">extends</span> <span class="title">TypertRemoteService</span> </span>&#123;</span><br><span class="line">  <span class="meta">@Remote</span>(<span class="string">&#x27;create&#x27;</span>)</span><br><span class="line">  <span class="function"><span class="title">createForClient</span>(<span class="params">agent: Agent, request: CreateGoalRequest, signal: AbortSignal</span>)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.create(agent, request)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>構建時自動生成 Client 端的類型安全接口，確保前後端 API 不會因為簽名變更而悄悄 break。</p>
+<hr>
+<h2 id="六、橫向比較：DSH-vs-競爭者"><a href="#六、橫向比較：DSH-vs-競爭者" class="headerlink" title="六、橫向比較：DSH vs 競爭者"></a>六、橫向比較：DSH vs 競爭者</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>維度</th>
+<th>LangChain</th>
+<th>AutoGen</th>
+<th>DSH</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>插件系統</td>
+<td>有，但深度耦合</td>
+<td>有限</td>
+<td>一切皆插件</td>
+</tr>
+<tr>
+<td>執行審計</td>
+<td>日誌分散</td>
+<td>基本</td>
+<td>完整事件流</td>
+</tr>
+<tr>
+<td>工具流水線</td>
+<td>自己實現</td>
+<td>自己實現</td>
+<td>框架內建分層控制</td>
+</tr>
+<tr>
+<td>MCP 整合</td>
+<td>需第三方適配</td>
+<td>無</td>
+<td>官方支援</td>
+</tr>
+<tr>
+<td>沙箱隔離</td>
+<td>無</td>
+<td>無</td>
+<td>原生支援</td>
+</tr>
+<tr>
+<td>架構穩定性</td>
+<td>API 經常變更</td>
+<td>實驗性</td>
+<td>嚴格的 TypeScript 雙 Aggregate 設計</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DSH 的最大差異：<strong>它不只是讓 Agent 跑起來，而是讓 Agent 在複雜、多變的真實環境中「可維護、可審計、可擴展」。</strong></p>
+<hr>
+<h2 id="七、誰適合用-DSH？"><a href="#七、誰適合用-DSH？" class="headerlink" title="七、誰適合用 DSH？"></a>七、誰適合用 DSH？</h2><p><strong>適合：</strong></p>
+<ul>
+<li>需要在正式環境部署 Agent 的開發團隊</li>
+<li>想實驗新工具/新模型，不想動框架的人</li>
+<li>對執行過程有審計需求的合規場景</li>
+<li>需要深度客製化 Agent 行為的企業</li>
+</ul>
+<p><strong>不急於跟進：</strong></p>
+<ul>
+<li>純研究目的，只需要快速跑 Demo</li>
+<li>還在評估 Agent 架構，不知道自己需要什麼能力</li>
+</ul>
+<p>目前 DSH 仍在 <strong>developer preview</strong>（v0.1.0-rc.7），API 可能有不兼容變更。但對於有長期視角的團隊，這是一個值得投入的方向。</p>
+<hr>
+<h2 id="相關連結"><a href="#相關連結" class="headerlink" title="相關連結"></a>相關連結</h2><ul>
+<li><a href="https://github.com/deepseek-ai/deepseek-harness">GitHub: deepseek-ai/deepseek-harness</a>（163k ⭐）</li>
+<li><a href="https://deepseek.com/harness">官方網站: deepseek.com/harness</a></li>
+<li><a href="https://github.com/cordiverse/paper">Cordis 框架論文</a></li>
+<li><a href="https://discord.gg/Ycq5dCaS4">Discord 社區</a></li>
+<li><a href="https://github.com/topics/dsh-plugin">插件生態目錄</a></li>
+</ul>
+<hr>
+<p><em>本文同步發表於 <a href="https://higumalu.github.io/higumalu-note/">higumalu-note</a>。</em></p>
+]]></content>
+      <categories>
+        <category>技術專題</category>
+      </categories>
+      <tags>
+        <tag>AI</tag>
+        <tag>Agent</tag>
+        <tag>DeepSeek</tag>
+        <tag>開發框架</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>美團 LongCat 團隊技術報告翻譯：擴展嵌入層在語言模型中超越擴展專家（Scaling Embeddings Outperforms Scaling Experts in Language Models）</title>
+    <url>/higumalu-note/2026-10-21-scaling-embeddings-outperforms-scaling-experts/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>論文標題</strong>：Scaling Embeddings Outperforms Scaling Experts in Language Models<br><strong>作者</strong>：Hong Liu, Jiaqi Zhang<em>, Chao Wang, Xing Hu, Linkun Lyu, Jiaqi Sun, Xurui Yang, Bo Wang, Fengcun Li, Yulei Qian, Lingtong Si, Yerui Sun, Rumei Li, Peng Pei</em>, Yuchen Xie, Xunliang Cai (<em>通訊作者: zhangjiaqi39@meituan.com, peipeng@meituan.com)<br><strong>機構</strong>：美團 LongCat 團隊 (Meituan LongCat Team)<br><strong>發布日期</strong>：2026 年 1 月 26 日（v2 更新：2026 年 2 月 11 日）<br><strong>論文鏈接</strong>：<a href="https://arxiv.org/abs/2601.21204">arXiv:2601.21204</a><br><em>*開源權重</em></em>：<a href="https://huggingface.co/meituan-longcat/LongCat-Flash-Lite">Hugging Face: meituan-longcat/LongCat-Flash-Lite</a>  </p>
+</blockquote>
+<span id="more"></span>
+<hr>
+<h2 id="摘要（Abstract）"><a href="#摘要（Abstract）" class="headerlink" title="摘要（Abstract）"></a>摘要（Abstract）</h2><p>儘管專家混合（Mixture-of-Experts, MoE）架構已成為大型語言模型（LLM）稀疏擴展的標準範式，但它們正面臨日益嚴重的邊際效益遞減與系統級瓶頸。在本研究中，我們探索了<strong>嵌入層擴展（Embedding Scaling）</strong>作為擴展稀疏性的一條強大且正交的全新維度。</p>
+<p>透過全面的分析與實驗，我們指出了<strong>嵌入擴展相比專家擴展能夠取得更優 Pareto 前沿（Superior Pareto Frontier）的特定運作區間</strong>。我們系統性地刻畫了決定此效能的關鍵架構要素——涵蓋從<strong>參數預算分配（Parameter Budgeting）</strong>到與<strong>模型寬度及深度</strong>的交互作用。此外，透過結合針對性的系統優化與<strong>投機解碼（Speculative Decoding）</strong>，我們成功將這種參數稀疏性轉化為實質的推理加速。</p>
+<p>在這些見解的指導下，我們推出並開源了 <strong>LongCat-Flash-Lite</strong>——一個總參數達 68.5B、從頭訓練（trained from scratch）、每個 Token 激活僅約 3B 的模型。儘管將超過 30B 的參數分配給了嵌入層，LongCat-Flash-Lite 不僅全面超越了參數量相當的 MoE 基線，而且在可比規模的現有模型中展現出卓越的競爭力，尤其在 <strong>Agent 工具調用</strong>與 <strong>Coding 程式碼任務</strong>領域表現尤為突出。</p>
+<hr>
+<h2 id="1-引言（Introduction）"><a href="#1-引言（Introduction）" class="headerlink" title="1. 引言（Introduction）"></a>1. 引言（Introduction）</h2><p>專家混合（Mixture-of-Experts, MoE）架構已確立為擴展大型語言模型（LLM）的主導範式（Lepikhin et al., 2021），它使模型能夠在維持可控計算成本的同時擴展至龐大的參數量。透過動態地將 Token 路由至專家的子集，模型將參數容量與計算成本解耦，允許 LLM 擴展至數兆參數，同時維持適度的推理延遲。然而，隨著模型規模和稀疏度水平的提升，性能的邊際收益逐漸減弱，最終趨向效率飽和點（Abnar et al., 2025）。此外，專家的實際擴展受到系統級瓶頸的約束，特別是分散式訓練中日益升高的通訊開銷與記憶體頻寬壓力。這使得探索前饋網絡（FFN）之外擴展稀疏參數的替代性正交維度變得勢在必行。</p>
+<p>與 MoE 相比，嵌入層提供了一個<strong>被忽視、本質具備稀疏性、且查表複雜度僅為 <script type="math/tex">\mathcal{O}(1)</script> 的維度</strong>。這允許海量的參數擴展而<strong>無需路由開銷</strong>——實際上在不引發計算爆炸的前提下實現了參數擴充。該維度的理論基礎由詞表擴展定律（Scaling laws with vocabulary; Tao et al., 2024）建立，該定律指出較大的模型需要成比例擴大的詞表以最大化計算效率。為了發掘這一潛力，學界與業界提出了多種策略：</p>
+<ol>
+<li><strong>結構擴展（Structural Expansion）</strong>：以逐層嵌入（Per-Layer Embedding, PLE; Google DeepMind, 2025; Sadhukhan et al., 2026; bcml-labs, 2025）為代表，它為每一層分配獨立的嵌入參數以擴展容量。</li>
+<li><strong>詞表擴展（Vocabulary Expansion via N-grams）</strong>：透過 N-gram 增加每個 Token 攜帶的信息密度。這一概念可追溯至 RNN 時代的查表語言模型（Lookup-table language models; Huang et al., 2021），並近期在 LLM 中得到推進（Clark et al., 2022; Huang et al., 2025; Pagnoni et al., 2025; Cheng et al., 2026）。</li>
+</ol>
+<p>這些方法共同突顯出嵌入層是擴展模型能力的肥沃土壤。</p>
+<p>儘管近期對擴展 LLM 嵌入參數的興趣濃厚，但仍有數個關鍵挑戰尚未得到充分探索：</p>
+<ul>
+<li>首先，專家參數與嵌入參數之間的<strong>相對擴展效率</strong>尚不明確，使得這兩個稀疏維度之間的最優容量分配比例模糊不清；</li>
+<li>其次，擴展嵌入的<strong>約束邊界</strong>尚未得到系統性刻畫：總參數預算、詞表大小、初始化方案以及模型寬度與深度的權衡等因素如何共同影響嵌入擴展的有效性與穩定性，仍缺乏清晰解答；</li>
+<li>第三，雖然已提出多種擴展嵌入的方法，但在不同區間下哪種策略更有效且高效仍不明朗；</li>
+<li>最後，擴展嵌入改變了模型在解碼過程中的輸入/輸出特徵，可能影響整體的 I/O 效率，但其對端到端推理性能的影響仍缺乏充分的分析與系統級優化。</li>
+</ul>
+<p>在本技術報告中，我們提出一項研究來解決這些挑戰，並建立一個強大的嵌入擴展框架。我們的主要貢獻總結如下：</p>
+<ul>
+<li><strong>嵌入擴展 vs. 專家擴展之對比</strong>：透過跨多種情境的全面擴展實驗，我們識別出了嵌入擴展相比增加專家數量能取得更優 Pareto 前沿的特定運作區間，為模型擴展提供了一種高效替代方案。</li>
+<li><strong>架構因素之影響分析</strong>：我們確立了決定嵌入擴展效能的完整架構要素集合，涵蓋整合時機、參數預算分配、雜湊衝突、超參數設定與嵌入初始化，以及模型寬度和深度的影響。此外，我們研究了擴展嵌入的不同方法，發現 N-gram Embedding 展現出最強健的可擴展性。</li>
+<li><strong>推理效率與系統優化</strong>：我們證明 N-gram Embedding 大幅減輕了 MoE 層中的 I/O 瓶頸，特別是在搭配投機解碼以最大化硬體利用率時。針對隨之而來的嵌入開銷，我們提出了專門的 <strong>N-gram Cache</strong> 與同步內核，確保激活參數的減少直接轉化為更低的延遲與更高的吞吐量。</li>
+<li><strong>開源 LongCat-Flash-Lite</strong>：基於上述發現，我們推出並開源了 LongCat-Flash-Lite——一個從頭訓練、總參數 68.5B、根據語境動態激活 2.9B~4.5B 參數的模型。評測表明，LongCat-Flash-Lite 不僅超越了參數量相當的 MoE 基線——證實了將超過 30B 參數分配給嵌入而非專家的卓越優勢——而且在同等規模現有模型中展現出高度競爭力，尤其在 Agent 工具調用與 Coding 任務上領先。</li>
+</ul>
+<hr>
+<h2 id="2-N-gram-嵌入層（N-gram-Embedding-Layer）"><a href="#2-N-gram-嵌入層（N-gram-Embedding-Layer）" class="headerlink" title="2. N-gram 嵌入層（N-gram Embedding Layer）"></a>2. N-gram 嵌入層（N-gram Embedding Layer）</h2><p>為了擴展嵌入參數，我們採納了 Clark et al. (2022); Huang et al. (2025); Pagnoni et al. (2025) 提出的 N-gram Embedding，透過擴展無詞表（vocabulary-free）的 N-gram 嵌入表來增強嵌入模組的表徵能力。</p>
+<p>具體而言，對於序列中的第 <script type="math/tex">i</script> 個 Token <script type="math/tex">t_i</script>，增強後的嵌入 <script type="math/tex">e_i</script> 計算如下：</p>
+<script type="math/tex; mode=display">e_i = \frac{1}{N} \left( E_0(t_i) + \sum_{n=2}^N E_n(\mathcal{H}_n(t_{i-n+1}, \dots, t_i))  \right)     ag{1}</script><p>其中當 <script type="math/tex">j \le 0</script> 時 <script type="math/tex">t_j = 0</script>。<script type="math/tex">E_0 \in \mathbb{R}^{V_0     imes D}</script> 是隱維度為 <script type="math/tex">D</script> 的原始基礎嵌入表，<script type="math/tex">E_n \in \mathbb{R}^{V_n     imes D}</script> 是擴展的嵌入表，<script type="math/tex">N</script> 表示最高 N-gram 階數，<script type="math/tex">\mathcal{H}_n</script> 表示雜湊映射函數。</p>
+<p>我們採用<strong>多項式滾動雜湊函數（Polynomial Rolling Hash Function）</strong>：</p>
+<script type="math/tex; mode=display">\mathcal{H}_n(t_{i-n+1}, \dots, t_i) = \left( \sum_{j=0}^{n-1} t_{i-j} * V_0^j  \right) \% V_n     ag{2}</script><p>為了進一步提升模型的表達能力並減少雜湊衝突，Clark et al. (2022); Huang et al. (2025) 將每個 N-gram 嵌入表分解為 <script type="math/tex">K</script> 個具有不同詞表大小的子表（sub-tables）。Huang et al. (2025) 進一步引入額外的線性投影將輸出映射回原始嵌入空間。N-gram 嵌入的最終形式（在 Huang et al., 2025 中亦被稱為 Over-Encoding）如圖 1 所示，可寫為：</p>
+<script type="math/tex; mode=display">e_i = \frac{1}{(N-1)K + 1} \left( E_0(t_i) + \sum_{n=2}^N \sum_{k=1}^K W_{n,k} E_{n,k}(\mathcal{H}_{n,k}(t_{i-n+1}, \dots, t_i))  \right)     ag{3}</script><p>其中 <script type="math/tex">E_{n,k} \in \mathbb{R}^{V_{n,k}     imes \frac{D}{(N-1)K}}</script> 為子表，<script type="math/tex">W_{n,k} \in \mathbb{R}^{D     imes \frac{D}{(N-1)K}}</script> 為線性投影矩陣。</p>
+<p>透過將子表的隱層大小設定為與子表數量成反比，該設計保證了 <strong>N-gram 嵌入的參數量相對於 <script type="math/tex">N</script> 和 <script type="math/tex">K</script> 保持恆定（Invariant）</strong>。</p>
+<p><img src="/higumalu-note/images/scaling_embeddings/NE-overview.svg" alt="N-gram 嵌入層架構"><br><em>圖 1：N-gram 嵌入層架構（Huang et al., 2025）。每個 Token 的嵌入表徵由 N-gram 嵌入分支進行增強。</em></p>
+<hr>
+<h2 id="3-專家擴展與嵌入擴展之對比分析（Comparative-Analysis-of-Expert-and-Embedding-Scaling）"><a href="#3-專家擴展與嵌入擴展之對比分析（Comparative-Analysis-of-Expert-and-Embedding-Scaling）" class="headerlink" title="3. 專家擴展與嵌入擴展之對比分析（Comparative Analysis of Expert and Embedding Scaling）"></a>3. 專家擴展與嵌入擴展之對比分析（Comparative Analysis of Expert and Embedding Scaling）</h2><p>本節介紹我們關於擴展嵌入與擴展專家的實證比較研究結果。</p>
+<ul>
+<li><strong>實驗設置</strong>：我們將 N-gram 嵌入整合至 Longcat-Flash 架構（Meituan, 2025）中，並在不同激活參數預算（280M、790M 和 1.3B）下進行從頭預訓練的 Scaling 實驗。</li>
+<li>具體而言，對於 N-gram 嵌入擴展，我們首先訓練基礎稀疏度介於 35% 到 98% 之間的 MoE 模型，並從特定稀疏度水準開始逐步引入 N-gram 嵌入。至關重要的是，在每個稀疏度水準下，N-gram 嵌入模型都與一個<strong>參數量完全對等（Parameter-equivalent）的 MoE 基線</strong>配對——該基線純粹透過增加專家數量達到相同的總參數量。</li>
+<li>所有模型均在 300B Token 的語料庫上進行預訓練。我們透過監控在精心構建的中英文雙語驗證集上的訓練損失與驗證損失來評估性能。</li>
+</ul>
+<h3 id="3-1-引入-N-gram-嵌入的最佳時機（Optimal-Timing-for-N-gram-Embedding-Integration）"><a href="#3-1-引入-N-gram-嵌入的最佳時機（Optimal-Timing-for-N-gram-Embedding-Integration）" class="headerlink" title="3.1 引入 N-gram 嵌入的最佳時機（Optimal Timing for N-gram Embedding Integration）"></a>3.1 引入 N-gram 嵌入的最佳時機（Optimal Timing for N-gram Embedding Integration）</h3><p>一項關鍵發現是：<strong>N-gram 嵌入的擴展動態強烈依賴於基礎模型的稀疏度水準。</strong></p>
+<p><img src="/higumalu-note/images/scaling_embeddings/scaling-200M_pol_n.svg" alt="MoE 與 N-gram Embedding Scaling 曲線對比"><br><em>圖 2：MoE 模型與 N-gram 嵌入（NE）模型的 Scaling 曲線。橫軸為總參數與激活參數（280M）的比率（作為稀疏度的代理指標）。右側子圖轉換為對數刻度。對於兩條 NE 曲線，虛線連接對應未加入 NE 的基礎 MoE 模型。</em></p>
+<p>圖 2 展示了三條不同的 Scaling 軌跡：</p>
+<ol>
+<li>標準 MoE 基線（藍線）；</li>
+<li>應用於低參數比基礎模型的 N-gram 嵌入（綠線）；</li>
+<li>應用於高參數比基礎模型的 N-gram 嵌入（紅線）。</li>
+</ol>
+<p>圖 2 顯示，MoE 的擴展曲線嚴格遵循對數線性關係。這意味著在低比率區間，邊際增加專家數量可以大幅降低損失；反之，在較高比率區間，要達到相同的損失降低需要顯著更龐大的專家參數增量。</p>
+<p>因此，<strong>當在低參數比時引入 N-gram 嵌入，其擴展優勢不及單純增加專家數量帶來的收益；然而，在高稀疏度水準下，N-gram 嵌入的效益變得顯著更加突出。</strong> 這一觀察引出了引入 N-gram 嵌入的第一項設計原則：</p>
+<blockquote>
+<p><strong>核心總結 1</strong>：應當在專家數量超過其「甜蜜點（Sweet Spot）」時，再引入 N-gram Embedding。</p>
+</blockquote>
+<p>這表明嵌入擴展是與專家擴展正交的一條極富前景的擴展維度。</p>
+<hr>
+<h3 id="3-2-整合策略（Integration-Strategy）"><a href="#3-2-整合策略（Integration-Strategy）" class="headerlink" title="3.2 整合策略（Integration Strategy）"></a>3.2 整合策略（Integration Strategy）</h3><h4 id="3-2-1-N-gram-嵌入的參數預算分配（Parameter-Budgeting-for-N-gram-Embeddings）"><a href="#3-2-1-N-gram-嵌入的參數預算分配（Parameter-Budgeting-for-N-gram-Embeddings）" class="headerlink" title="3.2.1 N-gram 嵌入的參數預算分配（Parameter Budgeting for N-gram Embeddings）"></a>3.2.1 N-gram 嵌入的參數預算分配（Parameter Budgeting for N-gram Embeddings）</h4><p>進一步觀察圖 2 可以發現藍色曲線與紅色曲線之間存在一個明確的交點：<strong>隨著參數比率持續上升，N-gram 嵌入的性能優勢逐漸收斂，最終被 MoE 基線反超。</strong></p>
+<p>這表明當模型將過高比例的參數預算分配給 N-gram 嵌入時，其性能會劣於同等參數量之 MoE 基線。這與同期工作 Engram（Cheng et al., 2026）的結論不謀而合——損失作為 N-gram 嵌入比例的函數呈現 U 型 Scaling 曲線。在圖 2 中，交叉點略高於 20 的參數比；此時 N-gram 嵌入參數約佔總參數量的 50%（因為基礎 MoE 模型的比例為 12）。由此我們得出第二項原則：</p>
+<blockquote>
+<p><strong>核心總結 2</strong>：分配給 N-gram Embedding 的參數預算不應超過總參數量的 50%。</p>
+</blockquote>
+<h4 id="3-2-2-透過詞表定規緩解雜湊衝突（Mitigating-Hash-Collisions-via-Vocabulary-Sizing）"><a href="#3-2-2-透過詞表定規緩解雜湊衝突（Mitigating-Hash-Collisions-via-Vocabulary-Sizing）" class="headerlink" title="3.2.2 透過詞表定規緩解雜湊衝突（Mitigating Hash Collisions via Vocabulary Sizing）"></a>3.2.2 透過詞表定規緩解雜湊衝突（Mitigating Hash Collisions via Vocabulary Sizing）</h4><p>在 N-gram 嵌入中，雜湊衝突迫使單一嵌入向量疊加多個不同 N-gram 的語義，損害學習效率並導致性能下降。我們發現<strong>選擇合適的詞表大小對抑制高衝突率至關重要</strong>。在訓練中，我們觀察到 N-gram 嵌入在特定詞表大小下會出現異常高的雜湊衝突率，特別是在 2-gram 雜湊中。為探究其底層機制，我們進行了雙重分析：</p>
+<ol>
+<li><strong>詞表命中率（Vocabulary Hit Rate）</strong>：預訓練語料庫至少激活一次的詞表條目比例；</li>
+<li><strong>雜湊衝突（Hash Collisions）</strong>：量化取模索引導致唯一 Token 表徵損失的次數。</li>
+</ol>
+<p><img src="/higumalu-note/images/scaling_embeddings/hit_rate_n.svg" alt="詞表命中率與衝突趨勢分析"><br><img src="/higumalu-note/images/scaling_embeddings/collision_trend_n.svg" alt="2-gram 雜湊衝突分析"><br><em>圖 3：(a) 不同 N-gram 的詞表命中率；(b) 不同詞表大小下的 2-gram 雜湊衝突數量。為清晰起見，在詞表整數倍附近的取樣點更為密集。</em></p>
+<ul>
+<li>圖 3a 顯示，2-gram 雜湊的命中率呈現平緩增長，而高階 N-gram 雜湊迅速收斂至接近 1.0 的命中率。</li>
+<li>圖 3b 顯示，2-gram 雜湊衝突數量與詞表大小呈現強烈的非線性相關性。一個顯著模式浮現：<strong>當詞表大小接近基礎詞表大小的整數倍時，衝突數量顯著暴增！</strong> 無論 N-gram 詞表大小是否為質數，該現象均持續存在。結合這些觀察，圖 3b 引出了一條關鍵原則：</li>
+</ul>
+<blockquote>
+<p><strong>核心總結 3</strong>：N-gram Embedding 的詞表大小應顯著偏離基礎詞表大小的整數倍，以防止雜湊衝突。</p>
+</blockquote>
+<h4 id="3-2-3-超參數敏感度分析（Sensitivity-Analysis-of-Hyperparameters）"><a href="#3-2-3-超參數敏感度分析（Sensitivity-Analysis-of-Hyperparameters）" class="headerlink" title="3.2.3 超參數敏感度分析（Sensitivity Analysis of Hyperparameters）"></a>3.2.3 超參數敏感度分析（Sensitivity Analysis of Hyperparameters）</h4><p>我們檢驗了模型性能對 N-gram 階數 <script type="math/tex">N</script> 和子表數量 <script type="math/tex">K</script> 的敏感度：</p>
+<ul>
+<li><strong>階數 <script type="math/tex">N</script></strong>：增加 <script type="math/tex">N</script> 能捕捉更豐富的上下文語義，但高階 N-gram 在語料中出現頻率極低，導致詞表上的極度稀疏分佈，大幅增加了學習有效嵌入的難度。</li>
+<li><strong>子表數量 <script type="math/tex">K</script></strong>：決定了應用於每個 N-gram 的獨立雜湊函數數量，能顯著減輕衝突概率，但超過特定閾值後收益遞減。</li>
+</ul>
+<p><img src="/higumalu-note/images/scaling_embeddings/loss-nk_n.svg" alt="N 與 K 超參數消融曲線"><br><em>圖 4：不同 <script type="math/tex">N</script> 與 <script type="math/tex">K</script> 組合下的訓練與驗證損失對比。</em></p>
+<p>利用 790M 激活參數模型進行消融（圖 4），當 <script type="math/tex">N=2</script> 且 <script type="math/tex">K=1</script> 時模型性能明顯較差；反之，<strong>只要 <script type="math/tex">N \ge 3</script> 且 <script type="math/tex">K \ge 2</script>，不同配置之間的性能差異便相當微小</strong>，表明模型在此區間內對超參數選擇具有很強的強健性。經驗上，將 <script type="math/tex">N</script> 設在 3 到 5 之間即可穩定獲得接近最優的表現。</p>
+<h4 id="3-2-4-促進有效訓練的嵌入放大策略（Embedding-Amplification-for-Effective-Training）"><a href="#3-2-4-促進有效訓練的嵌入放大策略（Embedding-Amplification-for-Effective-Training）" class="headerlink" title="3.2.4 促進有效訓練的嵌入放大策略（Embedding Amplification for Effective Training）"></a>3.2.4 促進有效訓練的嵌入放大策略（Embedding Amplification for Effective Training）</h4><p>在早期實驗中，我們觀察到嵌入模組的次優初始化會嚴重阻礙 N-gram 嵌入的效能。在 300B Token 預訓練後，我們計算了所有層的模組輸出與其對應殘差分支（identity path）的 <script type="math/tex">L_2</script> 範數，繪製於圖 5。</p>
+<p><img src="/higumalu-note/images/scaling_embeddings/norm.svg" alt="層級輸出範數與殘差比率分析"><br><em>圖 5：模組輸出與對應恆等分支的 <script type="math/tex">L_2</script> 範數層級分析及其比率。每個 shortcut 層包含兩個子層（後綴 0 與 1）。</em></p>
+<p>圖 5 揭露了一個重大差距：<strong>第一個注意力模組輸出的 <script type="math/tex">L_2</script> 範數比對應的恆等分支（本質上代表嵌入模組的輸出）大出整整一個數量級（約 <script type="math/tex">10imes</script>）！</strong> 這意味著在相加時，注意力輸出完全主導了殘差流，有效「淹沒（drowning out）」了嵌入訊號。這種訊號抑制現象隨訓練進行而顯著加劇。</p>
+<p>為緩解此問題，我們探索了兩種策略：</p>
+<ol>
+<li><strong>縮放因子（Scaling Factor）</strong>：在嵌入輸出中引入縮放因子（通常為 <script type="math/tex">\sqrt{D}</script>），以確保其在前向傳播中有足夠貢獻；</li>
+<li><strong>歸一化（Normalization）</strong>：在與殘差分支合併前對嵌入輸出應用 LayerNorm。LayerNorm 在訓練初期強制施加單位方差，同樣放大了嵌入的貢獻。</li>
+</ol>
+<p>在我們的實驗中，應用<strong>嵌入放大（Embedding Amplification）</strong>技術使得訓練損失和兩個驗證損失一致性地降低了 <strong>0.02</strong>。</p>
+<hr>
+<h3 id="3-3-跨模型寬度與深度的-Scaling-特性（Scaling-Properties-across-Model-Width-and-Depth）"><a href="#3-3-跨模型寬度與深度的-Scaling-特性（Scaling-Properties-across-Model-Width-and-Depth）" class="headerlink" title="3.3 跨模型寬度與深度的 Scaling 特性（Scaling Properties across Model Width and Depth）"></a>3.3 跨模型寬度與深度的 Scaling 特性（Scaling Properties across Model Width and Depth）</h3><h4 id="3-3-1-模型寬度增加放大優勢（Enhanced-Advantage-in-Wider-Models）"><a href="#3-3-1-模型寬度增加放大優勢（Enhanced-Advantage-in-Wider-Models）" class="headerlink" title="3.3.1 模型寬度增加放大優勢（Enhanced Advantage in Wider Models）"></a>3.3.1 模型寬度增加放大優勢（Enhanced Advantage in Wider Models）</h4><p>我們在固定模型深度（10 個 shortcut 層）的前提下，在 790M 和 1.3B 激活參數規模上只改變模型寬度（隱層維度與模組維度）進行 Scaling 實驗。</p>
+<p><img src="/higumalu-note/images/scaling_embeddings/scaling-500M_n.svg" alt="790M 與 1.3B Scaling 曲線"><br><img src="/higumalu-note/images/scaling_embeddings/scaling-1B_n.svg" alt="1.3B Scaling 曲線"><br><em>圖 6：(a) 790M 激活規模下的 Scaling 曲線；(b) 1.3B 激活規模下的 Scaling 曲線。</em></p>
+<p>分析揭示了兩個核心趨勢：</p>
+<ol>
+<li>當以合適比例引入時，N-gram 嵌入始終取得低於對等 MoE 基線的損失；</li>
+<li><strong>極為關鍵的是：隨著模型寬度（激活規模）的增加，N-gram 嵌入曲線與 MoE 曲線的交點系統性地向更高的總參/激活參比率移動！</strong><ul>
+<li>在 280M 激活尺寸下，比率超過 30 時 NE 便劣於 MoE；</li>
+<li>在 790M 下，NE 僅在英文驗證集上於該比率落後，其他指標均保持領先；</li>
+<li><strong>在 1.3B 激活尺寸下，即使比率高達 50，N-gram 嵌入依然保持明確優勢！</strong></li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p><strong>核心總結 4</strong>：在層數固定的情況下，增加模型寬度賦予 N-gram Embedding 更大的優勢。</p>
+</blockquote>
+<h4 id="3-3-2-模型深度增加收益遞減（Diminishing-Returns-in-Deeper-Models）"><a href="#3-3-2-模型深度增加收益遞減（Diminishing-Returns-in-Deeper-Models）" class="headerlink" title="3.3.2 模型深度增加收益遞減（Diminishing Returns in Deeper Models）"></a>3.3.2 模型深度增加收益遞減（Diminishing Returns in Deeper Models）</h4><p>對於 Pre-LayerNorm 架構，隨著網絡深度的增加，N-gram 嵌入透過殘差連接的貢獻本質上會逐漸衰減。</p>
+<p>我們在 1.3B 激活配置下訓練了 20 層和 40 層的模型，同時在所有深度中嚴格維持 N-gram 嵌入參數佔總參數約 50% 的比例。</p>
+<p><img src="/higumalu-note/images/scaling_embeddings/loss-diff-width_n.svg" alt="寬度與深度對損失縮減之影響對比"><br><img src="/higumalu-note/images/scaling_embeddings/loss-diff-depth_n.svg" alt="深度損失差值"><br><em>圖 7：N-gram 嵌入模型相比基線在不同 (a) 模型寬度 和 (b) 模型深度 下的損失降低幅度。</em></p>
+<p>圖 7b 呈現出鮮明的對比：<strong>當模型深度超過 20 層時，N-gram 嵌入相對基線的優勢經歷了顯著收縮。</strong> 這與增加寬度時優勢持續擴大的趨勢（圖 7a）形成強烈反差。</p>
+<blockquote>
+<p><strong>核心總結 5</strong>：增加模型深度會減弱 N-gram Embedding 的相對優勢。</p>
+</blockquote>
+<p>值得注意的是，當前大多數實用語言模型的 shortcut 層數通常在 40 層以下（相當於 80 個常規層）。鑑於寬度的增加能持續放大 NE 優勢，且其在 40 層下仍有良好表現，在常見架構深度內擴展 N-gram 嵌入仍能斬獲巨大的性能收益。</p>
+<hr>
+<h2 id="4-高效推理（Efficient-Inference）"><a href="#4-高效推理（Efficient-Inference）" class="headerlink" title="4. 高效推理（Efficient Inference）"></a>4. 高效推理（Efficient Inference）</h2><h3 id="4-1-削減-MoE-激活參數（Reduction-of-MoE-Activation-Parameters）"><a href="#4-1-削減-MoE-激活參數（Reduction-of-MoE-Activation-Parameters）" class="headerlink" title="4.1 削減 MoE 激活參數（Reduction of MoE Activation Parameters）"></a>4.1 削減 MoE 激活參數（Reduction of MoE Activation Parameters）</h3><p>N-gram 嵌入機制有效將參數從 MoE 層重新分配到嵌入空間中。這種架構變換在保持模型總參數不變的同時，<strong>減少了 MoE 層內的激活參數量</strong>——這在大 Token 數的記憶體 I/O 密集型解碼場景中極具優勢。此外，嵌入表的增大不會拖累延遲，因為嵌入查表的計算成本僅隨輸入 Token 數量擴展，而與嵌入總參數量無關。</p>
+<p><img src="/higumalu-note/images/scaling_embeddings/flash_comparison_n2.svg" alt="激活專家數與解碼吞吐量"><br><img src="/higumalu-note/images/scaling_embeddings/throughput_n_final_f.svg" alt="解碼吞吐量"><br><em>圖 8：(a) 不同 Batch Size 下 LongCat-Flash-Lite 與 Vanilla 基線激活專家數對比；(b) 8×H800-80G 上 LongCat-Flash-Lite 的解碼性能（ISL=4K, OSL=1K）。</em></p>
+<p>為了充分發揮激活參數減少帶來的效率優勢，關鍵在於透過大 Batch Size 最大化硬體利用率（如圖 8a）。這與<strong>投機解碼（Speculative Decoding）</strong>形成了天然的協同效應：多步投機解碼實質上擴大了「有效 Batch Size」，從而將參數稀疏性的理論優勢直接轉化為有形的推理加速。</p>
+<h3 id="4-2-優化嵌入查找（Optimized-Embedding-Lookup）"><a href="#4-2-優化嵌入查找（Optimized-Embedding-Lookup）" class="headerlink" title="4.2 優化嵌入查找（Optimized Embedding Lookup）"></a>4.2 優化嵌入查找（Optimized Embedding Lookup）</h3><p>儘管將參數從專家重配至 N-gram 嵌入降低了 MoE 的 I/O，但相比標準嵌入層，它引入了額外的 I/O、計算與通訊開銷。</p>
+<p>為此，我們引入了 <strong>N-gram Cache</strong>——一種受 KV Cache 設計啟發的專用快取機制。我們實現了客製化的 CUDA 算子直接在設備端管理 N-gram ID，實現與複雜推理調度邏輯的低開銷同步。</p>
+<p>在投機解碼場景中，草稿模型（Draft Model）層數更少且延遲更低，此時 N-gram 嵌入的相對開銷會放大。為解決此問題，我們提出兩項互補優化：</p>
+<ol>
+<li><strong>草稿模型採用常規嵌入層</strong>，繞過計算成本較高的 N-gram 查找；</li>
+<li><strong>在 Drafting 階段快取 N-gram 嵌入</strong>，消除後續驗證階段的重複計算。</li>
+</ol>
+<h3 id="4-3-重新思考-N-gram-嵌入優化：投機解碼的深層角色"><a href="#4-3-重新思考-N-gram-嵌入優化：投機解碼的深層角色" class="headerlink" title="4.3 重新思考 N-gram 嵌入優化：投機解碼的深層角色"></a>4.3 重新思考 N-gram 嵌入優化：投機解碼的深層角色</h3><p>除了硬體效率之外，我們認為 N-gram 嵌入架構本質上編碼了豐富的局部語境與 Token 共現資訊，與投機解碼存在未被發掘的協同潛力：</p>
+<ul>
+<li><strong>基於 N-gram Embedding 的 Drafting</strong>：由於 N-gram 嵌入聚合了前 <script type="math/tex">N-1</script> 個 Token 的信息，它隱式捕捉了短程依賴性。我們正在探索直接在 N-gram 嵌入輸出上附加輕量線性投影，將其改造為超輕量的草稿模型。</li>
+<li><strong>Early Rejection（提前拒絕）</strong>：N-gram 嵌入表徵可作為外部草稿模型生成 Token 的語義一致性檢查器（置信度估計器）。若草稿 Token 在 N-gram 空間的匹配機率極低，可在進入昂貴的目標模型驗證前「提前拒絕」，進一步降低驗證工作量。</li>
+</ul>
+<hr>
+<h2 id="5-與逐層嵌入（Per-Layer-Embedding）的整合探討"><a href="#5-與逐層嵌入（Per-Layer-Embedding）的整合探討" class="headerlink" title="5. 與逐層嵌入（Per-Layer Embedding）的整合探討"></a>5. 與逐層嵌入（Per-Layer Embedding）的整合探討</h2><p>本節對比 N-gram Embedding 與 Google DeepMind 提出的逐層嵌入（PLE），並介紹兩者的整合嘗試。</p>
+<h3 id="5-1-逐層嵌入（PLE）"><a href="#5-1-逐層嵌入（PLE）" class="headerlink" title="5.1 逐層嵌入（PLE）"></a>5.1 逐層嵌入（PLE）</h3><p>PLE 直接將 SwiGLU 模組中 Up-projection 矩陣的輸出替換為嵌入輸出。設 <script type="math/tex">x_i^{(l)}</script> 為第 <script type="math/tex">l</script> 層 FFN 模組的第 <script type="math/tex">i</script> 個輸入向量，加入 PLE 的 FFN 輸出為：</p>
+<script type="math/tex; mode=display">ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left(     ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot E_0^{(l)}(t_i)  \right)     ag{4}</script><h3 id="5-2-逐層-N-gram-嵌入（PLNE）"><a href="#5-2-逐層-N-gram-嵌入（PLNE）" class="headerlink" title="5.2 逐層 N-gram 嵌入（PLNE）"></a>5.2 逐層 N-gram 嵌入（PLNE）</h3><p>我們提出 <strong>Per-Layer N-gram Embedding (PLNE)</strong>，將每層的基礎嵌入輸出替換為 N-gram 嵌入輸出：</p>
+<script type="math/tex; mode=display">ext{FFN}^{(l)}(x_i) = W_d^{(l)} \left(     ext{SiLU}(W_g^{(l)} x_i^{(l)}) \odot e_i^{(l)}  \right)     ag{5}</script><p>其中 <script type="math/tex">e_i^{(l)}</script> 依據公式 (3) 計算，使用各層專屬的嵌入表與投影矩陣。</p>
+<h3 id="5-3-實證對比"><a href="#5-3-實證對比" class="headerlink" title="5.3 實證對比"></a>5.3 實證對比</h3><p><img src="/higumalu-note/images/scaling_embeddings/loss-ple_n.svg" alt="NE、PLE 與 PLNE 損失對比"><br><em>圖 9：790M 激活參數設定下 N-gram 嵌入（NE）、PLE 與 PLNE 的損失對比。</em></p>
+<p>圖 9 顯示，PLE 的表現劣於 N-gram Embedding，而 PLNE 相對 NE 僅取得微幅改善。我們將前者歸因於 N-gram 嵌入相比標準嵌入具備更優越的學習效率。</p>
+<p>然而，在後續增加模型寬度或深度的實驗中，PLNE 未能展現出持續的優勢，在多數場景下僅與 NE 持平。考慮到 PLNE 由於每層增加大量投影矩陣而實質增加了激活參數量，<strong>我們最終在更大規模的實驗中未採用 PLNE</strong>。</p>
+<hr>
+<h2 id="6-LongCat-Flash-Lite"><a href="#6-LongCat-Flash-Lite" class="headerlink" title="6. LongCat-Flash-Lite"></a>6. LongCat-Flash-Lite</h2><p>結合先前的研究見解，美團推出了整合 N-gram 嵌入並從頭訓練的 <strong>LongCat-Flash-Lite</strong>。</p>
+<h3 id="6-1-模型配置"><a href="#6-1-模型配置" class="headerlink" title="6.1 模型配置"></a>6.1 模型配置</h3><ul>
+<li><strong>架構細節</strong>：共 14 個 shortcut 層，總參數 68.5B，由於 Zero-Experts 機制，每 Token 動態激活 2.9B 至 4.5B 參數。MoE 模組包含 256 個 FFN 專家與 128 個 Zero-Experts，每 Token 選擇 12 個專家。<strong>嵌入模組包含 31.4B 的 N-gram 嵌入參數，佔總參數量的 46%</strong>。</li>
+<li><strong>訓練數據</strong>：在 11T Token（8k 長度）上進行預訓練，隨後進行 1.5T Token（擴展至 128k）的 Mid-training，最後進行 SFT。支援高達 256k 的上下文長度。</li>
+<li><strong>對照基線</strong>：訓練了一個總參數完全相同的 MoE 基線（<strong>LongCat-Flash-Lite-Vanilla</strong>），將 31.4B 的 N-gram 嵌入參數全部轉化為額外的 MoE 專家，兩者遵循完全相同的數據配方與訓練策略。</li>
+</ul>
+<p><img src="/higumalu-note/images/scaling_embeddings/lm_loss_n.svg" alt="訓練損失曲線對比"><br><em>圖 10：LongCat-Flash-Lite 與 Vanilla 基線的平滑訓練損失曲線。</em></p>
+<hr>
+<h3 id="6-2-Base-基礎模型評測結果"><a href="#6-2-Base-基礎模型評測結果" class="headerlink" title="6.2 Base 基礎模型評測結果"></a>6.2 Base 基礎模型評測結果</h3><h4 id="表-1：LongCat-Flash-Lite-與-Vanilla-基線在-1-3T-訓練節點下的-Base-模型性能對比"><a href="#表-1：LongCat-Flash-Lite-與-Vanilla-基線在-1-3T-訓練節點下的-Base-模型性能對比" class="headerlink" title="表 1：LongCat-Flash-Lite 與 Vanilla 基線在 1.3T 訓練節點下的 Base 模型性能對比"></a>表 1：LongCat-Flash-Lite 與 Vanilla 基線在 1.3T 訓練節點下的 Base 模型性能對比</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">評測領域</th>
+<th style="text-align:left">基準測試 (Benchmark)</th>
+<th style="text-align:center">LongCat-Flash-Lite-Vanilla @1.3T</th>
+<th style="text-align:center">LongCat-Flash-Lite @1.3T</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>通用領域 (General)</strong></td>
+<td style="text-align:left">MMLU</td>
+<td style="text-align:center"><strong>64.81</strong></td>
+<td style="text-align:center">64.01</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">MMLU-Pro</td>
+<td style="text-align:center">34.43</td>
+<td style="text-align:center"><strong>35.89</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">C-Eval</td>
+<td style="text-align:center">64.09</td>
+<td style="text-align:center"><strong>67.21</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">CMMLU</td>
+<td style="text-align:center">67.08</td>
+<td style="text-align:center"><strong>69.55</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>推理領域 (Reasoning)</strong></td>
+<td style="text-align:left">BBH</td>
+<td style="text-align:center">38.54</td>
+<td style="text-align:center"><strong>43.67</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">GPQA</td>
+<td style="text-align:center">25.37</td>
+<td style="text-align:center"><strong>29.66</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">DROP</td>
+<td style="text-align:center">47.92</td>
+<td style="text-align:center"><strong>52.43</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">GSM8K</td>
+<td style="text-align:center">50.00</td>
+<td style="text-align:center"><strong>50.50</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>程式碼領域 (Coding)</strong></td>
+<td style="text-align:left">HumanEval+</td>
+<td style="text-align:center">28.66</td>
+<td style="text-align:center"><strong>31.10</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">MultiPL-E</td>
+<td style="text-align:center"><strong>30.20</strong></td>
+<td style="text-align:center">30.03</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">BigCodeBench</td>
+<td style="text-align:center">33.42</td>
+<td style="text-align:center"><strong>36.05</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>在絕大多數基準測試中，LongCat-Flash-Lite 均大幅領先 Vanilla 基線，特別是在 <strong>BBH (+5.13)</strong>、<strong>GPQA (+4.29)</strong>、<strong>DROP (+4.51)</strong>、<strong>C-Eval (+3.12)</strong> 與 <strong>BigCodeBench (+2.63)</strong> 上優勢尤為突出。</p>
+<hr>
+<h3 id="6-3-Chat-對齊模型橫向對比"><a href="#6-3-Chat-對齊模型橫向對比" class="headerlink" title="6.3 Chat 對齊模型橫向對比"></a>6.3 Chat 對齊模型橫向對比</h3><h4 id="表-2：LongCat-Flash-Lite-與同規模前沿模型（Kimi-Linear、Qwen3-Next、Gemini-2-5-Flash-Lite）對比"><a href="#表-2：LongCat-Flash-Lite-與同規模前沿模型（Kimi-Linear、Qwen3-Next、Gemini-2-5-Flash-Lite）對比" class="headerlink" title="表 2：LongCat-Flash-Lite 與同規模前沿模型（Kimi-Linear、Qwen3-Next、Gemini 2.5 Flash-Lite）對比"></a>表 2：LongCat-Flash-Lite 與同規模前沿模型（Kimi-Linear、Qwen3-Next、Gemini 2.5 Flash-Lite）對比</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">評測維度</th>
+<th style="text-align:left">評測基準 (Benchmark)</th>
+<th style="text-align:center">Kimi-Linear-48B-A3B</th>
+<th style="text-align:center">Qwen3-Next-80B-A3B-Instruct</th>
+<th style="text-align:center">Gemini 2.5 Flash-Lite</th>
+<th style="text-align:center">LongCat-Flash-Lite</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>基礎架構</strong></td>
+<td style="text-align:left">Architecture</td>
+<td style="text-align:center">MoE</td>
+<td style="text-align:center">MoE</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center"><strong>MoE + NE</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>總參數量</strong></td>
+<td style="text-align:left">Total Params</td>
+<td style="text-align:center">48B</td>
+<td style="text-align:center">80B</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center"><strong>68.5B</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>激活參數量</strong></td>
+<td style="text-align:left">Activated Params</td>
+<td style="text-align:center">3B</td>
+<td style="text-align:center">3B</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center"><strong>2.9B ~ 4.5B</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>上下文長度</strong></td>
+<td style="text-align:left">Context Length</td>
+<td style="text-align:center">128k</td>
+<td style="text-align:center">128k</td>
+<td style="text-align:center">1M</td>
+<td style="text-align:center"><strong>256k</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Agent 工具調用</strong></td>
+<td style="text-align:left">Tau2-Airline (avg@8)</td>
+<td style="text-align:center">44.00</td>
+<td style="text-align:center">45.5*</td>
+<td style="text-align:center">35.00</td>
+<td style="text-align:center"><strong>58.00</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">Tau2-Retail (avg@8)</td>
+<td style="text-align:center">18.86</td>
+<td style="text-align:center">57.3*</td>
+<td style="text-align:center">37.50</td>
+<td style="text-align:center"><strong>73.10</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">Tau2-Telecom (avg@8)</td>
+<td style="text-align:center">15.68</td>
+<td style="text-align:center">13.2*</td>
+<td style="text-align:center">21.93</td>
+<td style="text-align:center"><strong>72.80</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">VitaBench (avg@4)</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">5.80</td>
+<td style="text-align:center">4.50</td>
+<td style="text-align:center"><strong>7.00</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Agent Coding</strong></td>
+<td style="text-align:left">SWE-Bench (acc)</td>
+<td style="text-align:center">32.80</td>
+<td style="text-align:center">37.60</td>
+<td style="text-align:center">41.3*</td>
+<td style="text-align:center"><strong>54.40</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">TerminalBench (acc)</td>
+<td style="text-align:center">20.00</td>
+<td style="text-align:center">15.19</td>
+<td style="text-align:center">20.00</td>
+<td style="text-align:center"><strong>33.75</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">SWE-Bench Multilingual</td>
+<td style="text-align:center">37.20</td>
+<td style="text-align:center">31.30</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center"><strong>38.10</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">PRDBench</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">15.36</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center"><strong>39.63</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>通用領域</strong></td>
+<td style="text-align:left">GPQA-Diamond (avg@16)</td>
+<td style="text-align:center">69.89</td>
+<td style="text-align:center"><strong>74.33</strong></td>
+<td style="text-align:center">70.20*</td>
+<td style="text-align:center">66.78</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">MMLU (acc)</td>
+<td style="text-align:center">79.91</td>
+<td style="text-align:center"><strong>89.28</strong></td>
+<td style="text-align:center">84.68</td>
+<td style="text-align:center">85.52</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">MMLU-Pro (acc)</td>
+<td style="text-align:center">67.22</td>
+<td style="text-align:center"><strong>82.93</strong></td>
+<td style="text-align:center">78.95</td>
+<td style="text-align:center">78.29</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">CEval (acc)</td>
+<td style="text-align:center">78.48</td>
+<td style="text-align:center"><strong>90.91</strong></td>
+<td style="text-align:center">75.16</td>
+<td style="text-align:center">86.55</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">CMMLU (acc)</td>
+<td style="text-align:center">76.26</td>
+<td style="text-align:center"><strong>86.50</strong></td>
+<td style="text-align:center">72.06</td>
+<td style="text-align:center">82.48</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>數學推理</strong></td>
+<td style="text-align:left">MATH500 (acc)</td>
+<td style="text-align:center">94.20</td>
+<td style="text-align:center"><strong>98.00</strong></td>
+<td style="text-align:center">95.20</td>
+<td style="text-align:center">96.80</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">AIME24 (avg@32)</td>
+<td style="text-align:center">70.52</td>
+<td style="text-align:center"><strong>81.35</strong></td>
+<td style="text-align:center">63.33</td>
+<td style="text-align:center">72.19</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">AIME25 (avg@32)</td>
+<td style="text-align:center">59.58</td>
+<td style="text-align:center"><strong>68.44</strong></td>
+<td style="text-align:center">50.1*</td>
+<td style="text-align:center">63.23</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>在 <strong>Agentic Tool Use</strong> 與 <strong>Agentic Coding</strong> 任務上，LongCat-Flash-Lite 建立了壓倒性的領先優勢：</p>
+<ul>
+<li>在 Tau2-Bench 零售場景中達到 <strong>73.10</strong>，電信場景更斬獲驚人的 <strong>72.80</strong>（比其他模型高出數倍）；</li>
+<li>在真實世界軟體工程基準 SWE-Bench 上達到 <strong>54.40%</strong>，超越 Gemini 2.5 Flash-Lite (41.3) 與 Qwen3-Next-80B (37.60)；</li>
+<li>在終端指令執行 TerminalBench 上取得 <strong>33.75%</strong>，展現極強的 Agentic 系統操作能力。</li>
+</ul>
+<h3 id="6-4-內核優化與推理實測加速"><a href="#6-4-內核優化與推理實測加速" class="headerlink" title="6.4 內核優化與推理實測加速"></a>6.4 內核優化與推理實測加速</h3><p>為了克服極度稀疏激活帶來的硬體頻寬飽和問題，團隊採用 Eagle3 與 3-step 投機解碼策略，配合寬專家並行（Wide EP）與 SBO（Single Batch Overlap）。為解決隨之而來的內核發射開銷，團隊實施了全方位的算子融合（Communication-Fusion、RMSNorm、SwiGLU 激活量化融合）與 PDL（Programmatic Dependent Launch）技術。</p>
+<h4 id="表-3：投機解碼推理加速比"><a href="#表-3：投機解碼推理加速比" class="headerlink" title="表 3：投機解碼推理加速比"></a>表 3：投機解碼推理加速比</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">硬體環境</th>
+<th style="text-align:center">投機解碼加速比 (Tokens/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>8× H800</strong></td>
+<td style="text-align:center"><strong>1.81×</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>在 8× H800 GPU 叢集上，端到端投機解碼吞吐實現了 <strong>1.81 倍</strong>的純硬體加速。</p>
+<hr>
+<h2 id="7-結論（Conclusions）"><a href="#7-結論（Conclusions）" class="headerlink" title="7. 結論（Conclusions）"></a>7. 結論（Conclusions）</h2><p>在本技術報告中，我們挑戰了僅靠增加 MoE 專家來擴展模型容量的傳統思維。我們證明了：<strong>擴展 N-gram 嵌入在特定高稀疏度區間能實現更優的 Pareto 前沿</strong>。透過深入刻畫預算配比（<script type="math/tex">\le 50\%</script>）、避開整數倍詞表的雜湊規則、嵌入放大（<script type="math/tex">\sqrt{D}</script> 縮放與 Norm），以及與模型寬度和深度的幾何關係，我們成功駕馭了大規模嵌入擴展。</p>
+<p>美團開源的 <strong>LongCat-Flash-Lite</strong> 證明了這一範式在工業級落地中的巨大威力：將 31.4B 參數賦予嵌入層，以僅約 3B 的激活計算量，在 Agent 與 Coding 領域達到了極具競爭力的性能水準，為下一代高效大模型架構設計開闢了全新方向。</p>
+<hr>
+<h2 id="譯者技術洞察與深度點評（Technical-Insights）"><a href="#譯者技術洞察與深度點評（Technical-Insights）" class="headerlink" title="譯者技術洞察與深度點評（Technical Insights）"></a>譯者技術洞察與深度點評（Technical Insights）</h2><h3 id="1-為什麼是美團-LongCat？與-DeepSeek、Kimi-架構路線的趣味對比"><a href="#1-為什麼是美團-LongCat？與-DeepSeek、Kimi-架構路線的趣味對比" class="headerlink" title="1. 為什麼是美團 LongCat？與 DeepSeek、Kimi 架構路線的趣味對比"></a>1. 為什麼是美團 LongCat？與 DeepSeek、Kimi 架構路線的趣味對比</h3><p>2025~2026 年的開源大模型架構呈現出百花齊放的局面：</p>
+<ul>
+<li><strong>DeepSeek-V3 / Kimi K3</strong> 走的是「極致細粒度專家路由 + 深度通信重疊」路線（如 DeepSeek DualPipe、MoonEP），在 FFN 層將專家數量堆疊到數百個，激活數十個；</li>
+<li><strong>美團 LongCat 團隊</strong> 則獨闢蹊徑：他們發現當 MoE 的專家數堆到一定程度後，邊際效益急劇遞減，同時顯存和通訊開銷暴增。因此，他們把超過 46% 的參數預算直接扔進了底層的 <strong>N-gram Embedding</strong>！</li>
+<li>這種「寬淺主幹 + 超大局部記憶嵌入表」的做法，本質上是用極低成本的 <script type="math/tex">\mathcal{O}(1)</script> 查表直接完成淺層語義綁定，讓後續僅有的 14 個 shortcut 層專注於高階邏輯與工具規劃，直接在 Agent 工具調用與程式碼修復（SWE-bench 54.4%）上打出了漂亮的成績。</li>
+</ul>
+<h3 id="2-雜湊衝突與分詞器的「整數倍共振」陷阱"><a href="#2-雜湊衝突與分詞器的「整數倍共振」陷阱" class="headerlink" title="2. 雜湊衝突與分詞器的「整數倍共振」陷阱"></a>2. 雜湊衝突與分詞器的「整數倍共振」陷阱</h3><p>這篇論文最精彩的工程發現之一是圖 3b 中的<strong>衝突異常尖峰</strong>：</p>
+<ul>
+<li>很多工程師直覺上認為雜湊表大小只要夠大、或是隨便挑個大質數或 <script type="math/tex">2^k</script> 即可；</li>
+<li>但美團團隊發現，BPE 分詞器的 Token ID 排布具有隱含的頻率結構，當 N-gram 詞表大小設為基礎詞表（如 128k）的整數倍時，會與多項式滾動雜湊發生諧波共振，導致衝突率反常飆升；</li>
+<li>避開整數倍（例如選擇非倍數質數）能立竿見影地降低衝突，這是所有設計 Hash-based 模型的演算法工程師必須牢記的實戰細節。</li>
+</ul>
+<h3 id="3-投機解碼：稀疏嵌入架構的最佳拍檔"><a href="#3-投機解碼：稀疏嵌入架構的最佳拍檔" class="headerlink" title="3. 投機解碼：稀疏嵌入架構的最佳拍檔"></a>3. 投機解碼：稀疏嵌入架構的最佳拍檔</h3><p>傳統 MoE 在 Batch Size 很小時，顯存頻寬利用率低，難以發揮參數量大的優勢。而 LongCat 巧妙地將「激活參數小（僅 3B）」與「多步投機解碼」結合：</p>
+<ul>
+<li>投機解碼天然放大了 Effective Batch Size；</li>
+<li>透過專門的 N-gram Cache 與 CUDA 算子管理，成功在 8×H800 上實測斬獲 1.81 倍的吞吐量提升，完成了從理論稀疏到真實推理提速的閉環。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>AI</category>
+        <category>論文翻譯</category>
+      </categories>
+      <tags>
+        <tag>MoE</tag>
+        <tag>美團</tag>
+        <tag>LongCat</tag>
+        <tag>N-gram Embedding</tag>
+        <tag>稀疏架構</tag>
+        <tag>投機解碼</tag>
+        <tag>論文翻譯</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>UCLA 開源 OpenVLHarness 深度解析：多模態記憶＋視覺空間代碼化推理，讓 MLLM 跨越「純內部思考」瓶頸</title>
     <url>/higumalu-note/2026-10-22-openvlharness-multimodal-agent/</url>
     <content><![CDATA[<blockquote>
@@ -3030,83 +3030,321 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
-    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
-    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
+    <title>Thinking Machines Lab 開源 Inkling 2 Mini 深度解析：用「迴圈深度」與「端到端 4-bit」把 26B 小模型壓出前沿 Agent 戰力</title>
+    <url>/higumalu-note/2026-11-24-inkling-2-mini-technical-deep-dive/</url>
+    <content><![CDATA[<blockquote>
+<p><strong>模型名稱</strong>：Inkling 2 Mini<br><strong>開發機構</strong>：Thinking Machines Lab (TML)<br><strong>發布日期</strong>：2026 年 11 月 20 日<br><strong>授權條款</strong>：Apache 2.0<br><strong>官方資源</strong>：<a href="https://thinkingmachines.ai/news/inkling-2-mini/">TML 官方部落格</a> / <a href="https://thinkingmachines.ai/model-card/inkling-2-mini/">TML 模型卡</a> / <a href="https://huggingface.co/thinkingmachines/Inkling-2-Mini">Hugging Face 倉庫</a></p>
+</blockquote>
 <hr>
-<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
-<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
+<h2 id="前言：在筆電記憶體裡塞進「前沿-Agent-戰力」"><a href="#前言：在筆電記憶體裡塞進「前沿-Agent-戰力」" class="headerlink" title="前言：在筆電記憶體裡塞進「前沿 Agent 戰力」"></a>前言：在筆電記憶體裡塞進「前沿 Agent 戰力」</h2><p>Thinking Machines Lab（TML）於 2026 年 11 月 20 日正式開源了 <strong>Inkling 2 Mini</strong> —— 一款採用 Apache 2.0 授權、支援 <strong>1M tokens 上下文</strong>的多模態（文字＋圖片＋影片）稀疏 MoE 模型。</p>
+<p>它的規格數字相當耐人尋味：總參數量為 <strong>26.4B</strong>，單次層訪問活躍參數僅 <strong>3.4B</strong>（計入 3 輪迴圈後相當於 <strong>5.4B</strong> 有效活躍參數）。更關鍵的是，由於模型從預訓練到強化學習（RL）前向全程採用 <strong>NVFP4 + MXFP8</strong> 混合低精度訓練，釋出的權重即為訓練精度，單一檢查點體積僅約 <strong>19.5 GB（18.2 GiB）</strong>，沒有任何轉檔量化損失，直接能在單張 32 GB 顯存 GPU、32 GB 以上 Apple Silicon 筆電或單台 NVIDIA DGX Spark 上本地運行。</p>
+<p>在獨立評測機構 Artificial Analysis 的 Intelligence Index v5.0 中，Inkling 2 Mini 拿下 <strong>20.1 分</strong>，追平 27B 稠密模型 <strong>Qwen3.8-27B (xhigh)</strong>，但活躍參數少了約 5 倍，以「活躍參數 × 輸出 tokens」計算的推論計算量少了約 <strong>2.8 倍</strong>，每題平均花費從 <script type="math/tex">3.53 降到 **</script>0.59**（耗時從 38.2 分鐘縮短至 9.0 分鐘）。</p>
+<span id="more"></span>
+<p>深入拆解官方報告、Hugging Face <code>config.json</code> 與 safetensors 結構、NVIDIA NeMo AutoModel 文件以及 Goodfire 的可解釋性研究後，可以發現 <strong>Inkling 2 Mini 幾乎沒有發明單一孤立的新元件，而是將 2018–2026 年間八組前沿技術精密組裝在一起</strong>，並在「迴圈＋初始全關閘門」與「端到端 4-bit 訓練」上做出關鍵的工程整合。</p>
+<hr>
+<h2 id="一、整體架構總覽與參數拆解"><a href="#一、整體架構總覽與參數拆解" class="headerlink" title="一、整體架構總覽與參數拆解"></a>一、整體架構總覽與參數拆解</h2><p><img src="/higumalu-note/images/inkling-2-mini/architecture.png" alt="Inkling 2 Mini 架構圖"></p>
+<p>從 <code>config.json</code>（<code>model_type: &quot;inkling2_loop&quot;</code>）可直接驗證，Inkling 2 Mini 的語言骨幹共有 <strong>24 層 Transformer</strong>（隱藏維度 <script type="math/tex">d = 2304</script>），並切分為 4 個 6 層區塊（block）：</p>
 <ul>
-<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
-<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
-<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
+<li><strong>Prelude（前導區，第 0–5 層）</strong>：執行 <strong>1 次</strong>。</li>
+<li><strong>Core（核心迴圈區，第 6–17 層，共 12 層）</strong>：固定重複執行 <strong>3 次</strong>。</li>
+<li><strong>Coda（尾聲區，第 18–23 層）</strong>：執行 <strong>1 次</strong>。</li>
 </ul>
-<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+<p>因此，每個 token 在單次前向傳播中會經歷 <script type="math/tex">6 + 12 \times 3 + 6 = 48</script> 次層運算（layer visits）。在注意力層配置上，每 6 層採用 <strong>5 層滑動視窗（SWA，window = 1,024）+ 1 層全域注意力</strong>（第 5、11、17、23 層），這意味著 48 次層訪問中<strong>只有 8 次是全域注意力</strong>（第 5 層 1 次、第 11 與 17 層各 3 次、第 23 層 1 次）。</p>
+<h3 id="1-1-權重參數量拆解"><a href="#1-1-權重參數量拆解" class="headerlink" title="1.1 權重參數量拆解"></a>1.1 權重參數量拆解</h3><p>根據 safetensors 實際張量形狀統計，26.39B 總參數中有高達 <strong>93%</strong> 集中在 MoE 專家層：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模組</th>
+<th>參數量</th>
+<th>佔比 / 備註</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MoE 專家層</strong></td>
+<td>24.461B</td>
+<td>約 92.7%（第 0–19 層 NVFP4，第 20–23 層 MXFP8）</td>
+</tr>
+<tr>
+<td><strong>詞嵌入＋輸出層</strong></td>
+<td>0.926B</td>
+<td>有效詞表 200,058（padding 至 201,024），不共享權重</td>
+</tr>
+<tr>
+<td><strong>注意力層</strong></td>
+<td>~0.654B</td>
+<td>24 query / 8 KV heads（head dim 128）＋短卷積與閘門</td>
+</tr>
+<tr>
+<td><strong>視覺編碼器（ViT）</strong></td>
+<td>0.318B</td>
+<td>23 層 ViT（寬 1024）＋ 2×2 空間合併＋ Projector</td>
+</tr>
+<tr>
+<td><strong>Router</strong></td>
+<td>0.007B</td>
+<td>每層 128 專家線性層＋ FP32 bias</td>
+</tr>
+<tr>
+<td><strong>合計</strong></td>
+<td><strong>26.389B</strong></td>
+<td>官方標示 26.4B（每多一輪迴圈約增加 1.09B 活躍參數）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="1-2-視覺編碼器與-Tokenizer-細節"><a href="#1-2-視覺編碼器與-Tokenizer-細節" class="headerlink" title="1.2 視覺編碼器與 Tokenizer 細節"></a>1.2 視覺編碼器與 Tokenizer 細節</h3><ul>
+<li><strong>不縮放的原生視覺輸入</strong>：視覺骨幹為 23 層 ViT（16 heads、MLP 4096、2D RoPE + 32×32 插值絕對位置編碼）。圖片不強制縮放至固定解析度，以 <code>20×20</code> patch 切分（時間軸複製成 2 幀以相容影片）並做 <code>2×2</code> 空間合併，最終每 <strong>40×40 像素對應 1 個語言 token</strong>，建議輸入邊長為 40–4,096 px。</li>
+<li><strong>Tokenizer 與推理強度控制</strong>：採用 tiktoken 格式（推論為 <code>o200k</code> 系列），支援 <code>none (0.0)</code>、<code>minimal (0.1)</code>、<code>low (0.2)</code>、<code>medium (0.7)</code>、<code>high (0.9，預設)</code> 到 <code>xhigh/max (0.99)</code> 等連續推理強度控制（透過在首則非 system 訊息前插入 <code>Thinking effort level: X</code> 觸發）。</li>
+</ul>
 <hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
+<h2 id="二、八大核心技術深度拆解"><a href="#二、八大核心技術深度拆解" class="headerlink" title="二、八大核心技術深度拆解"></a>二、八大核心技術深度拆解</h2><h3 id="1-迴圈（遞迴深度）Transformer-與「初始全關」跨輪閘門"><a href="#1-迴圈（遞迴深度）Transformer-與「初始全關」跨輪閘門" class="headerlink" title="1. 迴圈（遞迴深度）Transformer 與「初始全關」跨輪閘門"></a>1. 迴圈（遞迴深度）Transformer 與「初始全關」跨輪閘門</h3><p>從 2018 年 Google 的 <a href="https://arxiv.org/abs/1807.03819">Universal Transformers</a>、2025 年的 <a href="https://arxiv.org/abs/2502.05171">Huginn</a> 到 <a href="https://arxiv.org/abs/2510.25741">Ouro / LoopLM</a>，遞迴深度架構的核心直覺都是：<strong>用「重複計算」代替「增加參數」來換取深度</strong>。</p>
+<p>不過，<a href="https://arxiv.org/abs/2502.17416">Saunshi 等人（2025）</a> 與 Ouro 的實驗已證實一個關鍵限制：<strong>迴圈只幫助推理，幾乎不增加知識記憶容量</strong>。Ouro 實測顯示迴圈 1 次與 4 次的模型知識容量皆維持在約 2 bits/參數；但免 CoT 的多步模運算與形式邏輯準確率卻能暴增逾百個百分點。</p>
+<p>Inkling 2 Mini 在這條路線上做了兩項關鍵工程設計：</p>
+<ol>
+<li><strong>為什麼迴圈「中間 12 層」而非最後 12 層？</strong><br>TML 官方消融顯示，迴圈中間 12 層在 28 項評測中有 <strong>27 項</strong>優於迴圈最後 12 層。訓練到第 2,000 步時，不迴圈基線需要 <strong>1.51–1.91 倍</strong>計算量才能追上中間迴圈的 loss（對最後層迴圈則為 1.24–1.36 倍）；在 512K-token 長代理軌跡上，非迴圈模型更需多耗費 <strong>140%</strong> 推論算力才能達到同等 loss。</li>
+<li><strong>可變與漸進引入的 Rank-64 跨輪閘門</strong><br>為了讓迴圈能在預訓練中途平滑引入而不破壞原本特徵分佈，Core 層在第 2、3 輪會讀取上一輪區塊 2 與區塊 3 的輸出總和作為跨輪訊息 <script type="math/tex">m_s</script>（分別注入 Q、K、V 與 MoE 四個讀取點），並經過一個 Rank-64 控制器：</li>
+</ol>
+<script type="math/tex; mode=display">z = P\,[\mathrm{RMSNorm}(x);\ \mathrm{RMSNorm}(m)], \quad P \in \mathbb{R}^{64 \times 2d}</script><script type="math/tex; mode=display">\kappa = 1 - \tanh(Fz), \quad \gamma = \tanh(Gz), \quad x' = \kappa \odot x + \gamma \odot m</script><p>訓練初期權重設定使 <script type="math/tex">\gamma \approx 0</script>、<script type="math/tex">\kappa \approx 1</script>（閘門初始全關，完全擋住跨輪訊息），再隨訓練逐步打開。</p>
+<p>此外，TML 同時發布了研究變體 <strong>TML-d24-varloop-research</strong>（訓練時以 <code>1:2:6:2:1</code> 比例取樣 1–5 輪迴圈），證實迴圈次數越多，模型越能把思考壓進隱狀態裡：從 1 輪增加到 3 輪時，無 CoT 時間視界（Think Fast benchmark）從 <strong>16 秒提升到 37 秒</strong>，而 GPQA Diamond 所需的顯式推理 token 數則從 <strong>3,703 降到 1,731</strong>。</p>
+<hr>
+<h3 id="2-Attention-Residuals（AttnRes）：告別單一-Residual-Stream"><a href="#2-Attention-Residuals（AttnRes）：告別單一-Residual-Stream" class="headerlink" title="2. Attention Residuals（AttnRes）：告別單一 Residual Stream"></a>2. Attention Residuals（AttnRes）：告別單一 Residual Stream</h3><p>傳統 PreNorm Transformer 使用 <script type="math/tex">x_{l+1} = x_l + f(x_l)</script> 累加殘差，層數加深後早期層的訊號會被稀釋。Inkling 2 Mini 採用了 Kimi Team 於 2026 年 3 月發表的 <a href="https://arxiv.org/abs/2603.15031">Block Attention Residuals</a> 概念：</p>
 <ul>
-<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
-<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
-<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
-<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
-<li><strong>範例腳本</strong> — 附有使用範例</li>
+<li><strong>以 6 層為一個 Block</strong>：每個層（包含注意力與 MoE 子層）不再只吃上一層的殘差流，而是透過一個 FP32 的可學習查詢向量 <script type="math/tex">q</script>，對前面已完成各 Block 輸出的 RMSNorm 結果做 softmax 加權聚合：</li>
 </ul>
-<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
+<script type="math/tex; mode=display">x = \sum_j \alpha_j \hat{v}_j, \quad \alpha_j = \mathrm{softmax}_j\!\left(\frac{q^\top \hat{v}_j}{\sqrt{d}}\right), \quad \hat{v} = \frac{v}{\mathrm{RMS}(v)}</script><ul>
+<li><strong>全域層與讀取點</strong>：從權重結構可驗證全模型共有 <strong>56 個讀取點</strong>（23 個 <code>attn_queries</code>，其中 4 個全域層為 Q/K/V 分開讀取；24 個 <code>mlp_queries</code>；1 個 <code>output_query</code>）。由於查詢向量與輸入無關（僅對 Block 總和計算），它能兼顧低 I/O 開銷（Block 版每層每 token 僅 5.5d，大幅低於 mHC 的 34d）與極高的深度表達力。</li>
+</ul>
 <hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
-<blockquote>
-<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
-</blockquote>
-<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
-<blockquote>
-<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
-</blockquote>
-<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
-<blockquote>
-<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
-</blockquote>
+<h3 id="3-支撐-1M-上下文的注意力組合拳"><a href="#3-支撐-1M-上下文的注意力組合拳" class="headerlink" title="3. 支撐 1M 上下文的注意力組合拳"></a>3. 支撐 1M 上下文的注意力組合拳</h3><p>為了在 1M tokens 長上下文下壓低 KV Cache 並避免注意力崩潰，Inkling 2 Mini 疊加了五項機制：</p>
+<ol>
+<li><strong>5:1 混合滑動視窗＋GQA</strong>：每 6 層只有 1 層全域注意力（第 5、11、17、23 層），其餘 20 層為 <code>window=1,024</code> 的滑動視窗；搭配 24Q / 8KV GQA。以 BF16 估算，1M tokens 下全域層 KV cache 約 32 GiB、滑動視窗層固定僅約 0.16 GiB，比全全域注意力節省約 <strong>6 倍</strong>記憶體。</li>
+<li><strong>捨棄 RoPE，改用 Learned Relative Position Logits</strong>：語言骨幹完全不使用 RoPE（僅 DSpark drafter 使用），而是計算低維相對位置特徵（<code>d_rel=16</code>, <code>rel_extent=1024</code>, <code>rel_l2_clip=8.0</code>）加上距離偏置；vLLM 甚至為此專門撰寫了帶 sheared-bias 的 FlashAttention-4 kernel。</li>
+<li><strong>Learned Zero-Valued Virtual Sink</strong>：每頭依輸入算出一個 sink logit，對應 value 恆為 0 的虛擬 token，專門用來吸收無關的注意力機率質量。</li>
+<li><strong>Gated Attention（輸出閘門）</strong>：在 SDPA 輸出後加入逐頭逐通道的 <code>gate_attn</code> 閘門（源自 Qwen 2025 研究，可進一步減輕注意力尖峰並改善長上下文外推）。</li>
+<li><strong>每層 4 個短卷積（Short Conv1d, kernel=4）</strong>：分別作用於 K、V、注意力輸出與 MoE 輸出。20 個滑動層使用靜態 depthwise causal conv1d，而 <strong>4 個全域層的 K/V 則由 token 動態產生 4 個 taps</strong>（Dynamic Short Convolutions）。</li>
+</ol>
 <hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
+<h3 id="4-細粒度-MoE-與「先剪-2-3-再用-1T-Tokens-蒸餾修復」"><a href="#4-細粒度-MoE-與「先剪-2-3-再用-1T-Tokens-蒸餾修復」" class="headerlink" title="4. 細粒度 MoE 與「先剪 2/3 再用 1T Tokens 蒸餾修復」"></a>4. 細粒度 MoE 與「先剪 2/3 再用 1T Tokens 蒸餾修復」</h3><p>Inkling 2 Mini 採用細粒度 MoE 設計：<strong>128 個路由專家、每 token 啟用 top-8、無共享專家</strong>（<code>n_shared_experts: 0</code>），專家隱藏中間寬度為 1,152。Router 使用 sigmoid 分數搭配每個專家一個 FP32 可訓練校正 bias（而非傳統輔助負載平衡 loss），激活函數則為 <strong>capped SwiGLU</strong>（gate 截斷在 4.0，up 截斷在 25.0）。</p>
+<p>更特別的是它的<strong>專家剪枝策略</strong>：</p>
+<ul>
+<li><strong>預訓練起點</strong>：最初以每層 <strong>384 個專家（稀疏度 48）</strong> 訓練。</li>
+<li><strong>中期激進剪枝</strong>：直接在訓練中期依路由使用頻率<strong>剪掉 2/3（66.7%）的專家</strong>，只保留最常用的 128 個。</li>
+<li><strong>1T Tokens 蒸餾修復（Healing）</strong>：<a href="https://arxiv.org/abs/2510.13999">REAP 論文（2025）</a> 曾指出不重訓時單靠頻率剪枝會讓模型徹底崩潰（例如 Kimi-K2 剪 50% 後程式評測從 0.631 暴跌至 0.056）。TML 的解法是直接用一個更大的內部 Inkling 老師模型進行 <strong>1T tokens 的蒸餾修復</strong>（規模約 NVIDIA <a href="https://arxiv.org/abs/2407.14679">Minitron</a> 的 10 倍），讓剩下的 128 個專家吸收被刪除專家的能力。</li>
+</ul>
+<hr>
+<h3 id="5-後訓練配方：RL-學能力，On-Policy-蒸餾做對齊"><a href="#5-後訓練配方：RL-學能力，On-Policy-蒸餾做對齊" class="headerlink" title="5. 後訓練配方：RL 學能力，On-Policy 蒸餾做對齊"></a>5. 後訓練配方：RL 學能力，On-Policy 蒸餾做對齊</h3><p>Inkling 2 Mini 的後訓練分為三階段：<strong>SFT → RL（2.2T tokens、2,000 步）→ On-Policy 蒸餾對齊</strong>。</p>
+<p>TML 在其技術部落格指出：傳統 RL 每個 episode 只能提供約 <script type="math/tex">O(1)</script> bits 的稀疏獎勵回饋，算力成本極高；而 <strong>On-Policy 蒸餾</strong>（源自 Google DeepMind 的 <a href="https://arxiv.org/abs/2306.13649">GKD</a>）讓學生自己採樣軌跡，由老師模型對每個 token 計算一次 logprob，直接把 RL 的 advantage 設為<strong>負的逐 token reverse KL</strong>：</p>
+<script type="math/tex; mode=display">\text{advantage}_t = -\left(\log \pi_{\text{student}}(y_t \mid x, y_{<t}) - \log \pi_{\text{teacher}}(y_t \mid x, y_{<t})\right)</script><p>這種「一行程式碼」接上 RL importance-sampling loss 的做法，讓每個 token 都擁有密集回饋（<script type="math/tex">O(N)</script> bits），同時保有 on-policy 避免 exposure bias 與 mode-seeking（unhackable）的優勢，以極低成本完成最終對齊。</p>
+<hr>
+<h3 id="6-端到端-NVFP4-MXFP8-低精度訓練與硬體協同"><a href="#6-端到端-NVFP4-MXFP8-低精度訓練與硬體協同" class="headerlink" title="6. 端到端 NVFP4 / MXFP8 低精度訓練與硬體協同"></a>6. 端到端 NVFP4 / MXFP8 低精度訓練與硬體協同</h3><p>為了突破低精度訓練常在轉換或量化後掉點的瓶頸，TML 採用了與部署完全一致的原生低精度配方（<a href="https://thinkingmachines.ai/blog/end-to-end-4-bit-training/">End-to-End 4-Bit Training</a>）：</p>
+<ul>
+<li><strong>前向與反向分離</strong>：從預訓練到 RL，<strong>第 0–19 層專家層前向皆為 NVFP4</strong>（E2M1 元素、block size 16、FP8 E4M3 區塊縮放＋每專家/每 token FP32 外層縮放）；<strong>最後 1/6 的層（第 20–23 層）保留 MXFP8</strong>；反向傳遞則統一使用 MXFP8＋隨機捨入（Stochastic Rounding）。</li>
+<li><strong>Four Over Six 與確定性 Kernel</strong>：在激活值量化上結合 <a href="https://arxiv.org/abs/2512.02010">Four Over Six</a> 技巧減緩 FP4 最大值區間（66.6%–100%）的量化誤差，MoE combine 通訊也透過隨機 Hadamard 轉換壓縮至 8.25 bit。</li>
+<li><strong>訓練即部署</strong>：因為訓練終點即是 NVFP4 + MXFP8 權重，發布檢查點（<code>quant_method=modelopt</code>）<strong>不需額外 PTQ 校準即可直接上線</strong>，在 GB300 上預訓練比全 MXFP8 快 8%、RL 快 20%，獎勵表現無可見差異。</li>
+</ul>
+<hr>
+<h3 id="7-DSpark-推測解碼與本地部署生態"><a href="#7-DSpark-推測解碼與本地部署生態" class="headerlink" title="7. DSpark 推測解碼與本地部署生態"></a>7. DSpark 推測解碼與本地部署生態</h3><p>Inkling 2 Mini 附帶了一個獨立的 636 MB 推測解碼草稿模型（<code>mtp.safetensors</code>），採用 <a href="https://arxiv.org/abs/2607.05147">DSpark（2026-07）</a> 架構：</p>
+<ul>
+<li>由 <strong>3 層 decoder</strong>（全模型唯一使用 RoPE 的部分）組成，讀取目標模型第 <strong>5、23、41 次層訪問</strong>（恰好對應 Prelude 末、Core 第 2 輪第 11 層、Core 第 3 輪第 17 層全域層）以及最終狀態（第 48 次訪問）。</li>
+<li>平行 Backbone 一次提出 <code>block_size=8</code> 個草稿 token，再透過一個 rank-256 的 GRU 式 <code>markov_head</code> 補回 block 內部的 token 相依性，並由信心 head 動態決定每次驗證長度。</li>
+<li><strong>實測加速</strong>：Unsloth 在 B200 上實測開啟 DSpark 後，greedy 解碼從 <strong>99.9 tok/s 提升至 117.3 tok/s</strong>；在 DGX Spark 上透過 Stanford 的 Intelligence per Watt 指標實測達到 <strong>0.703</strong>（遠高於 Qwen3.6-35B-A3B 的 0.430）。</li>
+<li><strong>部署限制提醒</strong>：由於 NVFP4 專家權重不可做 Tensor Parallel (TP) 切分，在 SGLang 上部署時 <strong>EP 必須等於 TP</strong>；SGLang 同時提供 <code>--inkling2-loop-share-cache</code> 選項讓三輪迴圈共用 KV cache，可使 KV pool 空間翻倍（實測 gsm8k 甚至從 88.5% 微升至 90.0%）。</li>
+</ul>
+<hr>
+<h3 id="8-Goodfire-可解釋性研究：迴圈裡真的在「分段演算」"><a href="#8-Goodfire-可解釋性研究：迴圈裡真的在「分段演算」" class="headerlink" title="8. Goodfire 可解釋性研究：迴圈裡真的在「分段演算」"></a>8. Goodfire 可解釋性研究：迴圈裡真的在「分段演算」</h3><p>可解釋性團隊 <a href="https://www.goodfire.com/research/interpreting-inkling-2-mini/">Goodfire</a> 對 Inkling 2 Mini 進行了權重空間與激活分析，揭示了迴圈模型的內部運作機制：</p>
+<ul>
+<li><strong>Writer 集中在 Block 末層</strong>：跨層寫入主要集中在第 6、12、18 層，而第 18 層在第 1、2 輪與第 3 輪之間出現顯著行為反轉——巨大離群通道 <script type="math/tex">d_{2027}</script>（佔平方範數高達 46%）在第 1、2 輪呈正向尖峰，第 3 輪反轉為負向尖峰，扮演「最後一輪收尾清理」的角色。</li>
+<li><strong>Logit-lens 驗證</strong>：傳統 logit-lens 只在每一輪的末層有效，代表中間層確實專注於內部隱狀態轉換，而非提早收斂到詞表空間。</li>
+</ul>
+<hr>
+<h2 id="三、基準測試表現與獨立評測"><a href="#三、基準測試表現與獨立評測" class="headerlink" title="三、基準測試表現與獨立評測"></a>三、基準測試表現與獨立評測</h2><p>Inkling 2 Mini 最強的領域集中在<strong>程式代理（Agentic Coding）、搜尋與工具調用、長上下文與桌面 GUI 定位</strong>。以下節選官方模型卡數據與對比模型（粗體為該列最佳）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>類別</th>
+<th>評測項目</th>
+<th>Inkling 2 Mini<br/>(5.4B/26.4B)</th>
+<th>Qwen3.8-27B<br/>(27B Dense)</th>
+<th>Gemma 4 31B<br/>(30.7B Dense)</th>
+<th>Nemotron 3.5 Super VL<br/>(12B/124.5B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>綜合</strong></td>
+<td>AA Intelligence Index v5.0</td>
+<td><strong>20.1</strong></td>
+<td><strong>20.1</strong></td>
+<td>4.4</td>
+<td>13.6</td>
+</tr>
+<tr>
+<td><strong>程式</strong></td>
+<td>SWE-bench Verified (%)</td>
+<td><strong>79.2</strong></td>
+<td>77.8</td>
+<td>46.1</td>
+<td>71.1</td>
+</tr>
+<tr>
+<td><strong>程式</strong></td>
+<td>SWE-bench Pro v2 Hard (%)</td>
+<td><strong>77.9</strong></td>
+<td>73.8</td>
+<td>14.2</td>
+<td>44.1</td>
+</tr>
+<tr>
+<td><strong>程式</strong></td>
+<td>Vibe Code Bench v1.1 (%)</td>
+<td><strong>77.9</strong></td>
+<td>64.9</td>
+<td>–</td>
+<td>3.5</td>
+</tr>
+<tr>
+<td><strong>程式</strong></td>
+<td>Terminal Bench v2.1 (%)</td>
+<td>71.6</td>
+<td><strong>73.0</strong></td>
+<td>43.4</td>
+<td>60.7</td>
+</tr>
+<tr>
+<td><strong>搜尋/工具</strong></td>
+<td>BrowseComp (%)</td>
+<td><strong>79.0</strong></td>
+<td>61.6</td>
+<td>37.0</td>
+<td>78.9</td>
+</tr>
+<tr>
+<td><strong>搜尋/工具</strong></td>
+<td>DeepSearchQA (%)</td>
+<td><strong>85.3</strong></td>
+<td>79.7</td>
+<td>61.7</td>
+<td>77.7</td>
+</tr>
+<tr>
+<td><strong>搜尋/工具</strong></td>
+<td>MCP Atlas (%)</td>
+<td><strong>82.7</strong></td>
+<td>77.3</td>
+<td>54.2</td>
+<td>67.7</td>
+</tr>
+<tr>
+<td><strong>視覺</strong></td>
+<td>ScreenSpot Pro (%)</td>
+<td><strong>76.5</strong></td>
+<td>57.6</td>
+<td>5.9</td>
+<td>43.5</td>
+</tr>
+<tr>
+<td><strong>視覺</strong></td>
+<td>OmniDocBench v1.6 (%)</td>
+<td><strong>92.8</strong></td>
+<td>91.5</td>
+<td>82.5</td>
+<td>77.9</td>
+</tr>
+<tr>
+<td><strong>推理</strong></td>
+<td>ARC-AGI-2 (%)</td>
+<td><strong>49.3</strong></td>
+<td>42.4</td>
+<td>–</td>
+<td>1.5</td>
+</tr>
+<tr>
+<td><strong>推理</strong></td>
+<td>GPQA Diamond (%)</td>
+<td>86.6</td>
+<td><strong>90.5</strong></td>
+<td>85.7</td>
+<td>89.5</td>
+</tr>
+<tr>
+<td><strong>長上下文</strong></td>
+<td>LongBench v2 (%)</td>
+<td><strong>66.9</strong></td>
+<td>52.3</td>
+<td>52.9</td>
+<td>62.1</td>
+</tr>
+<tr>
+<td><strong>長上下文</strong></td>
+<td>MRCR v2 256K–512K (%)</td>
+<td><strong>46.4</strong></td>
+<td>38.0</td>
+<td>–</td>
+<td>5.7</td>
+</tr>
+<tr>
+<td><strong>知識</strong></td>
+<td>AA-Omniscience 非幻覺率 (%)</td>
+<td>63.4</td>
+<td><strong>71.4</strong></td>
+<td>14.5</td>
+<td>69.5</td>
+</tr>
+<tr>
+<td><strong>安全</strong></td>
+<td>破壞性動作（內部，越低越好）</td>
+<td><strong>10.2%</strong></td>
+<td>35.2%</td>
+<td>75.8%</td>
+<td>65.6%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>獨立第三方觀察（Artificial Analysis）</strong>：<br>Inkling 2 Mini 每題平均產生約 <strong>152K 輸出 tokens</strong>，比 Qwen3.8-27B（約 110K）多出 38%——這是它用「較長推理＋迴圈深度」換取高分代價的展現。但因為活躍參數只有對手的約 1/5，整體計算量與推論成本仍具備壓倒性優勢，穩居「智慧 vs 活躍參數」的 Pareto 前緣。</p>
+<hr>
+<h2 id="四、限制、未公開資訊與技術點評"><a href="#四、限制、未公開資訊與技術點評" class="headerlink" title="四、限制、未公開資訊與技術點評"></a>四、限制、未公開資訊與技術點評</h2><h3 id="官方自述的實務限制"><a href="#官方自述的實務限制" class="headerlink" title="官方自述的實務限制"></a>官方自述的實務限制</h3><ol>
+<li><strong>事實知識與幻覺</strong>：印證了「迴圈不增知識」的理論，Inkling 2 Mini 在事實回憶類任務落後大型模型與同級稠密模型（AA-Omniscience 63.4% vs Qwen3.8-27B 71.4%），且在不知道答案時較容易自信地說錯。</li>
+<li><strong>推理迴圈與代理失誤</strong>：在除錯程式時容易陷入過長的推理迴圈（且就算把推理強度設為最低 <code>none</code> 也無法完全關閉推理），建議生產環境務必設定輸出 token 與 Agent 回合上限；此外在 Agent 操作中有未經確認就刪除／覆寫檔案的紀錄。</li>
+<li><strong>中文與非英文表現</strong>：官方明確指出非英文品質較低，中文測試會出現「措辭簡略、中英混雜」的現象。</li>
+<li><strong>CoT 可監控性</strong>：因部分推理移入看不見的迴圈隱狀態，官方特別做了安全性檢查，結果顯示 <code>CoT-Control-QA</code> 遵從率最多僅 <strong>0.1%</strong>，LinuxArena 隱蔽任務成功率在可看思考內容時只有 <strong>1.3%</strong>，目前尚未發現隱蔽失控的跡象。</li>
+</ol>
+<h3 id="尚未公開的技術拼圖"><a href="#尚未公開的技術拼圖" class="headerlink" title="尚未公開的技術拼圖"></a>尚未公開的技術拼圖</h3><p>目前官方仍未揭露的資訊包含：預訓練總 token 數與詳細資料配比、知識截止日、1M 上下文具體的長距離延展策略、SFT/RL 獎勵函數設計、實際訓練算力規模，以及 <code>log_scaling_alpha=0.1</code> 等部分細微公式實作。此外不同文件對活躍參數（3B / 3.4B / 3.5B / 5.4B）與研究版 <code>MRCR 512K-1M</code>（37.7% vs 81.4%）的口徑存在差異，閱讀時需留意定義。</p>
+<hr>
+<h3 id="🐻-小熊技術點評"><a href="#🐻-小熊技術點評" class="headerlink" title="🐻 小熊技術點評"></a>🐻 小熊技術點評</h3><p>Inkling 2 Mini 給了開源小模型領域一個非常清晰的工程啟示：<strong>當單機記憶體（20–32 GB）卡死總參數量上限時，「知識」可以靠外部搜尋與工具（MCP / BrowseComp）補齊，但「代理推理與代碼規劃深度」必須靠架構創新硬擠出來。</strong></p>
+<p>TML 的解法非常務實：</p>
+<ol>
+<li>先用 <strong>384 專家的大模型</strong>學出足夠強的表徵，再用 <strong>剪枝 2/3＋1T tokens 蒸餾</strong>硬壓回 26.4B；</li>
+<li>用 <strong>中間 12 層 × 3 輪迴圈＋AttnRes</strong> 在不增加權重體積的前提下換取 48 層深度；</li>
+<li>用 <strong>訓練即部署的 NVFP4</strong> 省去 4-bit 量化掉點的風險，直接把 26B 模型壓進筆電級記憶體。</li>
+</ol>
+<p>雖然它在純事實知識與中文流暢度上還有明顯妥協，但作為一款能跑在個人工作站或筆電上的 <strong>Apache 2.0 程式與工具代理模型</strong>，Inkling 2 Mini 已經把「小體積高智慧」的工程標竿推上了一個全新台階。</p>
+<hr>
+<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><ul>
+<li><a href="https://thinkingmachines.ai/news/inkling-2-mini/">Introducing Inkling 2 Mini（Thinking Machines Lab 部落格）</a></li>
+<li><a href="https://thinkingmachines.ai/model-card/inkling-2-mini/">Inkling 2 Mini 模型卡（TML）</a> / <a href="https://huggingface.co/thinkingmachines/Inkling-2-Mini">Hugging Face 模型卡</a></li>
+<li><a href="https://huggingface.co/blog/inkling2mini">Welcome Inkling 2 Mini（Hugging Face 部落格）</a></li>
+<li><a href="https://artificialanalysis.ai/articles/inkling-2-mini">Artificial Analysis 獨立評測報告</a></li>
+<li><a href="https://thinkingmachines.ai/blog/end-to-end-4-bit-training/">TML: End-to-End 4-Bit Training</a> / <a href="https://thinkingmachines.ai/blog/on-policy-distillation/">On-Policy Distillation</a></li>
+<li><a href="https://www.goodfire.com/research/interpreting-inkling-2-mini/">Goodfire: Interpreting Inkling 2 Mini</a></li>
+<li>核心參考論文：<a href="https://arxiv.org/abs/1807.03819">Universal Transformers</a>、<a href="https://arxiv.org/abs/2502.05171">Huginn</a>、<a href="https://arxiv.org/abs/2510.25741">Ouro / LoopLM</a>、<a href="https://arxiv.org/abs/2603.15031">Attention Residuals</a>、<a href="https://arxiv.org/abs/2510.13999">REAP</a>、<a href="https://arxiv.org/abs/2407.14679">Minitron</a>、<a href="https://arxiv.org/abs/2306.13649">GKD</a>、<a href="https://arxiv.org/abs/2509.25149">NVFP4 預訓練</a>、<a href="https://arxiv.org/abs/2512.02010">Four Over Six</a>、<a href="https://arxiv.org/abs/2607.05147">DSpark</a>、<a href="https://arxiv.org/abs/2511.07885">Intelligence per Watt</a></li>
+</ul>
 ]]></content>
       <categories>
-        <category>pydicomRT</category>
+        <category>AI</category>
+        <category>論文與開源精讀</category>
       </categories>
       <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;Initial commit — 專案起點&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-06-16-c8f78e6-Initial-commit---%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E/</url>
-    <content><![CDATA[<h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：<code>.gitignore</code>、<code>LICENSE</code>、<code>README.md</code>。</p>
-<p>我決定從零開始建立一個專案，選擇正確的工具和架構是很重要的第一步。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 files changed, 216 insertions(+)</span><br><span class="line">.gitignore</span><br><span class="line">LICENSE</span><br><span class="line">README.md</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 當時是什麼契機想要建立這個專案？</strong></p>
-<blockquote>
-<p>我把醫學影像操作變簡單——這是最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。我希望打造一個簡單的套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
-</blockquote>
-<p><strong>Q2: 為什麼選擇這個專案結構？（src/ + example/ + test/）</strong></p>
-<blockquote>
-<p>主要是套件開發的慣例，沒有特別設計。src/ 內的架構是我希望根據 RT 每個流程的資料型態來分門別類：影像相關、RTSTRUCT 相關、DOSE 相關、影像配準相關——每個子領域一套對應的 function。</p>
-</blockquote>
-<p><strong>Q3: pyproject.toml 的設計有參考什麼嗎？</strong></p>
-<blockquote>
-<p>既然目標是降低操作難度，依賴套件的選擇就很明確：NumPy、SimpleITK 處理 3D 物件，pydicom 處理 DICOM 格式——都是領域內最主流、最多人用的工具。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c8f78e6">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
+        <tag>MoE</tag>
+        <tag>Inkling-2-Mini</tag>
+        <tag>Thinking Machines Lab</tag>
+        <tag>Looped Transformer</tag>
+        <tag>NVFP4</tag>
+        <tag>Attention Residuals</tag>
+        <tag>DSpark</tag>
       </tags>
   </entry>
   <entry>
@@ -3346,6 +3584,86 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
+    <title>pydicomRT｜&quot;建立核心套件 — RTSTRUCT 處理 **v0.3.1**&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-903eb86-%E5%BB%BA%E7%AB%8B%E6%A0%B8%E5%BF%83%E5%A5%97%E4%BB%B6---RTSTRUCT-%E8%99%95%E7%90%86/</url>
+    <content><![CDATA[<h2 id="✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1"><a href="#✨-建立核心套件-—-RTSTRUCT-處理-v0-3-1" class="headerlink" title="✨ 建立核心套件 — RTSTRUCT 處理 v0.3.1"></a>✨ 建立核心套件 — RTSTRUCT 處理 <strong>v0.3.1</strong></h2><p><strong>Commit:</strong> <code>903eb86</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="🌱-專案起源背景"><a href="#🌱-專案起源背景" class="headerlink" title="🌱 專案起源背景"></a>🌱 專案起源背景</h3><p>我想要把醫學影像操作變簡單——這就是 pydicomRT 最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。</p>
+<p>我在使用現有的開源工具處理 RTSTRUCT 時發現幾個痛點：</p>
+<ul>
+<li><strong>輪廓資料難以與 3D 影像對齊</strong> — 座標系統之間的轉換缺乏一致性實作</li>
+<li><strong>Mask ↔ Contour 轉換不直覺</strong> — 臨床軟體用 Mask，工程研究用 Contour，中間轉換往往是客製化 script</li>
+<li><strong>IOD 驗證不足</strong> — 自行拼湊的 RTSTRUCT 容易違反 DICOM 標準，上游系統一讀就爆炸</li>
+</ul>
+<p>所以我決定從頭打造一個專門處理 RTSTRUCT 的 Python 套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個功能 commit，我建立了核心套件，包含：</p>
+<ul>
+<li><strong>RTSTRUCT 建立與解析</strong> — 可以從頭創建新的 RTSTRUCT 檔案</li>
+<li><strong>3D Mask ↔ Contour 轉換</strong> — 兩邊格式的相互轉換</li>
+<li><strong>座標系統轉換</strong> — Image space ↔ Patient space</li>
+<li><strong>IOD 驗證</strong> — 確保符合 DICOM 標準</li>
+<li><strong>範例腳本</strong> — 附有使用範例</li>
+</ul>
+<p>18 個檔案、1642 行新增代碼，是一個相當完整的起始點。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">18 files changed, 1642 insertions(+)</span><br><span class="line">src/pydicomrt/rs/</span><br><span class="line">src/pydicomrt/utils/</span><br><span class="line">example/</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: RTSTRUCT 處理第一版最困難的部分是什麼？</strong></p>
+<blockquote>
+<p>說來可能意外——最難的不是 coding，而是規劃。因為我不確定日後會冒出什麼新需求，在整體架構上特別小心，生怕設計得太死。最後我決定根據 DICOM 資料的類型去設計各式各樣的處理方法，讓子模組各自發展時不會互相綁死。</p>
+</blockquote>
+<p><strong>Q2: Contour Sequence 的格式在網路上資料多嗎？還是主要靠 DICOM 標準文件？</strong></p>
+<blockquote>
+<p>網路上的資料很少，大部分還是得靠 DICOM 標準文件自己啃。另一部分則是我參考了 rt-utils 的實作方式，幫助理解官方文件中那些難以消化的描述。</p>
+</blockquote>
+<p><strong>Q3: 當時有參考其他 Python DICOM 處理庫嗎？pydicomRT 和它們的定位有何不同？</strong></p>
+<blockquote>
+<p>最一開始我確實用 rt-utils 處理 RTSTRUCT 相關資料，但後來發現一些更細節的寫入方式不在這個套件的範圍內——像是 Contour data 的浮點數精度、更詳細的 ROI 設定等。pydicomRT 的定位就是補上這些 rt-utils 照顧不到的地方，變成一個更完整的 RT 專門工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/903eb86">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;Initial commit — 專案起點&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-06-16-c8f78e6-Initial-commit---%E5%B0%88%E6%A1%88%E8%B5%B7%E9%BB%9E/</url>
+    <content><![CDATA[<h2 id="🏁-Initial-commit-—-專案起點"><a href="#🏁-Initial-commit-—-專案起點" class="headerlink" title="🏁 Initial commit — 專案起點"></a>🏁 Initial commit — 專案起點</h2><p><strong>Commit:</strong> <code>c8f78e6</code><br><strong>日期：</strong> 2025-06-16</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>這是 pydicomRT 的第一個 commit，我建立了專案的基本結構：<code>.gitignore</code>、<code>LICENSE</code>、<code>README.md</code>。</p>
+<p>我決定從零開始建立一個專案，選擇正確的工具和架構是很重要的第一步。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">3 files changed, 216 insertions(+)</span><br><span class="line">.gitignore</span><br><span class="line">LICENSE</span><br><span class="line">README.md</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: 當時是什麼契機想要建立這個專案？</strong></p>
+<blockquote>
+<p>我把醫學影像操作變簡單——這是最初的念頭。要把 DICOM 處理成可以實際操作的物件，往往得先深入研究儀器的成像原理與資料型態，其中 RT（放射治療）的需求特別複雜。我希望打造一個簡單的套件，讓研究人員用幾行 code 就能操作這些複雜資料，不必自己踩坑。</p>
+</blockquote>
+<p><strong>Q2: 為什麼選擇這個專案結構？（src/ + example/ + test/）</strong></p>
+<blockquote>
+<p>主要是套件開發的慣例，沒有特別設計。src/ 內的架構是我希望根據 RT 每個流程的資料型態來分門別類：影像相關、RTSTRUCT 相關、DOSE 相關、影像配準相關——每個子領域一套對應的 function。</p>
+</blockquote>
+<p><strong>Q3: pyproject.toml 的設計有參考什麼嗎？</strong></p>
+<blockquote>
+<p>既然目標是降低操作難度，依賴套件的選擇就很明確：NumPy、SimpleITK 處理 3D 物件，pydicom 處理 DICOM 格式——都是領域內最主流、最多人用的工具。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/c8f78e6">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>pydicomRT｜&quot;Registration 模組進場&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-08-18-6cc3899-Registration-%E6%A8%A1%E7%B5%84%E9%80%B2%E5%A0%B4/</url>
     <content><![CDATA[<h2 id="✨-Registration-模組進場"><a href="#✨-Registration-模組進場" class="headerlink" title="✨ Registration 模組進場"></a>✨ Registration 模組進場</h2><p><strong>Commit:</strong> <code>6cc3899</code><br><strong>日期：</strong> 2025-08-18</p>
@@ -3501,6 +3819,43 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
+    <title>pydicomRT｜&quot;Dose 模組上線 — sitk_transform&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-09-19-287e331-Dose-%E6%A8%A1%E7%B5%84%E4%B8%8A%E7%B7%9A---sitk_transform/</url>
+    <content><![CDATA[<h2 id="✨-Dose-模組上線-—-sitk-transform"><a href="#✨-Dose-模組上線-—-sitk-transform" class="headerlink" title="✨ Dose 模組上線 — sitk_transform"></a>✨ Dose 模組上線 — sitk_transform</h2><p><strong>Commit:</strong> <code>287e331</code><br><strong>日期：</strong> 2025-09-19</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Dose（劑量）處理是 pydicomRT 的第三個主要模組。</p>
+<p>這次我加入的 <code>sitk_transform</code> 模組解決了一個核心問題：</p>
+<ul>
+<li><strong>DICOM Dose Array ↔ SimpleITK Image</strong> — 讓劑量資料可以在 DICOM 格式和 SimpleITK 格式之間自由轉換</li>
+<li><strong>方向處理</strong> — Dose 有特殊的 Direction 需要處理</li>
+</ul>
+<p><code>sitk_transform</code> 的定位是「DICOM 資料與 SimpleITK 資料之間的橋樑」，讓各類資料能夠互通。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 file changed, 39 insertions(+)</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Dose 在整個 RT 流程中扮演什麼角色？</strong></p>
+<blockquote>
+<p>Dose 是 RT 資料中相當重要的一個區塊，源自於 RT Plan 的資料，主要用於紀錄治療劑量相關的資訊。實務上我會搭配 Registration 使用，讓放射物理師更好去評估每日治療劑量是否符合一開始規劃的劑量。</p>
+</blockquote>
+<p><strong>Q2: sitk_transform 解決了什麼問題？</strong></p>
+<blockquote>
+<p>一開始寫這個方法是為了讓各類資料能夠更好地在 DICOM 格式和 SimpleITK 格式之間互通。SimpleITK 有很強大的影像處理工具，但 DICOM 的資料結構畢竟不同，需要一個乾淨的轉換層。</p>
+</blockquote>
+<p><strong>Q3: Dose 資料處理的難點在哪裡？</strong></p>
+<blockquote>
+<p>轉換到患者座標空間是一個難題，另一部分則是要如何把 Dose 資料很好地綁定到影像資料的空間上。兩邊座標對不上，後續的劑量評估就會失準。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/287e331">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>pydicomRT｜&quot;版本 0.6.0 — 階段性總結&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-09-26-9b350a1-%E7%89%88%E6%9C%AC-060---%E9%9A%8E%E6%AE%B5%E6%80%A7%E7%B8%BD%E7%B5%90/</url>
     <content><![CDATA[<h2 id="🎉-版本-0-6-0-—-階段性總結"><a href="#🎉-版本-0-6-0-—-階段性總結" class="headerlink" title="🎉 版本 0.6.0 — 階段性總結"></a>🎉 版本 0.6.0 — 階段性總結</h2><p><strong>Commit:</strong> <code>9b350a1</code><br><strong>日期：</strong> 2025-09-26</p>
@@ -3530,43 +3885,6 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
 </blockquote>
 <hr>
 <p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/9b350a1">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>pydicomRT｜&quot;Dose 模組上線 — sitk_transform&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-09-19-287e331-Dose-%E6%A8%A1%E7%B5%84%E4%B8%8A%E7%B7%9A---sitk_transform/</url>
-    <content><![CDATA[<h2 id="✨-Dose-模組上線-—-sitk-transform"><a href="#✨-Dose-模組上線-—-sitk-transform" class="headerlink" title="✨ Dose 模組上線 — sitk_transform"></a>✨ Dose 模組上線 — sitk_transform</h2><p><strong>Commit:</strong> <code>287e331</code><br><strong>日期：</strong> 2025-09-19</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>Dose（劑量）處理是 pydicomRT 的第三個主要模組。</p>
-<p>這次我加入的 <code>sitk_transform</code> 模組解決了一個核心問題：</p>
-<ul>
-<li><strong>DICOM Dose Array ↔ SimpleITK Image</strong> — 讓劑量資料可以在 DICOM 格式和 SimpleITK 格式之間自由轉換</li>
-<li><strong>方向處理</strong> — Dose 有特殊的 Direction 需要處理</li>
-</ul>
-<p><code>sitk_transform</code> 的定位是「DICOM 資料與 SimpleITK 資料之間的橋樑」，讓各類資料能夠互通。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">1 file changed, 39 insertions(+)</span><br><span class="line">src/pydicomrt/dose/sitk_transform.py</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Dose 在整個 RT 流程中扮演什麼角色？</strong></p>
-<blockquote>
-<p>Dose 是 RT 資料中相當重要的一個區塊，源自於 RT Plan 的資料，主要用於紀錄治療劑量相關的資訊。實務上我會搭配 Registration 使用，讓放射物理師更好去評估每日治療劑量是否符合一開始規劃的劑量。</p>
-</blockquote>
-<p><strong>Q2: sitk_transform 解決了什麼問題？</strong></p>
-<blockquote>
-<p>一開始寫這個方法是為了讓各類資料能夠更好地在 DICOM 格式和 SimpleITK 格式之間互通。SimpleITK 有很強大的影像處理工具，但 DICOM 的資料結構畢竟不同，需要一個乾淨的轉換層。</p>
-</blockquote>
-<p><strong>Q3: Dose 資料處理的難點在哪裡？</strong></p>
-<blockquote>
-<p>轉換到患者座標空間是一個難題，另一部分則是要如何把 Dose 資料很好地綁定到影像資料的空間上。兩邊座標對不上，後續的劑量評估就會失準。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/287e331">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>
@@ -3648,44 +3966,6 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
-    <title>pydicomRT｜&quot;版本 0.6.3 — Builder 模組新增轉診醫師資訊&quot;</title>
-    <url>/higumalu-note/pydicomRT-commits/2025-12-09-d473c13-%E7%89%88%E6%9C%AC-063/</url>
-    <content><![CDATA[<h2 id="🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊"><a href="#🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊" class="headerlink" title="🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊"></a>🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊</h2><p><strong>Commit:</strong> <code>d473c13</code><br><strong>版本：</strong> v0.6.3<br><strong>日期：</strong> 2025-12-09</p>
-<hr>
-<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.3 我在 Builder 模組中新增了轉診醫師（Referring Physician）資訊的處理功能。</p>
-<p>在 DICOM 標準中，<code>ReferringPhysicianName</code> 是 Study 層級的重要屬性，它記錄了安排本次檢查的醫師資訊。這個資訊對於：</p>
-<ul>
-<li>臨床工作流程追蹤</li>
-<li>報告歸檔</li>
-<li>法規遵循（如 HIPAA）</li>
-</ul>
-<p>都非常重要。這次更新我將此資訊正確地加入到 Study 和 Series 的中繼資料中。</p>
-<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.2 → 0.6.3</span><br></pre></td></tr></table></figure>
-<hr>
-<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Referring Physician 和 Operating Physician 有什麼不同？</strong></p>
-<blockquote>
-<p>Referring Physician 是「開單」的醫師，也就是安排這次檢查的人，通常是臨床醫師。而 Operating Physician 是實際操作儀器的人，像是放射師或執行治療的技術人員。兩個角色在臨床上經常不同，記錄時不能搞混。</p>
-</blockquote>
-<p><strong>Q2: 為什麼這是 Study 和 Series 層級的資訊，而不是 Patient 層級？</strong></p>
-<blockquote>
-<p>因為這個資訊是和「檢查」綁在一起的，不是跟著病人一輩子。同一位病人可能會因為不同的病情，在不同時間由不同的醫師安排不同的檢查。Study 代表一次檢查，Series 是檢查中的某個子集，所以把 Referring Physician 放在這個層級是合理的。</p>
-</blockquote>
-<p><strong>Q3: 在匿名化處理時，這個欄位要如何處理？</strong></p>
-<blockquote>
-<p>這是個好問題。如果是研究用途，通常需要把 Referring Physician Name 移除或替換成匿名代碼。我目前還沒有在 pydicomRT 裡實作專門的匿名化功能，但未來可能會加入這個選項，畢竟很多研究數據都需要脫敏處理。</p>
-</blockquote>
-<hr>
-<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d473c13">GitHub</a></p>
-]]></content>
-      <categories>
-        <category>pydicomRT</category>
-      </categories>
-      <tags>
-        <tag>開發日誌</tag>
-        <tag>pydicomRT</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>pydicomRT｜&quot;📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射&quot;</title>
     <url>/higumalu-note/pydicomRT-commits/2025-11-21-d551280-README-%E6%9B%B4%E6%96%B0-RTSTRUCT-%E7%AF%84%E4%BE%8B/</url>
     <content><![CDATA[<h2 id="📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射"><a href="#📝-README-更新-—-RTSTRUCT-轉換範例加入-Affine-映射" class="headerlink" title="📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射"></a>📝 README 更新 — RTSTRUCT 轉換範例加入 Affine 映射</h2><p><strong>Commit:</strong> <code>d551280</code><br><strong>日期：</strong> 2025-11-21</p>
@@ -3714,6 +3994,44 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
 </blockquote>
 <hr>
 <p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d551280">GitHub</a></p>
+]]></content>
+      <categories>
+        <category>pydicomRT</category>
+      </categories>
+      <tags>
+        <tag>開發日誌</tag>
+        <tag>pydicomRT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>pydicomRT｜&quot;版本 0.6.3 — Builder 模組新增轉診醫師資訊&quot;</title>
+    <url>/higumalu-note/pydicomRT-commits/2025-12-09-d473c13-%E7%89%88%E6%9C%AC-063/</url>
+    <content><![CDATA[<h2 id="🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊"><a href="#🛠️-版本-0-6-3-—-Builder-模組新增轉診醫師資訊" class="headerlink" title="🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊"></a>🛠️ 版本 0.6.3 — Builder 模組新增轉診醫師資訊</h2><p><strong>Commit:</strong> <code>d473c13</code><br><strong>版本：</strong> v0.6.3<br><strong>日期：</strong> 2025-12-09</p>
+<hr>
+<h3 id="📋-變動內容"><a href="#📋-變動內容" class="headerlink" title="📋 變動內容"></a>📋 變動內容</h3><p>版本 0.6.3 我在 Builder 模組中新增了轉診醫師（Referring Physician）資訊的處理功能。</p>
+<p>在 DICOM 標準中，<code>ReferringPhysicianName</code> 是 Study 層級的重要屬性，它記錄了安排本次檢查的醫師資訊。這個資訊對於：</p>
+<ul>
+<li>臨床工作流程追蹤</li>
+<li>報告歸檔</li>
+<li>法規遵循（如 HIPAA）</li>
+</ul>
+<p>都非常重要。這次更新我將此資訊正確地加入到 Study 和 Series 的中繼資料中。</p>
+<h3 id="📁-受影響檔案"><a href="#📁-受影響檔案" class="headerlink" title="📁 受影響檔案"></a>📁 受影響檔案</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">pyproject.toml</span><br><span class="line">  - 版本號更新：0.6.2 → 0.6.3</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="💭-熊熊的開發心得"><a href="#💭-熊熊的開發心得" class="headerlink" title="💭 熊熊的開發心得"></a>💭 熊熊的開發心得</h3><p><strong>Q1: Referring Physician 和 Operating Physician 有什麼不同？</strong></p>
+<blockquote>
+<p>Referring Physician 是「開單」的醫師，也就是安排這次檢查的人，通常是臨床醫師。而 Operating Physician 是實際操作儀器的人，像是放射師或執行治療的技術人員。兩個角色在臨床上經常不同，記錄時不能搞混。</p>
+</blockquote>
+<p><strong>Q2: 為什麼這是 Study 和 Series 層級的資訊，而不是 Patient 層級？</strong></p>
+<blockquote>
+<p>因為這個資訊是和「檢查」綁在一起的，不是跟著病人一輩子。同一位病人可能會因為不同的病情，在不同時間由不同的醫師安排不同的檢查。Study 代表一次檢查，Series 是檢查中的某個子集，所以把 Referring Physician 放在這個層級是合理的。</p>
+</blockquote>
+<p><strong>Q3: 在匿名化處理時，這個欄位要如何處理？</strong></p>
+<blockquote>
+<p>這是個好問題。如果是研究用途，通常需要把 Referring Physician Name 移除或替換成匿名代碼。我目前還沒有在 pydicomRT 裡實作專門的匿名化功能，但未來可能會加入這個選項，畢竟很多研究數據都需要脫敏處理。</p>
+</blockquote>
+<hr>
+<p>📂 <strong>查看完整差異：</strong> <a href="https://github.com/higumalu/pydicomRT/commit/d473c13">GitHub</a></p>
 ]]></content>
       <categories>
         <category>pydicomRT</category>
@@ -4162,24 +4480,6 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
-    <title>google colab (0) setting &amp; UI</title>
-    <url>/higumalu-note/2021/10/05/colab-1/</url>
-    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a></p>
-<h2 id=""><a href="#" class="headerlink" title=""></a><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></h2><p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
-<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
-<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
-<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
-<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
-]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>setting</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>My New Post</title>
     <url>/higumalu-note/2021/09/30/My-New-Post/</url>
     <content><![CDATA[<h1 id="title-01"><a href="#title-01" class="headerlink" title="title_01"></a>title_01</h1><p>test test</p>
@@ -4206,6 +4506,39 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
 <h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$$ hexo deploy</span><br></pre></td></tr></table></figure>
 <p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
 ]]></content>
+  </entry>
+  <entry>
+    <title>google colab (0) setting &amp; UI</title>
+    <url>/higumalu-note/2021/10/05/colab-1/</url>
+    <content><![CDATA[<h3 id="透過colab建立jupyiter-notebook"><a href="#透過colab建立jupyiter-notebook" class="headerlink" title="透過colab建立jupyiter notebook"></a>透過colab建立jupyiter notebook</h3><p>1.直接透過首頁新增新的jupyiter notebook檔案<br><a href="https://colab.research.google.com/">https://colab.research.google.com/</a></p>
+<h2 id=""><a href="#" class="headerlink" title=""></a><img src="https://i.imgur.com/0fwVdK9.png" alt="Imgur"></h2><p>2.透過Google Drive建立jupyiter notebook檔案<br><a href="https://drive.google.com/">https://drive.google.com/</a><br><img src="https://i.imgur.com/uil2ui6.png" alt="Imgur"><br><img src="https://i.imgur.com/2ZAOteD.png" alt="Imgur"><br><img src="https://i.imgur.com/3pEWdDP.png" alt="Imgur"></p>
+<h3 id="colab上方列表"><a href="#colab上方列表" class="headerlink" title="colab上方列表"></a>colab上方列表</h3><p><em>一圖流由左至右</em><br>&nbsp;<br>檔案-&gt;在雲端硬碟中儲存副本-&gt;存到GOOGLE DRIVE<br>&nbsp;<br>工具-&gt;設定-&gt;改主題風格<br>&nbsp;<br>編輯-&gt;筆記本設定-&gt;啟用GPU加速</p>
+<p><img src="https://i.imgur.com/tlPQqtb.png" alt="Imgur"></p>
+<h3 id="主要工作區"><a href="#主要工作區" class="headerlink" title="主要工作區"></a>主要工作區</h3><p><em>important hot key</em><br>&nbsp;<br>Ctr + Enter = 執行目前程式格<br>Ctr + F9 = 執行全部的程式格<br>Ctr + M + B = 在下方建立一個新的程式格<br>&nbsp;<br>其他功能可以從<br>‘工具-&gt;鍵盤快捷鍵’ 去做設定</p>
+<p><img src="https://i.imgur.com/LBC5h4f.png" alt="Imgur"></p>
+]]></content>
+      <categories>
+        <category>colab</category>
+      </categories>
+      <tags>
+        <tag>colab</tag>
+        <tag>setting</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>google colab (1) connect to drive</title>
+    <url>/higumalu-note/2021/10/07/colab-2/</url>
+    <content><![CDATA[<h3 id="連結到Google-Drive"><a href="#連結到Google-Drive" class="headerlink" title="連結到Google Drive"></a>連結到Google Drive</h3><p>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!apt-get install -y -qq software-properties-common python-software-properties module-init-tools</span><br><span class="line">!add-apt-repository -y ppa:alessandro-strada/ppa <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get update -qq <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get -y install -qq google-drive-ocamlfuse fuse</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> google.colab <span class="keyword">import</span> auth</span><br><span class="line">auth.authenticate_user()</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> oauth2client.client <span class="keyword">import</span> GoogleCredentials</span><br><span class="line">creds = GoogleCredentials.get_application_default()</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> getpass</span><br><span class="line">!google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125; &lt; /dev/null <span class="number">2</span>&gt;&amp;<span class="number">1</span> | grep URL</span><br><span class="line">vcode = getpass.getpass()</span><br><span class="line">!echo &#123;vcode&#125; | google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">E: Package &#x27;python-software-properties&#x27; has no installation candidate</span><br><span class="line">Selecting previously unselected package google-drive-ocamlfuse.</span><br><span class="line">(Reading database ... 155047 files and directories currently installed.)</span><br><span class="line">Preparing to unpack .../google-drive-ocamlfuse_0.7.26-0ubuntu1~ubuntu18.04.1_amd64.deb ...</span><br><span class="line">Unpacking google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Setting up google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Processing triggers for man-db (2.8.3-2ubuntu0.1) ...</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">··········</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">Please enter the verification code: Access token retrieved correctly.</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>&nbsp;<br>執行之後點連結會產生一段驗證碼<br>貼到下方的格子中案Enter進行驗證<br><em>一共需要驗證兩次驗證瑪</em><br>&nbsp;<br>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!mkdir -p Drive</span><br><span class="line">!google-drive-ocamlfuse Drive</span><br><span class="line"></span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;.config&#x27;, &#x27;Drive&#x27;, &#x27;adc.json&#x27;, &#x27;sample_data&#x27;]</span><br></pre></td></tr></table></figure><br>在虛擬機開一個資料夾<br>名稱為’Drive’視為個人雲端硬碟的根目錄<br>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">os.chdir(<span class="string">&#x27;Drive/colab_test&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(os.listdir())</span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;GPUtest.ipynb&#x27;, &#x27;Untitled0.ipynb&#x27;]</span><br></pre></td></tr></table></figure><br>&nbsp;<br>切換到目前的工作資料夾<br>列出所有檔案</p>
+<p><img src="https://imgur.com/9tQ7FyJ.jpg" alt="Imgur"></p>
+<p>&nbsp;<br>&nbsp;</p>
+]]></content>
+      <categories>
+        <category>colab</category>
+      </categories>
+      <tags>
+        <tag>colab</tag>
+        <tag>drive</tag>
+      </tags>
   </entry>
   <entry>
     <title>google colab (2) CNN classification model with custom dataset</title>
@@ -4251,30 +4584,44 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       </tags>
   </entry>
   <entry>
-    <title>終於畢業了!!</title>
-    <url>/higumalu-note/2023/09/03/diary230903/</url>
-    <content><![CDATA[<p>總算是有空來搞點專案了</p>
+    <title>ultrasound defan</title>
+    <url>/higumalu-note/2022/03/25/US_defan/</url>
+    <content><![CDATA[<h3 id="A-universal-method-for-ultrasound-image-defan"><a href="#A-universal-method-for-ultrasound-image-defan" class="headerlink" title="A universal method for ultrasound image defan"></a>A universal method for ultrasound image defan</h3><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
+<h1 id="step-1"><a href="#step-1" class="headerlink" title="step 1"></a>step 1</h1><h3 id="import-moudle-amp-load-image"><a href="#import-moudle-amp-load-image" class="headerlink" title="import moudle &amp; load image"></a>import moudle &amp; load image</h3><p><img src="https://imgur.com/cuaq1Cd.jpg" alt="load"><br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> util <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageDraw</span><br><span class="line"></span><br><span class="line">img = cv2.imread(imgpath, cv2.IMREAD_COLOR)</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>&nbsp;</p>
+<h1 id="step-2"><a href="#step-2" class="headerlink" title="step 2"></a>step 2</h1><h3 id="get-the-coner-coordinate-x4"><a href="#get-the-coner-coordinate-x4" class="headerlink" title="get the coner coordinate (x4)"></a>get the coner coordinate (x4)</h3><h4 id="here-I-use-ginput-get-the-coordinate"><a href="#here-I-use-ginput-get-the-coordinate" class="headerlink" title="here I use ginput get the coordinate"></a>here I use ginput get the coordinate</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.title(<span class="string">&#x27;plt ginput&#x27;</span>) </span><br><span class="line">point = plt.ginput(<span class="number">4</span>) </span><br><span class="line"><span class="built_in">print</span>(point) </span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="use-line1-and-line2-to-caculate-the-focus-point-above-the-img"><a href="#use-line1-and-line2-to-caculate-the-focus-point-above-the-img" class="headerlink" title="use line1 and line2 to caculate the focus point above the img"></a>use line1 and line2 to caculate the focus point above the img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">ux1, uy1 = point[<span class="number">0</span>]</span><br><span class="line">dx1, dy1 = point[<span class="number">1</span>]</span><br><span class="line">ux2, uy2 = point[<span class="number">2</span>]</span><br><span class="line">dx2, dy2 = point[<span class="number">3</span>]</span><br><span class="line">img[:<span class="built_in">int</span>(uy1),:,:] = <span class="number">0</span> <span class="comment">#del area of uper UI </span></span><br><span class="line">line1 = [ux1, uy1, dx1, dy1]</span><br><span class="line">line2 = [ux2, uy2, dx2, dy2]</span><br><span class="line"></span><br><span class="line">focus = cross_point(line1, line2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h3 id="how2get-cross-point-coordinate"><a href="#how2get-cross-point-coordinate" class="headerlink" title="how2get cross point coordinate"></a>how2get cross point coordinate</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cross_point</span>(<span class="params">line1,line2</span>):</span></span><br><span class="line">    x1=line1[<span class="number">0</span>]</span><br><span class="line">    y1=line1[<span class="number">1</span>]</span><br><span class="line">    x2=line1[<span class="number">2</span>]</span><br><span class="line">    y2=line1[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    x3=line2[<span class="number">0</span>]</span><br><span class="line">    y3=line2[<span class="number">1</span>]</span><br><span class="line">    x4=line2[<span class="number">2</span>]</span><br><span class="line">    y4=line2[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    k1=(y2-y1)*<span class="number">1.0</span>/(x2-x1)</span><br><span class="line">    b1=y1*<span class="number">1.0</span>-x1*k1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> (x4-x3)==<span class="number">0</span>:</span><br><span class="line">        k2=<span class="literal">None</span></span><br><span class="line">        b2=<span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        k2=(y4-y3)*<span class="number">1.0</span>/(x4-x3)</span><br><span class="line">        b2=y3*<span class="number">1.0</span>-x3*k2*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> k2==<span class="literal">None</span>:</span><br><span class="line">        x=x3</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        x=(b2-b1)*<span class="number">1.0</span>/(k1-k2)</span><br><span class="line">    y=k1*x*<span class="number">1.0</span>+b1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">return</span> [x,y]</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<h1 id="step-3"><a href="#step-3" class="headerlink" title="step 3"></a>step 3</h1><h3 id="caculating-the-distance-of-focus-point-to-surface-and-bottom"><a href="#caculating-the-distance-of-focus-point-to-surface-and-bottom" class="headerlink" title="caculating the distance of focus point to surface and bottom"></a>caculating the distance of focus point to surface and bottom</h3><p><img src="https://i.imgur.com/sElg0Dn.png" alt="var"><br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">sur = math.dist(focus, point[<span class="number">0</span>])</span><br><span class="line">rad = math.dist(focus, point[<span class="number">1</span>])</span><br></pre></td></tr></table></figure><br>&nbsp;</p>
+<h3 id="crop-img-and-extension-the-matrix-size"><a href="#crop-img-and-extension-the-matrix-size" class="headerlink" title="crop img and extension the matrix size"></a>crop img and extension the matrix size</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">img = img[:math.floor(focus[<span class="number">1</span>]+rad), math.floor(dx1):math.ceil(dx2)]</span><br><span class="line"></span><br><span class="line">mask_w = img.shape[<span class="number">1</span>]</span><br><span class="line">mask_h = math.ceil(rad)</span><br><span class="line"></span><br><span class="line">bg = np.zeros(shape=(mask_h, mask_w, <span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">0</span>] = img[:,:,<span class="number">0</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">1</span>] = img[:,:,<span class="number">1</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">2</span>] = img[:,:,<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
+<h1 id="step-4"><a href="#step-4" class="headerlink" title="step 4"></a>step 4</h1><h3 id="defan-amp-crop-img"><a href="#defan-amp-crop-img" class="headerlink" title="defan &amp; crop img"></a>defan &amp; crop img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">defan = de_fan(bg,probe_angle,num_aline)</span><br><span class="line">defan = defan[<span class="built_in">int</span>(sur):,:,:]</span><br></pre></td></tr></table></figure>
+<h3 id="de-fan-code"><a href="#de-fan-code" class="headerlink" title="de_fan code"></a>de_fan code</h3><p>‘angle’ means the probe curve angle we can get that with product info or using cosine function to get it.<br>‘num_line’ means ‘A line’ here we can understand that is image width.<br>Here I used a for loop to resample the image, then inserted into the blank matrix.<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">de_fan</span>(<span class="params">image,angle,num_line</span>):</span></span><br><span class="line">    </span><br><span class="line">    h_l = math.floor(num_line/<span class="number">2</span>)</span><br><span class="line">    h_a = math.floor(angle/<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    height, width = image.shape[:<span class="number">2</span>]</span><br><span class="line">    defan = np.zeros(shape=(height,num_line,<span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">    defan[:,h_l,:] = image[:,math.floor(width)-<span class="number">1</span>,:]</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,h_l):</span><br><span class="line">        line = rotate_image_topcenter(image,d*h_a/h_l)</span><br><span class="line">        defan[:,h_l-d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">        line = rotate_image_topcenter(image,-d*h_a/h_l)</span><br><span class="line">        defan[:,h_l+d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> defan</span><br></pre></td></tr></table></figure><br>&nbsp;</p>
+<h3 id="rotate-image-topcenter-code"><a href="#rotate-image-topcenter-code" class="headerlink" title="rotate_image_topcenter code"></a>rotate_image_topcenter code</h3><p>Let rotate center is focused center</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rotate_image_topcenter</span>(<span class="params">mat, angle</span>):</span></span><br><span class="line">    height, width = mat.shape[:<span class="number">2</span>] <span class="comment"># image shape has 3 dimensions</span></span><br><span class="line">    image_center = (width/<span class="number">2</span>, <span class="number">0</span>) </span><br><span class="line">    rotation_mat = cv2.getRotationMatrix2D(image_center, angle, <span class="number">1.</span>)</span><br><span class="line">    rotated_mat = cv2.warpAffine(mat, rotation_mat, (width, height))</span><br><span class="line">    <span class="keyword">return</span> rotated_mat</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>&nbsp;<br>finally—-<br><img src="https://i.imgur.com/yPYAMkn.png" alt="fin"><br>&nbsp;</p>
+]]></content>
+      <categories>
+        <category>ultrasound</category>
+      </categories>
+      <tags>
+        <tag>image processing</tag>
+        <tag>ultrasound</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>終於忙完碩一上了!!</title>
+    <url>/higumalu-note/2022/03/24/diary0324/</url>
+    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
+<p>改天整理一下傳speaker deck</p>
+<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
 ]]></content>
       <categories>
         <category>daily</category>
       </categories>
       <tags>
         <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>google colab (1) connect to drive</title>
-    <url>/higumalu-note/2021/10/07/colab-2/</url>
-    <content><![CDATA[<h3 id="連結到Google-Drive"><a href="#連結到Google-Drive" class="headerlink" title="連結到Google Drive"></a>連結到Google Drive</h3><p>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!apt-get install -y -qq software-properties-common python-software-properties module-init-tools</span><br><span class="line">!add-apt-repository -y ppa:alessandro-strada/ppa <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get update -qq <span class="number">2</span>&gt;&amp;<span class="number">1</span> &gt; /dev/null</span><br><span class="line">!apt-get -y install -qq google-drive-ocamlfuse fuse</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> google.colab <span class="keyword">import</span> auth</span><br><span class="line">auth.authenticate_user()</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> oauth2client.client <span class="keyword">import</span> GoogleCredentials</span><br><span class="line">creds = GoogleCredentials.get_application_default()</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> getpass</span><br><span class="line">!google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125; &lt; /dev/null <span class="number">2</span>&gt;&amp;<span class="number">1</span> | grep URL</span><br><span class="line">vcode = getpass.getpass()</span><br><span class="line">!echo &#123;vcode&#125; | google-drive-ocamlfuse -headless -<span class="built_in">id</span>=&#123;creds.client_id&#125; -secret=&#123;creds.client_secret&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">E: Package &#x27;python-software-properties&#x27; has no installation candidate</span><br><span class="line">Selecting previously unselected package google-drive-ocamlfuse.</span><br><span class="line">(Reading database ... 155047 files and directories currently installed.)</span><br><span class="line">Preparing to unpack .../google-drive-ocamlfuse_0.7.26-0ubuntu1~ubuntu18.04.1_amd64.deb ...</span><br><span class="line">Unpacking google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Setting up google-drive-ocamlfuse (0.7.26-0ubuntu1~ubuntu18.04.1) ...</span><br><span class="line">Processing triggers for man-db (2.8.3-2ubuntu0.1) ...</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">··········</span><br><span class="line">Please, open the following URL in a web browser: https://accounts.google.com/o/...</span><br><span class="line">Please enter the verification code: Access token retrieved correctly.</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>&nbsp;<br>執行之後點連結會產生一段驗證碼<br>貼到下方的格子中案Enter進行驗證<br><em>一共需要驗證兩次驗證瑪</em><br>&nbsp;<br>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">!mkdir -p Drive</span><br><span class="line">!google-drive-ocamlfuse Drive</span><br><span class="line"></span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;.config&#x27;, &#x27;Drive&#x27;, &#x27;adc.json&#x27;, &#x27;sample_data&#x27;]</span><br></pre></td></tr></table></figure><br>在虛擬機開一個資料夾<br>名稱為’Drive’視為個人雲端硬碟的根目錄<br>&nbsp;<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">os.chdir(<span class="string">&#x27;Drive/colab_test&#x27;</span>)</span><br><span class="line"><span class="built_in">print</span>(os.listdir())</span><br></pre></td></tr></table></figure><br><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">[&#x27;GPUtest.ipynb&#x27;, &#x27;Untitled0.ipynb&#x27;]</span><br></pre></td></tr></table></figure><br>&nbsp;<br>切換到目前的工作資料夾<br>列出所有檔案</p>
-<p><img src="https://imgur.com/9tQ7FyJ.jpg" alt="Imgur"></p>
-<p>&nbsp;<br>&nbsp;</p>
-]]></content>
-      <categories>
-        <category>colab</category>
-      </categories>
-      <tags>
-        <tag>colab</tag>
-        <tag>drive</tag>
       </tags>
   </entry>
   <entry>
@@ -4292,6 +4639,18 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
       <tags>
         <tag>image processing</tag>
         <tag>ultrasound</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>終於畢業了!!</title>
+    <url>/higumalu-note/2023/09/03/diary230903/</url>
+    <content><![CDATA[<p>總算是有空來搞點專案了</p>
+]]></content>
+      <categories>
+        <category>daily</category>
+      </categories>
+      <tags>
+        <tag>other</tag>
       </tags>
   </entry>
   <entry>
@@ -4367,47 +4726,6 @@ b^{(t+1)}\leftarrow \tilde{b}^{(t+1)}-\mathrm{mean}\bigl(\tilde{b}^{(t+1)}\bigr)
 ]]></content>
       <categories>
         <category>關於</category>
-      </categories>
-      <tags>
-        <tag>other</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ultrasound defan</title>
-    <url>/higumalu-note/2022/03/25/US_defan/</url>
-    <content><![CDATA[<h3 id="A-universal-method-for-ultrasound-image-defan"><a href="#A-universal-method-for-ultrasound-image-defan" class="headerlink" title="A universal method for ultrasound image defan"></a>A universal method for ultrasound image defan</h3><p><img src="https://imgur.com/uglQwPk.jpg" alt="defan1"></p>
-<h1 id="step-1"><a href="#step-1" class="headerlink" title="step 1"></a>step 1</h1><h3 id="import-moudle-amp-load-image"><a href="#import-moudle-amp-load-image" class="headerlink" title="import moudle &amp; load image"></a>import moudle &amp; load image</h3><p><img src="https://imgur.com/cuaq1Cd.jpg" alt="load"><br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">from</span> matplotlib <span class="keyword">import</span> pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> util <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageDraw</span><br><span class="line"></span><br><span class="line">img = cv2.imread(imgpath, cv2.IMREAD_COLOR)</span><br><span class="line"></span><br></pre></td></tr></table></figure><br>&nbsp;</p>
-<h1 id="step-2"><a href="#step-2" class="headerlink" title="step 2"></a>step 2</h1><h3 id="get-the-coner-coordinate-x4"><a href="#get-the-coner-coordinate-x4" class="headerlink" title="get the coner coordinate (x4)"></a>get the coner coordinate (x4)</h3><h4 id="here-I-use-ginput-get-the-coordinate"><a href="#here-I-use-ginput-get-the-coordinate" class="headerlink" title="here I use ginput get the coordinate"></a>here I use ginput get the coordinate</h4><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">plt.title(<span class="string">&#x27;plt ginput&#x27;</span>) </span><br><span class="line">point = plt.ginput(<span class="number">4</span>) </span><br><span class="line"><span class="built_in">print</span>(point) </span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h3 id="use-line1-and-line2-to-caculate-the-focus-point-above-the-img"><a href="#use-line1-and-line2-to-caculate-the-focus-point-above-the-img" class="headerlink" title="use line1 and line2 to caculate the focus point above the img"></a>use line1 and line2 to caculate the focus point above the img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">ux1, uy1 = point[<span class="number">0</span>]</span><br><span class="line">dx1, dy1 = point[<span class="number">1</span>]</span><br><span class="line">ux2, uy2 = point[<span class="number">2</span>]</span><br><span class="line">dx2, dy2 = point[<span class="number">3</span>]</span><br><span class="line">img[:<span class="built_in">int</span>(uy1),:,:] = <span class="number">0</span> <span class="comment">#del area of uper UI </span></span><br><span class="line">line1 = [ux1, uy1, dx1, dy1]</span><br><span class="line">line2 = [ux2, uy2, dx2, dy2]</span><br><span class="line"></span><br><span class="line">focus = cross_point(line1, line2)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h3 id="how2get-cross-point-coordinate"><a href="#how2get-cross-point-coordinate" class="headerlink" title="how2get cross point coordinate"></a>how2get cross point coordinate</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cross_point</span>(<span class="params">line1,line2</span>):</span></span><br><span class="line">    x1=line1[<span class="number">0</span>]</span><br><span class="line">    y1=line1[<span class="number">1</span>]</span><br><span class="line">    x2=line1[<span class="number">2</span>]</span><br><span class="line">    y2=line1[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    x3=line2[<span class="number">0</span>]</span><br><span class="line">    y3=line2[<span class="number">1</span>]</span><br><span class="line">    x4=line2[<span class="number">2</span>]</span><br><span class="line">    y4=line2[<span class="number">3</span>]</span><br><span class="line">    </span><br><span class="line">    k1=(y2-y1)*<span class="number">1.0</span>/(x2-x1)</span><br><span class="line">    b1=y1*<span class="number">1.0</span>-x1*k1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> (x4-x3)==<span class="number">0</span>:</span><br><span class="line">        k2=<span class="literal">None</span></span><br><span class="line">        b2=<span class="number">0</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        k2=(y4-y3)*<span class="number">1.0</span>/(x4-x3)</span><br><span class="line">        b2=y3*<span class="number">1.0</span>-x3*k2*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">if</span> k2==<span class="literal">None</span>:</span><br><span class="line">        x=x3</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        x=(b2-b1)*<span class="number">1.0</span>/(k1-k2)</span><br><span class="line">    y=k1*x*<span class="number">1.0</span>+b1*<span class="number">1.0</span></span><br><span class="line">    <span class="keyword">return</span> [x,y]</span><br></pre></td></tr></table></figure>
-<p>&nbsp;</p>
-<h1 id="step-3"><a href="#step-3" class="headerlink" title="step 3"></a>step 3</h1><h3 id="caculating-the-distance-of-focus-point-to-surface-and-bottom"><a href="#caculating-the-distance-of-focus-point-to-surface-and-bottom" class="headerlink" title="caculating the distance of focus point to surface and bottom"></a>caculating the distance of focus point to surface and bottom</h3><p><img src="https://i.imgur.com/sElg0Dn.png" alt="var"><br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">sur = math.dist(focus, point[<span class="number">0</span>])</span><br><span class="line">rad = math.dist(focus, point[<span class="number">1</span>])</span><br></pre></td></tr></table></figure><br>&nbsp;</p>
-<h3 id="crop-img-and-extension-the-matrix-size"><a href="#crop-img-and-extension-the-matrix-size" class="headerlink" title="crop img and extension the matrix size"></a>crop img and extension the matrix size</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">img = img[:math.floor(focus[<span class="number">1</span>]+rad), math.floor(dx1):math.ceil(dx2)]</span><br><span class="line"></span><br><span class="line">mask_w = img.shape[<span class="number">1</span>]</span><br><span class="line">mask_h = math.ceil(rad)</span><br><span class="line"></span><br><span class="line">bg = np.zeros(shape=(mask_h, mask_w, <span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">0</span>] = img[:,:,<span class="number">0</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">1</span>] = img[:,:,<span class="number">1</span>]</span><br><span class="line">bg[(mask_h-img.shape[<span class="number">0</span>]):mask_h,:,<span class="number">2</span>] = img[:,:,<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
-<h1 id="step-4"><a href="#step-4" class="headerlink" title="step 4"></a>step 4</h1><h3 id="defan-amp-crop-img"><a href="#defan-amp-crop-img" class="headerlink" title="defan &amp; crop img"></a>defan &amp; crop img</h3><figure class="highlight py"><table><tr><td class="code"><pre><span class="line">defan = de_fan(bg,probe_angle,num_aline)</span><br><span class="line">defan = defan[<span class="built_in">int</span>(sur):,:,:]</span><br></pre></td></tr></table></figure>
-<h3 id="de-fan-code"><a href="#de-fan-code" class="headerlink" title="de_fan code"></a>de_fan code</h3><p>‘angle’ means the probe curve angle we can get that with product info or using cosine function to get it.<br>‘num_line’ means ‘A line’ here we can understand that is image width.<br>Here I used a for loop to resample the image, then inserted into the blank matrix.<br><figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">de_fan</span>(<span class="params">image,angle,num_line</span>):</span></span><br><span class="line">    </span><br><span class="line">    h_l = math.floor(num_line/<span class="number">2</span>)</span><br><span class="line">    h_a = math.floor(angle/<span class="number">2</span>)</span><br><span class="line">    </span><br><span class="line">    height, width = image.shape[:<span class="number">2</span>]</span><br><span class="line">    defan = np.zeros(shape=(height,num_line,<span class="number">3</span>)).astype(<span class="string">&#x27;uint8&#x27;</span>)</span><br><span class="line">    defan[:,h_l,:] = image[:,math.floor(width)-<span class="number">1</span>,:]</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,h_l):</span><br><span class="line">        line = rotate_image_topcenter(image,d*h_a/h_l)</span><br><span class="line">        defan[:,h_l-d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">        line = rotate_image_topcenter(image,-d*h_a/h_l)</span><br><span class="line">        defan[:,h_l+d] = line[:,<span class="built_in">int</span>(line.shape[<span class="number">1</span>]/<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> defan</span><br></pre></td></tr></table></figure><br>&nbsp;</p>
-<h3 id="rotate-image-topcenter-code"><a href="#rotate-image-topcenter-code" class="headerlink" title="rotate_image_topcenter code"></a>rotate_image_topcenter code</h3><p>Let rotate center is focused center</p>
-<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">rotate_image_topcenter</span>(<span class="params">mat, angle</span>):</span></span><br><span class="line">    height, width = mat.shape[:<span class="number">2</span>] <span class="comment"># image shape has 3 dimensions</span></span><br><span class="line">    image_center = (width/<span class="number">2</span>, <span class="number">0</span>) </span><br><span class="line">    rotation_mat = cv2.getRotationMatrix2D(image_center, angle, <span class="number">1.</span>)</span><br><span class="line">    rotated_mat = cv2.warpAffine(mat, rotation_mat, (width, height))</span><br><span class="line">    <span class="keyword">return</span> rotated_mat</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>&nbsp;<br>finally—-<br><img src="https://i.imgur.com/yPYAMkn.png" alt="fin"><br>&nbsp;</p>
-]]></content>
-      <categories>
-        <category>ultrasound</category>
-      </categories>
-      <tags>
-        <tag>image processing</tag>
-        <tag>ultrasound</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>終於忙完碩一上了!!</title>
-    <url>/higumalu-note/2022/03/24/diary0324/</url>
-    <content><![CDATA[<p>每天醒來都是翻譯Paper跟做PPT<br>一次爆修了24個學分<br>7777777777777777</p>
-<p>改天整理一下傳speaker deck</p>
-<p>(然後我忘記hexo要怎麼update了<br>笑死 晚點寫起來好了</p>
-]]></content>
-      <categories>
-        <category>daily</category>
       </categories>
       <tags>
         <tag>other</tag>
